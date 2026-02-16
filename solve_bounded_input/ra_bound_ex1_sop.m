@@ -32,50 +32,24 @@ target_set_sym = y1 ^ 2 + y2 ^ 2 - 0.01; % target_set: target_set <=0 inside tar
 [u, k1, mu, lambda, certificate, A_matrix, b_vector, ks] = reach_avoid_controller(fx_sym, gx_sym, hx_sym, x_vars_sym, safe_set_sym);
 % here u is a symbolic vector [u1; u2], each entry is a symbolic expression of state variables x1,x2,x3,x4, and unknown parameters (mu values, lambda, k1 controler polynomial)
 
-% before solving the bounded control, we have to fix parameter values (mu and lambda) with predefined numerical values
+% define constraint for the control input bounds
+% Ax = [1 0; -1 0; 0 1; 0 -1]; % example constraint matrix for control input bounds, here we want to enforce |u1| <= 100 and |u2| <= 100
+lb = [-100; -100]; % lower bounds for control inputs
+ub = [100; 100]; % upper bounds for control inputs
+ds = 2; % degree of the auxiliary SOS polynomials for the single-integrator system
+dv = 2; % degree of the k1 controller polynomial
+
 mu_val = 1; % example value for mu just for testing, HAVE TO DISCUSS THIS IN THE PAPER
-lambda_val = 1e-8; % example value for lambda as a small positive value, HAVE TO DISCUSS THIS IN THE PAPER
 
-% substitute mu values and lambda with predefined numerical values in the controller u
-u_subs = u;
-
-for i = 1:numel(mu)
-
-    if ~isempty(mu{i})
-        u_subs = subs(u_subs, mu{i}, mu_val);
-    end
-
-end
-
-u_subs = subs(u_subs, lambda, lambda_val);
-
-% substitute mu values and lambda with predefined numerical values in the certificate
-certificate_subs = certificate;
-
-for i = 1:numel(mu)
-
-    if ~isempty(mu{i})
-        certificate_subs = subs(certificate_subs, mu{i}, mu_val);
-    end
-
-end
-
-certificate_subs = subs(certificate_subs, lambda, lambda_val);
-
-% substitute the output mapping
-
-% check all variables in the substituted controller expression
-vars_in_u_subs = symvar(u_subs);
-disp('Variables in the substituted controller expression:');
-disp(vars_in_u_subs);
-
-% print the obtained certificate
-disp('Obtained certificate:');
-disp(certificate_subs);
-
-% print the obtained controller
-disp('Obtained controller after substituting mu and lambda with predefined values:');
-disp(u_subs);
+samples_num = 10; % number of random samples to find the valid samples that satisfy the control input bounds for the pseudo ux
 
 % solve the bounded control inputs using scenario optimization programming (SOP) with SOS constraints
-solvesop_bounded_control(u_subs, k1, certificate_subs, x_vars_sym, y_vars_sym, hx_sym, safe_set_sym, target_set_sym, -100, 100);
+[u_opt, certificate_opt] = solvesop_bounded_control(u, k1, mu, lambda, certificate, x_vars_sym, y_vars_sym, hx_sym, safe_set_sym, target_set_sym, mu_val, lb, ub, ds, dv, samples_num);
+
+% disp the obtained controller after solving with bounded control inputs
+disp('Obtained controller after solving with bounded control inputs:');
+disp(u_opt);
+
+% disp the obtained certificate after solving with bounded control inputs
+disp('Obtained certificate after solving with bounded control inputs:');
+disp(certificate_opt);

@@ -16,6 +16,8 @@ function [k1_opt, k1_lambda, k1_delta] = solve_vanilla_k1_controller(y_vars, saf
     % k1_lambda: obtained lambda scalar for the single-integrator system, scalar decision variable in the SOS program
     % k1_delta: obtained delta scalar for the single-integrator system, scalar decision variable in the SOS program
 
+    echo on;
+
     % get the number of outputs
     p = length(y_vars);
     % create pvar variables for the single-intgegrator system
@@ -110,7 +112,9 @@ function [k1_opt, k1_lambda, k1_delta] = solve_vanilla_k1_controller(y_vars, saf
     end
 
     % extract the obtained lambda and delta
-    k1_lambda = sosgetsol(prog, lambda);
-    k1_delta = sosgetsol(prog, delta);
+    k1_lambda = double(sosgetsol(prog, lambda));
+    k1_delta = double(sosgetsol(prog, delta));
+
+    echo off;
 
 end
