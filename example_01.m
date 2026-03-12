@@ -34,14 +34,16 @@ target_set_sym = y1 ^ 2 - 0.01; % target_set: target_set <=0 inside target set
 
 % define constraint for the control input bounds
 % Ax = [1 0; -1 0; 0 1; 0 -1]; % example constraint matrix for control input bounds, here we want to enforce |u1| <= 100 and |u2| <= 100
-lb = [-1; -1]; % lower bounds for control inputs
-ub = [1; 1]; % upper bounds for control inputs
-ds = 8; % degree of the auxiliary SOS polynomials for the single-integrator system
-dv = 8; % degree of the k1 controller polynomial
+% set the random seed for reproducibility
+rng(42);
+lb = [-20]; % lower bounds for control inputs
+ub = [20]; % upper bounds for control inputs
+ds = 6; % degree of the auxiliary SOS polynomials for the single-integrator system
+dv = 4; % degree of the k1 controller polynomial
 
-mu_val = 1; % example value for mu just for testing, HAVE TO DISCUSS THIS IN THE PAPER
+mu_val = 10; % example value for mu just for testing, HAVE TO DISCUSS THIS IN THE PAPER
 
-samples_num = 100; % number of random samples to find the valid samples that satisfy the control input bounds for the pseudo ux
+samples_num = 200; % number of random samples to find the valid samples that satisfy the control input bounds for the pseudo ux
 
 bound_min = [-1.1; -1.1]; % lower bounds for sampling the state space for finding valid samples that satisfy the set (safe, target, vanilla reach-avoid certificate) constraints
 bound_max = [1.1; 1.1]; % upper bounds for sampling the state space for finding valid samples that satisfy the set (safe, target, vanilla reach-avoid certificate) constraints
@@ -50,6 +52,14 @@ bound_max = [1.1; 1.1]; % upper bounds for sampling the state space for finding 
 [u_opt, certificate_opt, valid_count] = solvesop_bounded_control(u, k1, J_k1, mu, lambda, certificate, cert_term_dict, p, r_deg, x_vars_sym, y_vars_sym, ...
     hx_sym, safe_set_sym, target_set_sym, mu_val, lb, ub, ds, dv, samples_num, bound_min, bound_max);
 
+% compute the bounds of the obtained controller over zero superlevel set of the certificate
+[num_1, den_1] = numden(u_opt(1));
+[lb_1, ub_1] = compute_poly_bounds_sos(num_1, den_1, certificate_opt, ds, 1e-3);
+% estimate the bounds of the obtained controller over zero superlevel set of the certificate using sampling (for verification)
+[estimated_lb_1, estimated_ub_1] = compute_poly_bounds_sampling(num_1, certificate_opt, 10000, bound_min, bound_max);
+
+disp('------------------------------------------------------------------------------------');
+
 % disp the obtained controller after solving with bounded control inputs
 disp('Obtained controller after solving with bounded control inputs:');
 disp(u_opt);
@@ -57,6 +67,15 @@ disp(u_opt);
 % disp the obtained certificate after solving with bounded control inputs
 disp('Obtained certificate after solving with bounded control inputs:');
 disp(certificate_opt);
+
+% disp the number of valid samples that satisfy the control input bounds for the pseudo ux
+disp(['Number of valid samples that satisfy the control input bounds for the pseudo ux: ', num2str(valid_count), ' out of ', num2str(samples_num)]);
+
+disp(['Bounds for u1 over the zero superlevel set of the certificate: [', ...
+          num2str(lb_1), ', ', num2str(ub_1), ']']);
+
+disp(['Estimated bounds for u1 over the zero superlevel set of the certificate using sampling: [', ...
+          num2str(estimated_lb_1), ', ', num2str(estimated_ub_1), ']']);
 
 % export the results, also all setting parameters, to a python file for verification and testing
 % first, use a struct to collect all the relevant parameters for exporting
