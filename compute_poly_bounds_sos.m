@@ -40,11 +40,11 @@ function [lower_bound, upper_bound] = compute_poly_bounds(num_poly, den_poly, su
     vars = eval(['[' strjoin(var_names, ', ') ']']);
 
     % Four explicit calls; algebraic sign logic is encapsulated in the helper.
-    lb_pos = solve_fraction_bound(vars, num_poly, den_poly, superlevel_set_poly, ds_min, epsilon, 1, 'lower');
-    ub_pos = solve_fraction_bound(vars, num_poly, den_poly, superlevel_set_poly, ds_min, epsilon, 1, 'upper');
+    lb_pos = solve_fraction_bound(vars, num_poly, den_poly, superlevel_set_poly, ds_min, epsilon, 1, 'lower', 1);
+    ub_pos = solve_fraction_bound(vars, num_poly, den_poly, superlevel_set_poly, ds_min, epsilon, 1, 'upper', 1);
 
-    lb_neg = solve_fraction_bound(vars, num_poly, den_poly, superlevel_set_poly, ds_min, epsilon, -1, 'lower');
-    ub_neg = solve_fraction_bound(vars, num_poly, den_poly, superlevel_set_poly, ds_min, epsilon, -1, 'upper');
+    lb_neg = solve_fraction_bound(vars, num_poly, den_poly, superlevel_set_poly, ds_min, epsilon, -1, 'lower', 1);
+    ub_neg = solve_fraction_bound(vars, num_poly, den_poly, superlevel_set_poly, ds_min, epsilon, -1, 'upper', 1);
 
     lower_bound = min(lb_pos, lb_neg);
     upper_bound = max(ub_pos, ub_neg);
@@ -56,7 +56,7 @@ end
 % sign_Q =  1 : denominator region  {den_poly >= epsilon}
 % sign_Q = -1 : denominator region  {den_poly <= -epsilon}
 % =========================================================================
-function bound_val = solve_fraction_bound(poly_vars, num_poly, den_poly, S_poly, ds_min, epsilon, sign_Q, bound_type)
+function bound_val = solve_fraction_bound(poly_vars, num_poly, den_poly, S_poly, ds_min, epsilon, sign_Q, bound_type, is_quiet)
     ds = ds_min + mod(ds_min, 2);
     prog = sosprogram(poly_vars);
 
@@ -109,7 +109,13 @@ function bound_val = solve_fraction_bound(poly_vars, num_poly, den_poly, S_poly,
     prog = sosineq(prog, s_ball);
 
     solver_opt.solver = 'mosek';
-    solver_opt.verbose = 0;
+
+    if exist('is_quiet', 'var') && is_quiet
+        solver_opt.verbose = 0;
+    else
+        solver_opt.verbose = 1;
+    end
+
     prog = sossolve(prog, solver_opt);
 
     b_sol = sosgetsol(prog, b);

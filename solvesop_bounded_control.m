@@ -56,7 +56,9 @@ function [ux_opt, certificate_opt, valid_count] = solvesop_bounded_control(ux, k
     % evaluate the pseudo ux for all samples in a vectorized manner
     ux_pseudo_values = ux_pseudo_func(args{:}); % this will return a matrix of size (m x num_samples)
     % check which samples satisfy the control input bounds
-    valid_indices = all(ux_pseudo_values >= lb) & all(ux_pseudo_values <= ub);
+    % use all(..., 1) to reduce over the control dimension (rows) so that the
+    % result is always a (1 x num_samples) logical vector, even when m = 1
+    valid_indices = all(ux_pseudo_values >= lb, 1) & all(ux_pseudo_values <= ub, 1);
     % select the valid samples
     x_samples_valid = x_samples(:, valid_indices);
     valid_count = sum(valid_indices);
