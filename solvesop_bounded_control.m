@@ -97,7 +97,7 @@ function [ux_opt, certificate_opt, valid_count] = solvesop_bounded_control(ux, k
     % count the number of valid samples that satisfy the certificate constraint (certificate value >= 0) and control input bounds for the final controller
     valid_certificate_count = sum(certificate_values >= 0 & all(ux_opt_values >= lb) & all(ux_opt_values <= ub));
     fprintf('Final Controller Report: %d Valid Certificate / %d Total (%.2f%%)\n', ...
-        valid_certificate_count, size(x_samples_valid, 2), (valid_certificate_count / size(x_samples_valid, 2)) * 100);
+        valid_certificate_count, size(x_samples, 2), (valid_certificate_count / size(x_samples, 2)) * 100);
     % DEBUG
 
 end

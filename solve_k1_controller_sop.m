@@ -89,15 +89,9 @@ function [k1_opt, J_k1_opt, k1_delta] = solve_k1_controller_sop(ux, k1_sym, J_k1
         J_k1_pvar_flat = [J_k1_pvar_flat; pvar(strcat(char(J_k1_sym_flat(i)), '_pvar'))];
     end
 
-    % create the pvar polynoimials for the system output mapping hx(x)
-    hx_pvar = polynomial(zeros(length(hx), 1));
-
-    for i = 1:length(hx)
-        hx_pvar(i) = sym2pvar(hx(i), x_vars, x_vars_pvar);
-    end
-
-    % detect all trigonometric terms in the given controller expression ux
-    trig_terms = detect_trigonometric_terms(ux);
+    % detect all trigonometric terms in both ux and hx combined so that trig
+    % functions appearing in the output map hx are also given dummy variables
+    trig_terms = detect_trigonometric_terms([ux; hx]);
     % create dummy symbolic variables for all detected trigonometric terms with corresponding detected names, which will be used for substitution to convert the trigonometric terms into polynomial terms for SOS programming
     dummy_trig_vars = sym(zeros(length(trig_terms), 1));
     dummy_trig_vars_pvar = [];
@@ -110,6 +104,20 @@ function [k1_opt, J_k1_opt, k1_delta] = solve_k1_controller_sop(ux, k1_sym, J_k1
         trig_term_str = strrep(trig_term_str, ')', '');
         dummy_trig_vars(i) = str2sym(strcat('dummy_trig_var_', trig_term_str));
         dummy_trig_vars_pvar = [dummy_trig_vars_pvar; pvar(strcat('dummy_trig_var_', trig_term_str, '_pvar'))];
+    end
+
+    % create the pvar polynomials for the system output mapping hx(x)
+    % substitute any trig terms with dummy symbolic vars first so that hx is polynomial in x_vars
+    hx_sub = hx;
+
+    for i = 1:length(trig_terms)
+        hx_sub = subs(hx_sub, trig_terms(i), dummy_trig_vars(i));
+    end
+
+    hx_pvar = polynomial(zeros(length(hx), 1));
+
+    for i = 1:length(hx)
+        hx_pvar(i) = sym2pvar(hx_sub(i), [x_vars; dummy_trig_vars], [x_vars_pvar; dummy_trig_vars_pvar]);
     end
 
     % create the pvar version of the safe set and target set by substituting y_vars with y_vars_pvar
@@ -203,7 +211,15 @@ function prog = add_certificate_nonnegativity_constraints(prog, cert_term_dict, 
 
         % --- (1,1) entry: ψ(y(x_sample)) ---
         % evaluate hx at the sample point to get y numerically
-        hx_sample = double(subs(hx_pvar, x_vars_pvar, x_sample));
+        % first substitute state vars, then substitute any trig dummy pvars
+        hx_sample_pvar = subs(hx_pvar, x_vars_pvar, x_sample);
+
+        for k = 1:length(trig_terms)
+            trig_val = double(subs(trig_terms(k), x_vars, x_sample));
+            hx_sample_pvar = subs(hx_sample_pvar, dummy_trig_vars_pvar(k), trig_val);
+        end
+
+        hx_sample = double(hx_sample_pvar);
         % then evaluate safe_set_pvar at that y (still a dpvar because k1_poly may appear)
         psi_sample = subs(safe_set_pvar, y_vars_pvar, hx_sample);
         M_sample(1, 1) = psi_sample;
@@ -217,6 +233,12 @@ function prog = add_certificate_nonnegativity_constraints(prog, cert_term_dict, 
                 term_ij = cert_term_dict(sprintf("output_%d_k%d", i, j));
 
                 eta_kj_sym = term_ij{1}(2); % Lf^j h_i − k_j^i  — symbolic
+
+                % substitute trig terms with dummy symbolic vars before sym2pvar
+                % (same pattern as add_control_limit_constraints does for num)
+                for k_trig = 1:length(trig_terms)
+                    eta_kj_sym = subs(eta_kj_sym, trig_terms(k_trig), dummy_trig_vars(k_trig));
+                end
 
                 % Convert to pvar, substitute decision variables, then evaluate at x_sample
                 % (same pattern as the control limit constraints)

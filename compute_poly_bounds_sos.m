@@ -25,6 +25,24 @@
 function [lower_bound, upper_bound] = compute_poly_bounds(num_poly, den_poly, superlevel_set_poly, ds_min, epsilon)
     % ── Convert sym inputs to pvar if needed ────────────────────────────────
     if isa(num_poly, 'sym') || isa(den_poly, 'sym') || isa(superlevel_set_poly, 'sym')
+        % detect trig terms across all three expressions and replace with
+        % dummy symbolic vars so that every coefficient is numeric
+        all_sym = [num_poly; den_poly; superlevel_set_poly];
+        trig_terms = detect_trigonometric_terms(all_sym);
+        dummy_trig_syms = sym(zeros(length(trig_terms), 1));
+
+        for i_trig = 1:length(trig_terms)
+            trig_str = char(trig_terms(i_trig));
+            trig_str = strrep(strrep(trig_str, '(', '_'), ')', '');
+            dummy_trig_syms(i_trig) = str2sym(['dummy_trig_sos_' trig_str]);
+        end
+
+        for i_trig = 1:length(trig_terms)
+            num_poly = subs(num_poly, trig_terms(i_trig), dummy_trig_syms(i_trig));
+            den_poly = subs(den_poly, trig_terms(i_trig), dummy_trig_syms(i_trig));
+            superlevel_set_poly = subs(superlevel_set_poly, trig_terms(i_trig), dummy_trig_syms(i_trig));
+        end
+
         sym_vars = symvar(num_poly + den_poly + superlevel_set_poly);
         var_names = arrayfun(@char, sym_vars, 'UniformOutput', false);
         eval(['pvar ' strjoin(var_names, ' ')]);
