@@ -35,16 +35,6 @@ gx_sym = [ ...
 % geometry parameter
 L = 1.0; % pendulum/nozzle arm length [m]
 
-% obstacle parameters (ellipse)
-x_obs = 0.3; % obstacle center y1 [m]  (tip x-coord)
-z_obs = -0.5; % obstacle center y2 [m]  (tip z-coord, corresponds to pz = z_obs+L = 0.5)
-a_obs = 0.3; % obstacle semi-axis in x [m]
-b_obs = 0.3; % obstacle semi-axis in z [m]
-
-% target position
-x_target = 0.0; % target y1 [m]  (tip x at landing: px ≈ 0)
-z_target = -3.0; % target y2 [m]  (tip z at landing: pz = z_target+L = 0.0)
-
 % output: tip position  y = [x - L*theta; z - L]
 hx_sym = [px - L * sin(th); pz - L * cos(th)];
 
@@ -59,14 +49,14 @@ y_vars_sym = [y1; y2];
 W_x = 2; % working-space half-width in y1 direction [m]
 W_z = 2; % working-space half-width in y2 direction [m]
 x_c = 0.0; % squircle centre in y1 [m]
-z_c = -1.5; % squircle centre in y2 [m]
-z_peak = -1.0; % desired peak y2-coordinate [m]  (must be strictly inside the squircle)
-u_peak = z_peak - z_c;
+z_c = 1; % squircle centre in y2 [m]
 C_coeff = (W_x / W_z) ^ 4;
-beta = -0.3;
-safe_set_sym = (W_x ^ 4 - (y1 - x_c) ^ 4 - C_coeff * (y2 - z_c) ^ 4) * (1 + beta * (y2 - z_c));
+safe_set_sym = (W_x ^ 4 - (y1 - x_c) ^ 4 - C_coeff * (y2 - z_c) ^ 4);
 
 % define the target set: flat ellipse — tight in y2, relaxed in y1
+% target position
+x_target = 0.0; % target y1 [m]  (tip x at landing: px ≈ 0)
+z_target = 1.0; % target y2 [m]  (tip z at landing: pz = z_target+L = 0.0)
 r_y1 = 0.3; % semi-axis in y1 [m]  (larger → more relaxed horizontally)
 r_y2 = 0.05; % semi-axis in y2 [m]  (smaller → tighter vertically, flat shape)
 target_set_sym = (y1 - x_target) ^ 2 / r_y1 ^ 2 + (y2 - z_target) ^ 2 / r_y2 ^ 2 - 1; % target_set <= 0 inside ellipse
@@ -80,18 +70,18 @@ target_set_sym = (y1 - x_target) ^ 2 / r_y1 ^ 2 + (y2 - z_target) ^ 2 / r_y2 ^ 2
 % Ax = [1 0; -1 0; 0 1; 0 -1]; % example constraint matrix for control input bounds, here we want to enforce |u1| <= 100 and |u2| <= 100
 % set the random seed for reproducibility
 rng(42);
-lb = [-130; -25]; % lower bounds for control inputs [F_min; M_min]  (widened from observed u1_min=-115, u2_min=-20)
-ub = [30; 20]; % upper bounds for control inputs [F_max; M_max]  (widened from observed u1_max=23, u2_max=15)
+lb = [-80; -50]; % lower bounds for control inputs [F_min; M_min]  (widened from observed u1_min=-115, u2_min=-20)
+ub = [350; 50]; % upper bounds for control inputs [F_max; M_max]  (widened from observed u1_max=23, u2_max=15)
 ds = 4; % degree of the auxiliary SOS polynomials for the single-integrator system
 dv = 4; % degree of the k1 controller polynomial
 
-mu_val = 200; % example value for mu just for testing, HAVE TO DISCUSS THIS IN THE PAPER
+mu_val = 10; % example value for mu just for testing, HAVE TO DISCUSS THIS IN THE PAPER
 
-samples_num = 500; % number of random samples to find the valid samples that satisfy the control input bounds for the pseudo ux
+samples_num = 1000; % number of random samples to find the valid samples that satisfy the control input bounds for the pseudo ux
 
 % state order: [px; pz; th; vx; vz; om]
-bound_min = [-1.0; -0.3; -pi / 6; -0.5; -0.5; -0.5]; % state order: [px; pz; th; vx; vz; om]  (pz centered on landing approach)
-bound_max = [1.0; 1.3; pi / 6; 0.5; 0.5; 0.5]; % (pz_max=1.3 → y2_max=0.3 covers near-landing region)
+bound_min = [-2.0; 0; -pi / 6; -0.1; -0.1; -0.1]; % state order: [px; pz; th; vx; vz; om]  (pz centered on landing approach)
+bound_max = [2.0; 4; pi / 6; 0.1; 0.1; 0.1]; % (pz_max=4 → y2_max=1.0 covers near-landing region)
 
 % solve the bounded control inputs using scenario optimization programming (SOP) with SOS constraints
 [u_opt, certificate_opt, valid_count] = solvesop_bounded_control(u, k1, J_k1, mu, lambda, certificate, cert_term_dict, p, r_deg, x_vars_sym, y_vars_sym, ...
@@ -106,8 +96,8 @@ bound_max = [1.0; 1.3; pi / 6; 0.5; 0.5; 0.5]; % (pz_max=1.3 → y2_max=0.3 cove
 % disp(den_1);
 % [lb_1, ub_1] = compute_poly_bounds_sos(num_1, den_1, certificate_opt, ds, 1e-4);
 % estimate the bounds of the obtained controller over zero superlevel set of the certificate using sampling (for verification)
-[estimated_lb_1, estimated_ub_1] = compute_poly_bounds_sampling(u_opt(1), certificate_opt, 10000, bound_min, bound_max);
-[estimated_lb_2, estimated_ub_2] = compute_poly_bounds_sampling(u_opt(2), certificate_opt, 10000, bound_min, bound_max);
+[estimated_lb_1, estimated_ub_1] = compute_poly_bounds_sampling(x_vars_sym, u_opt(1), certificate_opt, 50000, bound_min, bound_max);
+[estimated_lb_2, estimated_ub_2] = compute_poly_bounds_sampling(x_vars_sym, u_opt(2), certificate_opt, 50000, bound_min, bound_max);
 
 disp('------------------------------------------------------------------------------------');
 
