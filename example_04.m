@@ -33,7 +33,7 @@ gx_sym = [ ...
           ];
 
 % geometry parameter
-L = 1.0; % pendulum/nozzle arm length [m]
+L = 0.1; % pendulum/nozzle arm length [m]
 
 % output: tip position  y = [x - L*theta; z - L]
 hx_sym = [px - L * sin(th); pz - L * cos(th)];
@@ -140,5 +140,5 @@ params_for_export.valid_count = valid_count;
 params_for_export.bound_min = bound_min;
 params_for_export.bound_max = bound_max;
 
-export_to_python(u_opt, certificate_opt, params_for_export, 'sop_bounded_control_ex1_debug.py');
+export_to_python(u_opt, certificate_opt, params_for_export, 'sop_bounded_control_ex4_debug.py');
 % export the computed controller and certificate to a python file for verification and testing

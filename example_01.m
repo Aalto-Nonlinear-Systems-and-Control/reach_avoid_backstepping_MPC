@@ -56,7 +56,7 @@ bound_max = [1.1; 1.1]; % upper bounds for sampling the state space for finding 
 [num_1, den_1] = numden(u_opt(1));
 [lb_1, ub_1] = compute_poly_bounds_sos(num_1, den_1, certificate_opt, ds, 1e-3);
 % estimate the bounds of the obtained controller over zero superlevel set of the certificate using sampling (for verification)
-[estimated_lb_1, estimated_ub_1] = compute_poly_bounds_sampling(num_1, certificate_opt, 10000, bound_min, bound_max);
+[estimated_lb_1, estimated_ub_1] = compute_poly_bounds_sampling(x_vars_sym, u_opt(1), certificate_opt, 10000, bound_min, bound_max);
 
 disp('------------------------------------------------------------------------------------');
 
