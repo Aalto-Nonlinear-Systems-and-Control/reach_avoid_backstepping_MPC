@@ -47,6 +47,17 @@ function [ux_opt, certificate_opt, valid_count, k1_opt] = solvesop_bounded_contr
 
     ux_pseudo = substitute_mu_lambda(ux_pseudo, mu, lambda, mu_val, k1_lambda); % use the computed value from the vanilla k1 controller design as the lambda value for solving the bounded control inputs
 
+    % >>>>>>>>>>>>>>>>>>>>>> DEBUG <<<<<<<<<<<<<<<<<<<<
+    % export the obtained unconstrained controller and the certificate for comparison later
+    params_for_export = struct();
+    params_for_export.lb = lb;
+    params_for_export.ub = ub;
+    params_for_export.mu_val = mu_val;
+    params_for_export.ds = ds;
+    params_for_export.dv = dv;
+    export_to_python(ux_pseudo, certificate_subs, k1_y, params_for_export, 'sop_bounded_control_unconstrained_controller.py');
+    % >>>>>>>>>>>>>>>>>>>>>> DEBUG <<<<<<<<<<<<<<<<<<<<
+
     % select the samples that satisfy the control input bounds for the pseudo ux
 
     % convert the samples to a format that can be substituted into the symbolic expression (each column is a sample)
