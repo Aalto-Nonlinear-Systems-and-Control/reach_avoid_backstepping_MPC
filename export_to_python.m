@@ -1,7 +1,8 @@
 % helper function to export the computed u_opt and certificate_opt from the SOP design to a Python file that can be read in python for verification and testing
-function export_to_python(u_opt, certificate_opt, params, file_name)
+function export_to_python(u_opt, certificate_opt, k1_opt, params, file_name)
     % u_opt: symbolic expression for the computed controller with bounded control inputs, should be a symbolic vector of size (m x 1) where m is the number of control inputs
     % certificate_opt: symbolic expression for the computed certificate with bounded control inputs, should be a symbolic expression
+    % k1_opt: symbolic expression for the computed k1 controller polynomial
     % params: struct containing all the parameters for export
     % file_name: name of the file to export the results, should be a string ending with .py
 
@@ -15,7 +16,7 @@ function export_to_python(u_opt, certificate_opt, params, file_name)
     certificate_opt_str = matlab_expr_to_python(char(certificate_opt));
 
     % Collect all symbolic variables across all expressions to declare them
-    all_vars = symvar([u_opt(:); certificate_opt]);
+    all_vars = symvar([u_opt(:); certificate_opt; k1_opt(:)]);
     var_names = arrayfun(@char, all_vars, 'UniformOutput', false);
 
     % Append timestamp to file name (before the extension)
@@ -25,6 +26,10 @@ function export_to_python(u_opt, certificate_opt, params, file_name)
 
     % write the results to a python file
     fid = fopen(stamped_name, 'w');
+
+    if fid == -1
+        error('Failed to open output file for writing: %s', stamped_name);
+    end
 
     % Write sympy import and symbol definitions so expressions are immediately usable
     fprintf(fid, 'from sympy import *\n\n');
@@ -42,6 +47,17 @@ function export_to_python(u_opt, certificate_opt, params, file_name)
     fprintf(fid, ']\n\n');
     fprintf(fid, 'certificate_opt = %s\n', certificate_opt_str);
 
+    % write the k1_opt expression
+    fprintf(fid, '\n\n');
+    fprintf(fid, 'k1_opt = [\n');
+
+    for i = 1:length(k1_opt)
+        k1_opt_str = matlab_expr_to_python(char(k1_opt(i)));
+        fprintf(fid, '    %s,\n', k1_opt_str);
+    end
+
+    fprintf(fid, ']\n');
+
     % write all the parameters in the params struct to the python file as comments for reference
     fprintf(fid, '\n\n');
     fprintf(fid, '# Parameters\n');
@@ -55,7 +71,7 @@ function export_to_python(u_opt, certificate_opt, params, file_name)
                 val_str = matlab_expr_to_python(char(val));
             else
                 % symbolic vector/matrix: convert each element, output as nested Python list
-                [nr, nc] = size(val);
+                [nr, ~] = size(val);
                 rows = cell(nr, 1);
 
                 for r = 1:nr

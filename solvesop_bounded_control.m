@@ -1,5 +1,5 @@
 % function to solve bounded control for given reach-avoid backstepping controller
-function [ux_opt, certificate_opt, valid_count] = solvesop_bounded_control(ux, k1_sym, J_k1_sym, mu, lambda, certificate, cert_term_dict, p, r_deg, ...
+function [ux_opt, certificate_opt, valid_count, k1_opt] = solvesop_bounded_control(ux, k1_sym, J_k1_sym, mu, lambda, certificate, cert_term_dict, p, r_deg, ...
         x_vars, y_vars, hx, safe_set, target_set, mu_val, lb, ub, ds, dv, samples_num, bound_min, bound_max)
 
     % INPUTS:

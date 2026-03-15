@@ -77,14 +77,14 @@ dv = 4; % degree of the k1 controller polynomial
 
 mu_val = 10; % example value for mu just for testing, HAVE TO DISCUSS THIS IN THE PAPER
 
-samples_num = 1000; % number of random samples to find the valid samples that satisfy the control input bounds for the pseudo ux
+samples_num = 100; % number of random samples to find the valid samples that satisfy the control input bounds for the pseudo ux
 
 % state order: [px; pz; th; vx; vz; om]
 bound_min = [-2.0; 0; -pi / 6; -0.1; -0.1; -0.1]; % state order: [px; pz; th; vx; vz; om]  (pz centered on landing approach)
 bound_max = [2.0; 4; pi / 6; 0.1; 0.1; 0.1]; % (pz_max=4 → y2_max=1.0 covers near-landing region)
 
 % solve the bounded control inputs using scenario optimization programming (SOP) with SOS constraints
-[u_opt, certificate_opt, valid_count] = solvesop_bounded_control(u, k1, J_k1, mu, lambda, certificate, cert_term_dict, p, r_deg, x_vars_sym, y_vars_sym, ...
+[u_opt, certificate_opt, valid_count, k1_opt] = solvesop_bounded_control(u, k1, J_k1, mu, lambda, certificate, cert_term_dict, p, r_deg, x_vars_sym, y_vars_sym, ...
     hx_sym, safe_set_sym, target_set_sym, mu_val, lb, ub, ds, dv, samples_num, bound_min, bound_max);
 
 % % compute the bounds of the obtained controller over zero superlevel set of the certificate
@@ -140,5 +140,5 @@ params_for_export.valid_count = valid_count;
 params_for_export.bound_min = bound_min;
 params_for_export.bound_max = bound_max;
 
-export_to_python(u_opt, certificate_opt, params_for_export, 'sop_bounded_control_ex4_debug.py');
+export_to_python(u_opt, certificate_opt, k1_opt, params_for_export, 'sop_bounded_control_ex4_result.py');
 % export the computed controller and certificate to a python file for verification and testing

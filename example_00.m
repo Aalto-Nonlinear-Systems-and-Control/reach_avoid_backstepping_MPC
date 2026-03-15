@@ -47,7 +47,7 @@ bound_min = [-1.1; -1.1]; % lower bounds for sampling the state space for findin
 bound_max = [1.1; 1.1]; % upper bounds for sampling the state space for finding valid samples that satisfy the set (safe, target, vanilla reach-avoid certificate) constraints
 
 % solve the bounded control inputs using scenario optimization programming (SOP) with SOS constraints
-[u_opt, certificate_opt, valid_count] = solvesop_bounded_control(u, k1, J_k1, mu, lambda, certificate, cert_term_dict, p, r_deg, x_vars_sym, y_vars_sym, ...
+[u_opt, certificate_opt, valid_count, k1_opt] = solvesop_bounded_control(u, k1, J_k1, mu, lambda, certificate, cert_term_dict, p, r_deg, x_vars_sym, y_vars_sym, ...
     hx_sym, safe_set_sym, target_set_sym, mu_val, lb, ub, ds, dv, samples_num, bound_min, bound_max);
 
 % disp the obtained controller after solving with bounded control inputs
@@ -78,5 +78,5 @@ params_for_export.valid_count = valid_count;
 params_for_export.bound_min = bound_min;
 params_for_export.bound_max = bound_max;
 
-export_to_python(u_opt, certificate_opt, params_for_export, 'sop_bounded_control_ex1_debug.py');
+export_to_python(u_opt, certificate_opt, k1_opt, params_for_export, 'sop_bounded_control_ex1_debug.py');
 % export the computed controller and certificate to a python file for verification and testing
