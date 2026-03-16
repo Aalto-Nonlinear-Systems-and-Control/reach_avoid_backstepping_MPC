@@ -37,8 +37,8 @@ safe_set_sym = alpha * h_raw; % h(y): zsafe_set >= 0 inside safe set
 % Ax = [1 0; -1 0; 0 1; 0 -1]; % example constraint matrix for control input bounds, here we want to enforce |u1| <= 100 and |u2| <= 100
 % set the random seed for reproducibility
 rng(42);
-lb = [-100; -100]; % lower bounds for control inputs [omega_min; a_min]
-ub = [100; 100]; % upper bounds for control inputs [omega_max; a_max]
+lb = [-5; -5]; % lower bounds for control inputs [omega_min; a_min]
+ub = [5; 5]; % upper bounds for control inputs [omega_max; a_max]
 ds = 4; % degree of the auxiliary SOS polynomials for the single-integrator system
 dv = 4; % degree of the k1 controller polynomial
 
@@ -57,8 +57,8 @@ bound_max = [2; 2; 4 * pi / 3; 1.0]; % upper bounds for sampling state [x1; x2; 
 % [num_1, den_1] = numden(u_opt(1));
 % [lb_1, ub_1] = compute_poly_bounds_sos(num_1, den_1, certificate_opt, ds, 1e-3);
 % estimate the bounds of the obtained controller over zero superlevel set of the certificate using sampling (for verification)
-[estimated_lb_1, estimated_ub_1] = compute_poly_bounds_sampling(x_vars_sym, u_opt(1), certificate_opt, 50000, bound_min, bound_max);
-[estimated_lb_2, estimated_ub_2] = compute_poly_bounds_sampling(x_vars_sym, u_opt(2), certificate_opt, 50000, bound_min, bound_max);
+[estimated_lb_1, estimated_ub_1] = compute_poly_bounds_sampling(x_vars_sym, u_opt(1), certificate_opt, 10000, bound_min, bound_max);
+[estimated_lb_2, estimated_ub_2] = compute_poly_bounds_sampling(x_vars_sym, u_opt(2), certificate_opt, 10000, bound_min, bound_max);
 
 disp('------------------------------------------------------------------------------------');
 
