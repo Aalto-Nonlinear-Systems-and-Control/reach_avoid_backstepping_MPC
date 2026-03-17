@@ -49,13 +49,24 @@ function [ux_opt, certificate_opt, valid_count, k1_opt] = solvesop_bounded_contr
 
     % >>>>>>>>>>>>>>>>>>>>>> DEBUG <<<<<<<<<<<<<<<<<<<<
     % export the obtained unconstrained controller and the certificate for comparison later
+    % If an auxiliary variable x5 = x1+x2 was introduced to work around the
+    % compound-trig-argument limitation, substitute it back before exporting
+    % so the Python output uses only the natural state variables.
+    ux_pseudo_exp = ux_pseudo;
+    certificate_exp = certificate_subs;
+
+    if any(arrayfun(@(v) isequal(v, sym('x5')), x_vars))
+        ux_pseudo_exp = subs(ux_pseudo_exp, sym('x5'), sym('x1') + sym('x2'));
+        certificate_exp = subs(certificate_exp, sym('x5'), sym('x1') + sym('x2'));
+    end
+
     params_for_export = struct();
     params_for_export.lb = lb;
     params_for_export.ub = ub;
     params_for_export.mu_val = mu_val;
     params_for_export.ds = ds;
     params_for_export.dv = dv;
-    export_to_python(ux_pseudo, certificate_subs, k1_y, params_for_export, 'sop_bounded_control_unconstrained_controller.py');
+    export_to_python(ux_pseudo_exp, certificate_exp, k1_y, params_for_export, 'sop_bounded_control_unconstrained_controller.py');
     % >>>>>>>>>>>>>>>>>>>>>> DEBUG <<<<<<<<<<<<<<<<<<<<
 
     % select the samples that satisfy the control input bounds for the pseudo ux
