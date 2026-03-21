@@ -4,7 +4,6 @@
 
 This repository implements a two-phase framework for synthesizing controllers that drive a nonlinear system into a _target set_ while staying inside a _safe set_, subject to bounded control inputs.
 
-**Phase 1 — Symbolic synthesis (MATLAB):**
 Given system dynamics $\dot{x} = f(x) + g(x)u$, an output map $y = h(x)$, a safe set $\{\psi(y) \geq 0\}$, and a target set $\{\phi(y) \leq 0\}$, the MATLAB scripts use backstepping and Sum-of-Squares (SOS) polynomial optimization to compute:
 
 - A reach-avoid **certificate** $V(x) \geq 0$ certifying that any trajectory starting with $V(x_0) \geq 0$ will reach the target without leaving the safe set.
