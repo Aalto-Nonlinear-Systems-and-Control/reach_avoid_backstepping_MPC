@@ -1,5 +1,5 @@
 % function to solve bounded control for given reach-avoid backstepping controller
-function [ux_opt, certificate_opt, valid_count] = solvesop_bounded_control(ux, k1_sym, J_k1_sym, mu, lambda, certificate, cert_term_dict, p, r_deg, ...
+function [ux_opt, certificate_opt, valid_count, k1_opt] = solvesop_bounded_control(ux, k1_sym, J_k1_sym, mu, lambda, certificate, cert_term_dict, p, r_deg, ...
         x_vars, y_vars, hx, safe_set, target_set, mu_val, lb, ub, ds, dv, samples_num, bound_min, bound_max)
 
     % INPUTS:
@@ -46,6 +46,28 @@ function [ux_opt, certificate_opt, valid_count] = solvesop_bounded_control(ux, k
     % also substitute the obtained mu_val and lambda_val into the original controller expression
 
     ux_pseudo = substitute_mu_lambda(ux_pseudo, mu, lambda, mu_val, k1_lambda); % use the computed value from the vanilla k1 controller design as the lambda value for solving the bounded control inputs
+
+    % >>>>>>>>>>>>>>>>>>>>>> DEBUG <<<<<<<<<<<<<<<<<<<<
+    % export the obtained unconstrained controller and the certificate for comparison later
+    % If an auxiliary variable x5 = x1+x2 was introduced to work around the
+    % compound-trig-argument limitation, substitute it back before exporting
+    % so the Python output uses only the natural state variables.
+    ux_pseudo_exp = ux_pseudo;
+    certificate_exp = certificate_subs;
+
+    if any(arrayfun(@(v) isequal(v, sym('x5')), x_vars))
+        ux_pseudo_exp = subs(ux_pseudo_exp, sym('x5'), sym('x1') + sym('x2'));
+        certificate_exp = subs(certificate_exp, sym('x5'), sym('x1') + sym('x2'));
+    end
+
+    params_for_export = struct();
+    params_for_export.lb = lb;
+    params_for_export.ub = ub;
+    params_for_export.mu_val = mu_val;
+    params_for_export.ds = ds;
+    params_for_export.dv = dv;
+    export_to_python(ux_pseudo_exp, certificate_exp, k1_y, params_for_export, 'sop_bounded_control_unconstrained_controller.py');
+    % >>>>>>>>>>>>>>>>>>>>>> DEBUG <<<<<<<<<<<<<<<<<<<<
 
     % select the samples that satisfy the control input bounds for the pseudo ux
 
@@ -97,7 +119,7 @@ function [ux_opt, certificate_opt, valid_count] = solvesop_bounded_control(ux, k
     % count the number of valid samples that satisfy the certificate constraint (certificate value >= 0) and control input bounds for the final controller
     valid_certificate_count = sum(certificate_values >= 0 & all(ux_opt_values >= lb) & all(ux_opt_values <= ub));
     fprintf('Final Controller Report: %d Valid Certificate / %d Total (%.2f%%)\n', ...
-        valid_certificate_count, size(x_samples_valid, 2), (valid_certificate_count / size(x_samples_valid, 2)) * 100);
+        valid_certificate_count, size(x_samples, 2), (valid_certificate_count / size(x_samples, 2)) * 100);
     % DEBUG
 
 end
