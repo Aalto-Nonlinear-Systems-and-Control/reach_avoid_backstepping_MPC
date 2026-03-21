@@ -183,7 +183,7 @@ All MPC problems solved with IPOPT (tolerance $10^{-4}$, max 3000 iterations) vi
 The MPC solves at each step $t$ (Dubins car and manipulator use output-tracking cost; double integrator uses state cost):
 
 $$
-\min_{x_{0:N},\, u_{0:N-1}} \sum_{k=0}^{N-1} \|h(x_k) - y^{*}\|_{Q_y}^2 + \|u_k\|_{R_u}^2 + \|h(x_N) - y^{*}\|_{Q_{f,y}}^2
+\min_{x_{0:N},\, u_{0:N-1}} \sum_{k=0}^{N-1} \lVert h(x_k) - y^{*}\rVert_{Q_y}^2 + \lVert u_k\rVert_{R_u}^2 + \lVert h(x_N) - y^{*}\rVert_{Q_{f,y}}^2
 \quad \text{(output cost, Dubins / manipulator)}
 $$
 
