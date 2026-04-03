@@ -1,5 +1,7 @@
 # Reach-Avoid Backstepping MPC
 
+<img src="reach_avoid_mpc.png" width="800" alt="Reach-Avoid MPC"/>
+
 ## Overview
 
 This repository implements a two-phase framework for synthesizing controllers that drive a nonlinear system into a _target set_ while staying inside a _safe set_, subject to bounded control inputs.
