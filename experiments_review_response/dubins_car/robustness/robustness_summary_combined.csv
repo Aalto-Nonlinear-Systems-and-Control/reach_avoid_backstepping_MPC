@@ -1,0 +1,7 @@
+,Success rate [%],Success rate [%],Success rate [%],Mean T-to-target [s],Mean T-to-target [s],Mean T-to-target [s],Mean min safety margin,Mean min safety margin,Mean min safety margin,Mean safety violations,Mean safety violations,Mean safety violations
+method,Vanilla MPC,RA-MPC,Unconstrained,Vanilla MPC,RA-MPC,Unconstrained,Vanilla MPC,RA-MPC,Unconstrained,Vanilla MPC,RA-MPC,Unconstrained
+level,,,,,,,,,,,,
+nominal,76.0,86.7,30.7,0.908,0.984,5.483,1.5452,1.2941,5.9601,0.07,0.12,0.0
+mild,39.7,41.3,30.3,0.722,0.742,5.451,1.5238,1.263,5.6827,0.49,0.55,0.36
+moderate,39.0,37.7,29.3,0.731,0.733,5.384,1.4465,1.1331,4.4801,0.49,0.58,3.42
+strong,32.0,35.3,30.0,0.697,0.731,5.309,1.3478,1.0246,3.2082,0.56,0.59,9.69

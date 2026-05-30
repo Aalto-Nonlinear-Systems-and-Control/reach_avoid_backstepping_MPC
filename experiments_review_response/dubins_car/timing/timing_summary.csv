@@ -1,0 +1,4 @@
+method,n_reached,success_rate_300_pct,m1_total_steps,m1_mean_ms,m1_median_ms,m1_std_ms,m1_max_ms,m2_mean_T_s,m2_std_T_s
+Vanilla MPC,231,77.0,4220,165.31,161.436,60.567,903.694,0.913,0.314
+RA-MPC,259,86.3,5089,120.477,115.677,44.333,1148.106,0.982,0.354
+Unconstrained,100,33.3,27476,0.148,0.112,0.076,0.868,,
