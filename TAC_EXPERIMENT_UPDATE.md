@@ -41,7 +41,10 @@ otherwise the Markdown table formatter of the IDE breaks the tables.
 ### 1.3 Sampling period and the `dt` sweep
 
 - Paper: fixed period $T$ with $T < T^*(\delta)$, where $T^*(\delta)$ is the
-  largest $T$ with $\beta(T)/\lambda < \delta$.
+  largest $T$ with $\beta(T)/\lambda < \delta$. Algorithm 1 takes $\delta$
+  as input and picks $T \in (0, \beta^{-1}(\lambda\delta))$ offline; the
+  experiments do the converse (fix `dt`, then choose $\delta > \beta(T)/\lambda$).
+  Both satisfy the same condition, so no code change follows from this.
 - Code now: fixed `dt_mpc` for the base runs; the sweep varies `dt` with the
   same controller design.
 - Change for the base runs: none, but $\delta$ and $\omega$ are computed at
@@ -63,7 +66,9 @@ otherwise the Markdown table formatter of the IDE breaks the tables.
 - Code now: the warm start repeats the last input (`U_warm[:, -1:]`).
 - Change: build the candidate with $u^c$ evaluated at the predicted terminal
   state (numpy `lambdify` of `u_opt`). Verify that this input respects the
-  bounds.
+  bounds. At $k = 0$ there is no candidate ($\mathbf{U}_0 = \emptyset$ in
+  Algorithm 1): the first solve uses the solver's default initial guess, as
+  the notebooks already do.
 
 ### 1.5 Cost comparison rule (suboptimal MPC)
 
@@ -73,19 +78,34 @@ otherwise the Markdown table formatter of the IDE breaks the tables.
 - Change: warm start at the candidate and compare the returned cost with the
   candidate cost; keep the cheaper one.
 
-### 1.6 Fallback branch (Algorithm 1, lines 8 and 9)
+### 1.6 Adaptive horizon (Algorithm 1, lines 9 and 10)
 
-- Paper: if the candidate's predicted trajectory enters $\mathcal{X}_T$,
-  execute it (current text: open loop until entry).
-- Code now: an infeasible solve marks the trajectory as failed.
-- Change: add the fallback branch. See decision D1 for open loop versus a
-  shrinking-horizon reach problem.
+- Paper: after building $\mathbf{U}_{k+1}$, roll it out over $[0, NT]$. If the
+  rollout enters $\mathcal{X}_T$ at any time, set $N \gets \max(N - 1, 1)$.
+  There is no fallback and no open-loop execution: the next step solves (21)
+  with the new horizon, warm-started at $\mathbf{U}_{k+1}$ (after a shrink the
+  candidate has one entry more than the horizon; only the first $N$ entries
+  are used). The shortened candidate $\{u^*_{1 \mid k}, \dots, u^*_{N-1 \mid k}\}$
+  ends at $\hat{x}^*(NT \mid k) \in \mathcal{X}_{RA}^{\delta}$, so it is feasible
+  and costs $J^*_k - \ell(x_k, u^*_{0 \mid k})$; no $u^c$ step is ever appended
+  from a state at or inside the target. The horizon never grows back.
+- Code now: `N_hor` is a fixed global; an infeasible solve marks the run as
+  failed.
+- Change: make the horizon a per-step variable carried through the closed
+  loop. Dubins: `solve_mpc` builds a fresh `Opti` per call, so pass `N` as an
+  argument. Manipulator: the pre-compiled solver is built for one `N`; cache
+  one solver per horizon length (at most `N_hor` of them, built on demand).
+  Check the candidate rollout against $\mathcal{X}_T$ at every RK4 node and,
+  for the last ($u^c$) segment, at integrator sub-steps as well, since the
+  paper's condition is on the continuous trajectory. Under the nominal model
+  an infeasible solve can no longer occur; treat it as a violation and log it.
 
 ### 1.7 Time bound (Corollary 1)
 
 - Paper: entry into $\mathcal{X}_T$ no later than
-  $t = (\lfloor J_0^*/\underline{\ell} \rfloor + N + 1)\,T$; the proof uses
-  $J^*_{k+1} \le J^*_k - \underline{\ell}$.
+  $t = (\lfloor J_0^*/\underline{\ell} \rfloor + 1)\,T$; the proof uses
+  $J^*_{k+1} \le J^*_k - \underline{\ell}$, which holds both for the full
+  candidate (via (22)) and for the shortened one (same terminal state).
 - Code now: $J^*_k$ is not logged.
 - Change: log $J^*_k$ per closed-loop step and check both the monotone
   decrease and the bound. Validation only unless we decide to plot it.
@@ -141,17 +161,18 @@ per system that returns the constants together with `delta(T)` and
       `F_disc` (the current rollout uses explicit Euler).
 - [ ] cell 4, return value: also return the solver cost; add a
       `candidate_cost(x0, U)` helper and apply the "keep the cheaper" rule.
-- [ ] cells 5 and 7, `_feasible_receding` and `simulate_ra_mpc_traj`: check
-      whether the candidate rollout enters $\mathcal{X}_T$ within the horizon
-      and add the fallback branch. An infeasible solve outside the fallback is
-      now a violation; log it separately from "failed".
+- [ ] cells 5 and 7, `_feasible_receding` and `simulate_ra_mpc_traj`: carry
+      `N` through the loop; after each solve build the candidate, roll it
+      out, and shrink `N` if the rollout touches $\mathcal{X}_T$ (1.6). Any
+      infeasible solve is now a violation; log it separately from "failed".
 - [ ] log $J^*_k$ and check $J^*_{k+1} \le J^*_k - \underline{\ell}$.
 - [ ] header comment and printouts (they still say `V(x_N) >= 0`).
 
 ### `notebooks/example_manipulator_reach_avoid_mpc.ipynb`
 
 - [ ] cell 3: the same four changes in `solve_mpc` and in the shared
-      pre-compiled solver (`solve_mpc_fast`, `make_fast_solver`).
+      pre-compiled solver (`solve_mpc_fast`, `make_fast_solver`); add a
+      per-horizon solver cache for the adaptive `N`.
 - [ ] cell 4: the same closed-loop changes.
 
 ### `notebooks/make_paper_figs_dubins.ipynb` and `notebooks/make_paper_figs_manipulator.ipynb`
@@ -212,18 +233,15 @@ per system that returns the constants together with `delta(T)` and
 - [ ] candidate input $u^c(\hat{x}^*(NT \mid k))$ within the bounds at every step.
 - [ ] $J^*_k$ decreases by at least $\underline{\ell}$ at every solved step.
 - [ ] reaching time no later than
-      $(\lfloor J_0^*/\underline{\ell} \rfloor + N + 1)\,T$ on every successful run.
-- [ ] no infeasible solve outside the fallback branch.
+      $(\lfloor J_0^*/\underline{\ell} \rfloor + 1)\,T$ on every successful run.
+- [ ] no infeasible solve at all; `N` nonincreasing and never below 1.
 - [ ] success rates and closed-loop plots regenerated; numbers in the paper
       (Fig. 4 and Fig. 6 counts, sweep curves, computation-time table) updated.
 
 ## 5. Open decisions
 
-- D1, fallback implementation. Paper Algorithm 1 currently executes the
-  stored candidate open loop until entry. Alternative discussed: keep
-  re-solving a shrinking-horizon reach problem with terminal constraint
-  $\hat{x}(\tau_e - kT) \in \mathcal{X}_T$, warm-started at the candidate,
-  which retains feedback. Code and paper must agree.
+- D1, resolved: the paper now uses the adaptive horizon of 1.6 (no
+  fallback, no open-loop execution). Code follows the paper.
 - D2, choice of $\delta$. Candidates: $\delta = 2\beta(T)/\lambda$, or
   $\delta = \beta(T)/\lambda + \theta M_\Psi$ with a small $\theta$. A larger
   $\delta$ shrinks the terminal set but enlarges the guaranteed increment and
