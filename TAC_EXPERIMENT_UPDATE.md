@@ -38,12 +38,24 @@ otherwise the Markdown table formatter of the IDE breaks the tables.
   of the $Q_f$ term is not allowed: the tracking term need not decrease
   along $u^c$, which would break (22).
 
-### 1.3 Sampling period
+### 1.3 Sampling period and the `dt` sweep
 
-- Paper: fixed period $T$ with $T < T^*(\delta)$.
-- Code now: fixed `dt_mpc`.
-- Change: none for the base runs, but $\delta$ and $\omega$ depend on $T$.
-  Every `dt` in the sweeps needs its own $\delta(T)$ and $\omega(T)$.
+- Paper: fixed period $T$ with $T < T^*(\delta)$, where $T^*(\delta)$ is the
+  largest $T$ with $\beta(T)/\lambda < \delta$.
+- Code now: fixed `dt_mpc` for the base runs; the sweep varies `dt` with the
+  same controller design.
+- Change for the base runs: none, but $\delta$ and $\omega$ are computed at
+  the base period $T_{\text{base}}$ (0.05 s Dubins, 0.01 s manipulator).
+- Change for the sweep: keep the sweep, but with $\delta$ and $\omega$
+  fixed at their base values, so that only the sampling period changes.
+  Recomputing $\delta(T)$, $\omega(T)$ per point would shrink the terminal
+  set with $T$ and force $\rho = 0$ by construction once
+  $\beta(T)/\lambda \ge M_\Psi$; that curve would measure the
+  conservativeness of $\beta(T)$, not the closed loop. Mark the certified
+  range $T < T^*(\delta)$ on the $\rho$ versus $T$ plot. Inside it the
+  theory predicts success from every initially feasible state (nominal
+  model), so any failure there signals an implementation or integration
+  error; outside it the curve is empirical, as in the current paper text.
 
 ### 1.4 Shifted candidate (Algorithm 1, line 7)
 
@@ -145,11 +157,15 @@ per system that returns the constants together with `delta(T)` and
 ### `notebooks/make_paper_figs_dubins.ipynb` and `notebooks/make_paper_figs_manipulator.ipynb`
 
 - [ ] `feas_rampc` and `make_fast_solver(..., "cert")`: the same MPC changes.
-- [ ] `dt` sweep: recompute `delta(dt)` and `omega(dt)` for every entry of
-      `DT_SWEEP`; `_sweep_sig()` must include the constants or a version tag so
-      that the caches in `figures/*.npz` are invalidated.
-- [ ] expect a qualitative change: for the larger `dt` values the sampling
-      condition may fail. Decide how the paper reports this (D4).
+- [ ] `dt` sweep: keep `delta` and `omega` at their base values for every
+      entry of `DT_SWEEP` (see 1.3); `_sweep_sig()` must include the constants
+      or a version tag so that the caches in `figures/*.npz` are invalidated.
+- [ ] compute $T^*(\delta)$ and draw it on the sweep panel (vertical line or
+      shaded certified range); check that $\rho = 100\%$ for the sweep points
+      inside it.
+- [ ] optional (D4): a small table with $\delta(T)$, $\omega(T)$ and whether
+      $\{\Psi \ge \delta(T)\}$ is non-empty for each `dt`, to show how the
+      certified design changes with $T$.
 
 ### `notebooks/noise_robustness_dubins.ipynb`
 
@@ -214,8 +230,10 @@ per system that returns the constants together with `delta(T)` and
   reduces $\omega$.
 - D3, domain for the constants. Sampling box $\mathcal{X}$ from MATLAB versus
   the tighter $\{\Psi \ge 0\}$. The paper states the constants on $\mathcal{X}$.
-- D4, sweep semantics. If $\delta(dt)$ exceeds $M_\Psi$ for the coarse `dt`
-  values, report $\rho = 0$ there, or drop those points and say so.
+- D4, sweep presentation. The main sweep uses the base design (1.3). Decide
+  whether to add the per-`dt` redesign table ($\delta(T)$, $\omega(T)$,
+  terminal set non-empty or not), and how the paper words the gap between
+  the certified $T^*(\delta)$ and the empirically successful periods.
 - D5, refactor. Shared `python/ra_mpc.py` versus editing the four notebooks in
   place.
 - D6, magnitude of $\omega$. The theoretical minimum may dominate the tracking
