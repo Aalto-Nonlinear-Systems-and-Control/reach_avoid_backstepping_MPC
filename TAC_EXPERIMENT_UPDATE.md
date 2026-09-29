@@ -154,19 +154,19 @@ per system that returns the constants together with `delta(T)` and
 
 ### `notebooks/example_dubins_car_reach_avoid_mpc.ipynb`
 
-- [ ] cell 4, `solve_mpc`: terminal constraint `cert_vec(X[:, N]) >= delta`.
-- [ ] cell 4, cost: drop the `Qf_y` term; add `omega * (M_psi - cert_vec(X[:, N]))`.
-- [ ] cell 4, warm start: shifted candidate whose last input is `u_c(x_N_pred)`
+- [x] cell 4, `solve_mpc`: terminal constraint `cert_vec(X[:, N]) >= delta`.
+- [x] cell 4, cost: drop the `Qf_y` term; add `omega * (M_psi - cert_vec(X[:, N]))`.
+- [x] cell 4, warm start: shifted candidate whose last input is `u_c(x_N_pred)`
       (new numpy callable from `u_opt`); roll it out with the same RK4 map
       `F_disc` (the current rollout uses explicit Euler).
-- [ ] cell 4, return value: also return the solver cost; add a
+- [x] cell 4, return value: also return the solver cost; add a
       `candidate_cost(x0, U)` helper and apply the "keep the cheaper" rule.
-- [ ] cells 5 and 7, `_feasible_receding` and `simulate_ra_mpc_traj`: carry
+- [x] cells 5 and 7, `_feasible_receding` and `simulate_ra_mpc_traj`: carry
       `N` through the loop; after each solve build the candidate, roll it
       out, and shrink `N` if the rollout touches $\mathcal{X}_T$ (1.6). Any
       infeasible solve is now a violation; log it separately from "failed".
-- [ ] log $J^*_k$ and check $J^*_{k+1} \le J^*_k - \underline{\ell}$.
-- [ ] header comment and printouts (they still say `V(x_N) >= 0`).
+- [x] log $J^*_k$ and check $J^*_{k+1} \le J^*_k - \underline{\ell}$.
+- [x] header comment and printouts (they still say `V(x_N) >= 0`).
 
 ### `notebooks/example_manipulator_reach_avoid_mpc.ipynb`
 
@@ -177,7 +177,7 @@ per system that returns the constants together with `delta(T)` and
 
 ### `notebooks/make_paper_figs_dubins.ipynb` and `notebooks/make_paper_figs_manipulator.ipynb`
 
-- [ ] `feas_rampc` and `make_fast_solver(..., "cert")`: the same MPC changes.
+- [~] `feas_rampc` and `make_fast_solver(..., "cert")`: the same MPC changes.
 - [ ] `dt` sweep: keep `delta` and `omega` at their base values for every
       entry of `DT_SWEEP` (see 1.3); `_sweep_sig()` must include the constants
       or a version tag so that the caches in `figures/*.npz` are invalidated.
@@ -199,7 +199,7 @@ per system that returns the constants together with `delta(T)` and
 
 ### `python/`
 
-- [ ] add `python/ra_mpc_constants.py` (Section 2).
+- [x] add `python/ra_mpc_constants.py` (Section 2).
 - [ ] optional (D5): factor the RA-MPC builder into `python/ra_mpc.py` so
       that the four notebooks share one implementation.
 
@@ -257,3 +257,89 @@ per system that returns the constants together with `delta(T)` and
 - D6, magnitude of $\omega$. The theoretical minimum may dominate the tracking
   cost. Report the value; if the closed-loop behaviour degrades, discuss
   whether to present the tracking cost as illustrative in the paper.
+
+## 6. Results: Dubins car (branch `tac-revision`, for confirmation)
+
+Implementation: `python/ra_mpc_dubins.py` (Algorithm 1: terminal set
+$\{\Psi \ge \delta\}$, $V_f = \omega(M_\Psi - \Psi)$, shifted candidate with
+cheaper-of rule, adaptive horizon), `python/ra_mpc_constants.py` (Lemma 2
+constants), `scripts/eval_dubins_tac.py` (batch evaluation). Both Dubins
+notebooks now call the module; `make_paper_figs_dubins.ipynb` feasibility and
+`dt` sweep use Algorithm 1 for RA-MPC (vanilla and unconstrained unchanged).
+The manipulator item for `make_fast_solver` is still open.
+
+Settings: $T = 0.05$ s, $N = 25$, $\delta = 0.1$, $\omega = 1000$,
+$M_\Psi = 11.63$, $\ell_{\min} = 0.5$, stage cost unchanged, safety
+constraint tightened to $\psi_{\text{safe}} \ge 10^{-3}$ (see 6.3).
+
+### 6.1 Theory constants are vacuous for this controller
+
+- MATLAB `solve_vanilla_k1_controller` gives $\lambda = 1.09 \times 10^{-8}$
+  (independent numerical estimate of $\min \dot\Psi/\Psi$ agrees, about $10^{-6}$ or below).
+- On $\{\Psi \ge 0\}$ within the synthesis box ($\theta \in [2\pi/3, 4\pi/3]$,
+  $v \in [0.1, 1]$): $M_{u^c} = (96, 11)$, so $u^c$ exceeds the input bounds on
+  34 % ($\omega$) and 6 % ($a$) of that set; $\ell_{u^c} = (1246, 85)$, $M_v = 106$.
+- Hence $\beta(0.05)/\lambda \approx 4.7 \times 10^{11} \gg M_\Psi$ and the certified
+  period is $T^*(\delta) \approx 10^{-14}$ s. Remark 4's $\omega$ is infinite.
+- Under one ZOH step of $u^c$ ($T = 0.05$ s) from $\{\Psi \ge \delta\} \setminus \mathcal{X}_T$,
+  $\Psi$ decreases in 44 % of sampled states.
+- Consequence: $\delta$ and $\omega$ are practical choices; (22) is not
+  guaranteed a priori and is checked a posteriori instead.
+
+### 6.2 Closed loop, nominal plant (MPC model = plant), 300 initial states, 10 s
+
+| $\omega$ | reached | infeasible at $k=0$ | infeasible later | timeout | steps violating $J^*_{k+1} \le J^*_k - \ell_{\min}$ (reached runs) | $t_{\text{entry}} \le t_{\text{bound}}$ |
+| --- | --- | --- | --- | --- | --- | --- |
+| 10 | 285 | 12 | 0 | 3 | 1 / 5964 | 285 / 285 |
+| 100 | 285 | 10 | 0 | 5 | 0 / 5935 | 285 / 285 |
+| 1000 | 284 | 11 | 0 | 5 | 0 / 5900 | 284 / 284 |
+
+- Recursive feasibility holds numerically: no infeasible solve after $k = 0$.
+- The candidate $u^c$ step was within the input bounds at every step, and the
+  horizon shrank in every successful run (the plan reaches $\mathcal{X}_T$ well
+  within $N$ from about 0.5 s on).
+- Time bound: all reached runs satisfy it, but it is very loose:
+  $t_{\text{entry}}$ 0.15 to 1.85 s versus $t_{\text{bound}}$ 102 to 359 s
+  (ratio below 0.01). The reason is that $J^*$ floors near
+  $\omega(M_\Psi - \max\Psi) \approx 1000$, not near 0 (figure
+  `figures/tac_dubins_cost.png`). Using $J^*_0 - \inf J^*$ in place of $J^*_0$
+  would tighten the corollary; worth considering for the paper.
+- The 5 timeouts all stall at $(1.41, 0)$ with $v = 0$, the point of the ring
+  opposite the target. There the decoupling matrix is singular (Assumption 1
+  fails), $\Psi$ does not increase under $u^c$, and (22) is violated at almost
+  every step (J decreases by about 0.4 per step, less than $\ell_{\min}$).
+- Solve time about 40 ms per step (fresh `Opti` per call, larger than the 22 ms
+  of the pre-built solver below).
+
+### 6.3 Closed loop, continuous ZOH plant (as in the paper figures), 20 s
+
+- Without the safety back-off, 40 runs ended "unsafe" with violations of order
+  $10^{-5}$ or smaller while travelling at 3 to 4 m/s along the boundary: the
+  RK4 prediction error at $T = 0.05$ s pushes the state just outside. With the
+  back-off $\psi_{\text{safe}} \ge 10^{-3}$: no safety violation.
+- Result with back-off: RA-MPC reaches the target from 258 / 300 states
+  (paper currently reports 255 / 300 with the LCSS formulation); vanilla MPC
+  245 / 300, unconstrained 197 / 300 (unchanged).
+- 26 runs become infeasible mid-run, all on the tightened boundary at about
+  3.3 m/s: plant-model mismatch breaks recursive feasibility (no such case with
+  the nominal plant). This is the robustness issue of the paper's model
+  uncertainty remark, not a defect of Algorithm 1.
+- Shared trajectory of the paper figure: reached at 1.40 s, $t_{\text{bound}} = 249$ s,
+  no decrease violation in 27 steps (figure `figures/fig_dubins_cost.png`).
+- `dt` sweep (150 states, $T N = 1.25$ s): $\rho$ = 96.7, 88.0, 77.3, 84.0 %
+  for $T$ = 0.025, 0.05, 0.125, 0.25 s. Not monotone any more (was 96.7, 85.3,
+  66.7, 58.7 % before the back-off, and monotone in the LCSS version). The
+  certified range $T < T^*(\delta)$ is about $10^{-14}$ s and cannot be drawn.
+
+### 6.4 Points to decide
+
+1. How the paper treats 6.1: the Lemma 2 constants are existence-level only for
+   this controller; the experiments cannot certify $T$, $\delta$, $\omega$.
+2. Whether to keep $\omega = 1000$ (results are insensitive to $\omega$ in
+   10 to 1000) and $\delta = 0.1$.
+3. Whether to tighten Corollary 1 with $J^*_0 - \inf J^*$.
+4. Whether to state the safety back-off in the paper (it is a standard
+   constraint tightening for discretisation error).
+5. The non-monotone `dt` sweep and the new counts (258 / 300, figure 4 and 5 of the paper).
+6. Whether to update the paper figures now (`figures/fig_dubins_*.png`
+   regenerated on this branch; not yet copied to `TAC/figs/`).
