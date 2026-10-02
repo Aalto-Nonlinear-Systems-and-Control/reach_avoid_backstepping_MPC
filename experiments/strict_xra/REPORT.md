@@ -397,7 +397,7 @@ Restricting to states where $u^c$ meets the bounds changes the shares by at most
 
 ---
 
-## 10. Redesign of $\psi$: a steeper weight
+## 9. Redesign of $\psi$: a steeper weight
 
 The safe set is the zero-superlevel set of $h$ alone, so any weight
 $\alpha > 0$ on the safe set gives the same safe set for $\psi = \alpha h$. The
@@ -406,7 +406,7 @@ far side is 1.2), which makes the far critical value high (Section 3) and
 $\psi$ flat. A weight that grows monotonically along the ring towards the
 target turns the far critical point into a saddle with a small value.
 
-### 10.1 Critical points for candidate weights
+### 9.1 Critical points for candidate weights
 
 By symmetry in $y_2$, the critical points of $\psi = \alpha(y_1)\,h$ lie on the
 axis $y_2 = 0$: off the axis $\partial\psi/\partial y_2 = \alpha\,\partial h/\partial y_2$
@@ -428,7 +428,7 @@ $\psi = (2.5 - y_1)^2\,h/600$ ($\max\psi = 1.10$, saddle value $0.0357$).
 The remaining quarter of the ring around the far saddle cannot be certified by
 any weight (Section 3.3).
 
-### 10.2 Rigorous $k_1$ (scaled, $K = 1$, degree 8)
+### 9.2 Rigorous $k_1$ (scaled, $K = 1$, degree 8)
 
 | $\lambda$ | $\delta/\lambda$ | $\min m$ (relative) | $\max \lvert k_1 \rvert$ | certified area outside $\mathcal{X}_T$ |
 | --- | --- | --- | --- | --- |
@@ -447,7 +447,7 @@ normalised differently from Section 4 ($\max\psi = 1.1$ instead of 10.8), so
 the values of $\lambda$ are not directly comparable; the relevant rate is
 $\dot\Psi/\Psi$ below.
 
-### 10.3 Full-state certificate ($\lambda = 0.005$, rigorous vanilla $k_1$)
+### 9.3 Full-state certificate ($\lambda = 0.005$, rigorous vanilla $k_1$)
 
 | quantity | committed | Section 5, $\mu = 0.1$ | $\alpha = (2.5 - y_1)^2$, $\mu = 0.1$ | $\alpha = (2.5 - y_1)^2$, $\mu = 0.5$ |
 | --- | --- | --- | --- | --- |
@@ -467,7 +467,7 @@ $T = 0.05$ s are spread over all levels of $\Psi$ (0.98 % for $\Psi \ge 0.01$,
 next state stays in $\{\Psi \ge 0\}$. At $T = 0.1$ and $0.2$ s the shares are
 2.1 % and 6.1 %.
 
-### 10.4 What the redesign fixes and what it does not
+### 9.4 What the redesign fixes and what it does not
 
 Fixed or largely improved:
 
@@ -488,11 +488,11 @@ Not fixed:
 - The SOP stage is still unscaled and reintroduces tiny violations
   ($2 \times 10^{-4}$ of the samples for $\mu = 0.5$).
 
-Scripts: `run_alpha.m` (Section 10.2) and `run_full_alpha.m` (Section 10.3);
+Scripts: `run_alpha.m` (Section 9.2) and `run_full_alpha.m` (Section 9.3);
 exports in `out/rigorous_alpha2_mu0.1_vanilla_k1.py` and
 `out/rigorous_alpha2_mu0.5_vanilla_k1.py`.
 
-## 9. Reproduction
+## 10. Reproduction
 
 ```
 cd experiments/strict_xra
@@ -501,6 +501,8 @@ matlab -batch "run('run_deg.m')"     # degree test
 matlab -batch "run('run_kmax.m')"    # Section 4.2, unscaled, K = 1
 matlab -batch "run('run_scaled.m')"  # Section 4.2, scaled
 matlab -batch "run('run_full.m')"    # Section 5, full synthesis
+matlab -batch "run('run_alpha.m')"   # Section 9.2, weight (2.5 - y1)^2
+matlab -batch "run('run_full_alpha.m')" # Section 9.3
 # exports land in controllers/tmp_*.py: move them to out/ before anything else
 LAM=0.02 python check_full.py out/rigorous_mu0.1_vanilla_k1.py
 ```
