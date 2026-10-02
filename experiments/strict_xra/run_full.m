@@ -1,5 +1,5 @@
 global LMIN KMAX SCALE
-cd(.); addpath('/Users/jianqiang/Downloads/reach_avoid_backstepping_MPC/matlab'); addpath(.);
+here = fileparts(mfilename('fullpath')); cd(here); addpath(fullfile(here, '..', '..', 'matlab')); addpath(here);
 syms x1 x2 th v y1 y2;
 x_vars_sym = [x1; x2; th; v]; fx_sym = [v*cos(th); v*sin(th); 0; 0];
 gx_sym = [0 0; 0 0; 1 0; 0 1]; hx_sym = [x1; x2]; y_vars_sym = [y1; y2];

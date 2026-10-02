@@ -1,5 +1,5 @@
 global LMIN
-cd(.); addpath('/Users/jianqiang/Downloads/reach_avoid_backstepping_MPC/matlab'); addpath(.);
+here = fileparts(mfilename('fullpath')); cd(here); addpath(fullfile(here, '..', '..', 'matlab')); addpath(here);
 syms y1 y2; y_vars_sym = [y1; y2];
 h_raw = -(y1^4 + y2^4 - 16) * (y1^4 + y2^4 - 4);
 target_set_sym = (y2 - 0)^2 + ((y1 + 1.7)/0.5)^2 - 0.4;
