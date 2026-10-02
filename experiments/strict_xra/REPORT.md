@@ -492,7 +492,91 @@ Scripts: `run_alpha.m` (Section 9.2) and `run_full_alpha.m` (Section 9.3);
 exports in `out/rigorous_alpha2_mu0.1_vanilla_k1.py` and
 `out/rigorous_alpha2_mu0.5_vanilla_k1.py`.
 
-## 10. Reproduction
+---
+
+## 10. Where Lemma 2 loses (certificate of Section 9, $\mu = 0.1$, $\lambda = 0.005$)
+
+### 10.1 The domain of the constants is not the cause
+
+All constants were already taken on $\{\Psi \ge 0\}$ (minus $\mathcal{X}_T$ where
+relevant), intersected with the sampling box, not on the whole safe set or
+state space. The box limits $\theta \in [2\pi/3, 4\pi/3]$ and $v \in [0.1, 1]$, so
+it is if anything smaller than $\mathcal{X}_{RA}$. Changing the domain moves
+$T^\star$ by less than a factor 2:
+
+| domain | $M_{g_1}$, $M_{g_2}$ | $\ell_{u^c_1}$, $\ell_{u^c_2}$ | $M_v$ | $T^\star(0.1 \max\Psi)$ |
+| --- | --- | --- | --- | --- |
+| $\{\Psi \ge 0\}$, all headings, $v \in [0.1, 1.5]$ | 3.03, 4.58 | 110, 8.9 | 9.4 | $1.5 \times 10^{-7}$ s |
+| $\{\Psi \ge 0\}$, sampling box (used so far) | 3.03, 4.59 | 90, 9.1 | 7.7 | $2.1 \times 10^{-7}$ s |
+| $\{\Psi \ge 0.1 \max\Psi\}$, sampling box | 2.83, 4.34 | 90, 8.7 | 7.1 | $2.5 \times 10^{-7}$ s |
+
+### 10.2 Factor-by-factor comparison along real ZOH arcs
+
+From 13 500 states in $\mathcal{X}_{RA} \setminus \mathcal{X}_T$, arcs of length
+$T = 0.05$ s with the input frozen at $u^c(x_k)$:
+
+| step of the proof | bound | actual (median / max) | overestimate |
+| --- | --- | --- | --- |
+| drift $\Delta_k(t)$, eq. (18) | $\frac{e^{\ell_{sys}T} - 1}{\ell_{sys}}\lVert \dot x_k \rVert$ | | 1.02 (tight) |
+| $\lvert u^c(x(t)) - u^c(x_k) \rvert / \Delta_k(t)$ | $\ell_{u^c} = 99$ | 0.67 / 15 | 6.5 to 150 |
+| mismatch $e(t) = \sum_j L_{g_j}\Psi\,(u^c_j(x(t)) - u^c_j(x_k))$ | $\beta_k(T)$ | 0.016 / 0.78 | median 730 |
+| same, state-independent | $\beta(T) = 135$ | 0.016 / 0.78 | median 8 400 |
+| available margin | $\lambda\Psi_k$, median $10^{-3}$ | true $\dot\Psi$: median $\dot\Psi/\Psi = 1.26$ | about 250 |
+
+Two factors dominate: the product of separate suprema $M_g\,\ell_{u^c}\,M_v$
+(three to four orders of magnitude), and the use of the uniform worst-case
+rate $\lambda$ as the only margin (more than two orders). Even the true mismatch
+exceeds $\lambda\Psi_k$ in 94 % of the states, yet $\Psi$ increases in 99 % of
+the ZOH steps, because the actual $\dot\Psi$ is much larger than $\lambda\Psi$.
+
+### 10.3 A second-order alternative
+
+With a frozen input, $\dot\Psi$ at $t_k$ equals its continuous-time value, so
+
+$$
+\Psi(x(t_{k+1})) \;\ge\; \Psi_k + \dot\Psi(x_k)\,T - \tfrac{1}{2} M_2\,T^2,
+\qquad
+M_2 \doteq \sup \lvert \ddot\Psi \rvert \ \text{along ZOH arcs in } \mathcal{X}_{RA},
+\tag{10}
+$$
+
+with $\ddot\Psi = (f + g u)^\top \nabla^2\Psi\,(f + g u) + \nabla\Psi^\top \tfrac{\partial f}{\partial x}(f + g u)$
+for constant $u$. This bound needs no Lipschitz constant of $u^c$. Increase over
+one step holds if $\dot\Psi(x_k) > \tfrac{1}{2} M_2 T$, i.e.
+
+$$
+T^\star = \frac{2\,\eta}{M_2}, \qquad
+\eta = \lambda\delta \ \ \text{(certified rate)} \quad\text{or}\quad
+\eta = \min_{\{\Psi \ge \delta\} \setminus \mathcal{X}_T} \dot\Psi \ \ \text{(additive margin)}.
+\tag{11}
+$$
+
+| quantity | value |
+| --- | --- |
+| $M_2$ over $\mathcal{X}_{RA} \times$ (box of $u^c$ values) | 576 (too loose: pairs a state with inputs it never sees) |
+| $M_2$ along arcs, $T = 0.01$ to $0.1$ s | 19 to 23 (99 % quantile about 7) |
+| $\eta = \lambda\delta$, $\delta = 0.1 \max\Psi$ | $5.2 \times 10^{-4}$ |
+| $\eta = \min \dot\Psi$ on $\{\Psi \ge \delta\} \setminus \mathcal{X}_T$ | 0.0072 to 0.0083 |
+
+| bound | $T^\star$ |
+| --- | --- |
+| Lemma 2 as in the paper | $2.1 \times 10^{-7}$ s |
+| (11) with $\eta = \lambda\delta$ | $5.4 \times 10^{-5}$ s |
+| (11) with the additive margin | $7.5 \times 10^{-4}$ s |
+| simulation: $\Psi$ increases in 99 % of steps | $0.05$ s |
+
+The additive margin can be certified by SOS (require
+$\dot\Psi \ge \lambda\Psi + \eta$ on $\{\Psi \ge \delta\} \setminus \mathcal{X}_T$), and
+$M_2$ by an SOS or interval bound over $\mathcal{X}_{RA}$ and the drift
+neighbourhood of each state; the numbers above are sampled. The remaining gap
+to 0.05 s comes from $\eta$ (the slowest region, near the far saddle) and from
+$M_2$ being a supremum; for recursive feasibility only states near the level
+$\delta$ need an increase, which would allow $\eta$ to be taken on a band around
+$\{\Psi = \delta\}$ only.
+
+Script: `lemma2_tightness.py`.
+
+## 11. Reproduction
 
 ```
 cd experiments/strict_xra
@@ -503,6 +587,7 @@ matlab -batch "run('run_scaled.m')"  # Section 4.2, scaled
 matlab -batch "run('run_full.m')"    # Section 5, full synthesis
 matlab -batch "run('run_alpha.m')"   # Section 9.2, weight (2.5 - y1)^2
 matlab -batch "run('run_full_alpha.m')" # Section 9.3
+python lemma2_tightness.py out/rigorous_alpha2_mu0.1_vanilla_k1.py 0.005   # Section 10
 # exports land in controllers/tmp_*.py: move them to out/ before anything else
 LAM=0.02 python check_full.py out/rigorous_mu0.1_vanilla_k1.py
 ```
