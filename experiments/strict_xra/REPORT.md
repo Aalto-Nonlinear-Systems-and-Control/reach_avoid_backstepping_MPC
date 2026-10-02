@@ -395,6 +395,103 @@ Restricting to states where $u^c$ meets the bounds changes the shares by at most
 - Re-run the MPC experiments with the rigorous certificate. The smaller
   $\mathcal{X}_{RA}$ makes the enlargement by MPC more visible.
 
+---
+
+## 10. Redesign of $\psi$: a steeper weight
+
+The safe set is the zero-superlevel set of $h$ alone, so any weight
+$\alpha > 0$ on the safe set gives the same safe set for $\psi = \alpha h$. The
+committed weight is almost constant ($\alpha$ at the target over $\alpha$ at the
+far side is 1.2), which makes the far critical value high (Section 3) and
+$\psi$ flat. A weight that grows monotonically along the ring towards the
+target turns the far critical point into a saddle with a small value.
+
+### 10.1 Critical points for candidate weights
+
+By symmetry in $y_2$, the critical points of $\psi = \alpha(y_1)\,h$ lie on the
+axis $y_2 = 0$: off the axis $\partial\psi/\partial y_2 = \alpha\,\partial h/\partial y_2$
+vanishes only on the ridge $y_1^4 + y_2^4 = 10$, where
+$\nabla\psi = h\,\nabla\alpha \ne 0$. On the axis we solve
+$\partial\psi/\partial y_1 = 0$ and classify with the second derivatives (the
+fourth derivative in $y_2$ when the second vanishes).
+
+| $\alpha(y)$ | $\min\alpha$ on safe set | far critical point | its $\psi$ / $\max\psi$ | largest certifiable area outside $\mathcal{X}_T$ |
+| --- | --- | --- | --- | --- |
+| $10^{-3}(300 - \phi)$ (committed) | 0.245 | local maximum at $(1.774, 0)$ | 83.9 % | 24 % |
+| $(2.5 - y_1)^2$ | 0.252 | saddle at $(1.679, 0)$ | 3.2 % | 74 % |
+| $(2.2 - y_1)^3$ | 0.008 | saddle at $(1.593, 0)$ | 0.23 % | 78 % |
+| $(2.2 - y_1)^4$ | 0.000 | saddle at $(1.562, 0)$ | 0.04 % | 79 % |
+
+$(2.5 - y_1)^2$ keeps the degree of $\psi$ at 10 and stays well away from zero,
+so it is the choice tested below, normalised as
+$\psi = (2.5 - y_1)^2\,h/600$ ($\max\psi = 1.10$, saddle value $0.0357$).
+The remaining quarter of the ring around the far saddle cannot be certified by
+any weight (Section 3.3).
+
+### 10.2 Rigorous $k_1$ (scaled, $K = 1$, degree 8)
+
+| $\lambda$ | $\delta/\lambda$ | $\min m$ (relative) | $\max \lvert k_1 \rvert$ | certified area outside $\mathcal{X}_T$ |
+| --- | --- | --- | --- | --- |
+| 0.0005 | 0.0318 | $-1.0 \times 10^{-6}$ ($-1.8 \times 10^{-3}$), poor solve (feasratio 0.45) | 0.770 | 79 % |
+| 0.001 | 0.0355 | $+5.4 \times 10^{-7}$ | 0.760 | 75 % |
+| 0.002 | 0.0353 | $+1.1 \times 10^{-7}$ | 0.827 | 75 % |
+| **0.005** | **0.0356** | $+2.9 \times 10^{-7}$ | **0.764** | **75 %** |
+| 0.01 | 0.0355 | $-1.3 \times 10^{-6}$ ($-1.2 \times 10^{-4}$) | 0.823 | 75 % |
+| 0.02 | 0.0958 | $+9.9 \times 10^{-5}$ | 1.000 | 56 % |
+| 0.05 | 0.698 | $+9.6 \times 10^{-5}$ | 1.000 | 14 % |
+| 0.1 | 0.899 | $+9.8 \times 10^{-5}$ | 1.000 | 7 % |
+
+For $\lambda \le 0.01$ the solution reaches the saddle bound $0.0357$. Above that
+the field bound (7) becomes active and the set shrinks. Note that $\psi$ is
+normalised differently from Section 4 ($\max\psi = 1.1$ instead of 10.8), so
+the values of $\lambda$ are not directly comparable; the relevant rate is
+$\dot\Psi/\Psi$ below.
+
+### 10.3 Full-state certificate ($\lambda = 0.005$, rigorous vanilla $k_1$)
+
+| quantity | committed | Section 5, $\mu = 0.1$ | $\alpha = (2.5 - y_1)^2$, $\mu = 0.1$ | $\alpha = (2.5 - y_1)^2$, $\mu = 0.5$ |
+| --- | --- | --- | --- | --- |
+| violations of $\dot\Psi \ge \lambda\Psi$ | 0.85 % | 0 | 0 (min margin $+6.4 \times 10^{-3}$) | 0 (min margin $+6.0 \times 10^{-3}$) |
+| median $\dot\Psi/\Psi$ | $2 \times 10^{-5}$ | 0.85 | 1.26 | 1.09 |
+| $\{\Psi \ge 0\}$ share of the box | (not certified) | 2.6 % | 4.1 % | 15.9 % |
+| MPC initial states inside (of 300) | (not certified) | 11 | 17 | 79 |
+| $u^c$ within $\lvert u \rvert \le 5$ | 63 % | 95.4 % | 99.8 % (max $\lvert\omega\rvert$ 7.1) | 91.7 % (max $\lvert\omega\rvert$ 46) |
+| continuous loop, 40 states | 37 reached | 40, monotone | 40, monotone, median 2.7 s | 40, monotone, median 3.2 s |
+| ZOH, $\Psi$ decreases, $T = 0.05$ s | 44 % | 41 % | **0.9 %** | 10.4 % |
+| ZOH, $\Psi$ decreases, $T = 0.01$ s | 43 % | 9.5 % | 0.1 % | 1.2 % |
+| Lemma 2, $T^\star(0.1 \max\Psi)$ | $10^{-14}$ s | $1.1 \times 10^{-7}$ s | $2.0 \times 10^{-7}$ s | $1.1 \times 10^{-8}$ s |
+
+For $\alpha = (2.5 - y_1)^2$, $\mu = 0.1$, the remaining decreases at
+$T = 0.05$ s are spread over all levels of $\Psi$ (0.98 % for $\Psi \ge 0.01$,
+0.99 % for $\Psi \ge 0.1$), are at most $7.5 \times 10^{-3}$ in size, and every
+next state stays in $\{\Psi \ge 0\}$. At $T = 0.1$ and $0.2$ s the shares are
+2.1 % and 6.1 %.
+
+### 10.4 What the redesign fixes and what it does not
+
+Fixed or largely improved:
+
+- size of the certified set in the output plane: 24 % to 75 % of the ring;
+- flatness of $\Psi$ and hence the per-step behaviour under ZOH: at the paper's
+  $T = 0.05$ s, $\Psi$ decreases from 0.9 % of the states instead of 41 to 44 %;
+- input bounds: $u^c$ within the bounds on 99.8 % of $\{\Psi \ge 0\}$ for $\mu = 0.1$.
+
+Not fixed:
+
+- Lemma 2's certified $T^\star$ remains of order $10^{-7}$ s. The global
+  Lipschitz constant $\ell_{u^c}$ (91 here) and the factor $M_v$ dominate (8).
+  This is a property of the bound, not of $\Psi$; a sharper lemma (for example
+  bounding $\ddot\Psi$ along ZOH arcs, as in (9)) is needed for a practical $T$.
+- The full-state set is still small for $\mu = 0.1$ (17 of 300 initial states)
+  because of the velocity term in (4). $\mu = 0.5$ quadruples it but weakens
+  the input bounds and the ZOH behaviour. MPC is what enlarges the region.
+- The SOP stage is still unscaled and reintroduces tiny violations
+  ($2 \times 10^{-4}$ of the samples for $\mu = 0.5$).
+
+Scripts: `run_alpha.m` (Section 10.2) and `run_full_alpha.m` (Section 10.3);
+exports in `out/rigorous_alpha2_mu0.1_vanilla_k1.py` and
+`out/rigorous_alpha2_mu0.5_vanilla_k1.py`.
+
 ## 9. Reproduction
 
 ```
