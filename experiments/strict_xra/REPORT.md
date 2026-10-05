@@ -777,6 +777,70 @@ Two implementation points were needed for this:
 - Example 1 of the paper changes: $\psi$, the certificate parameters, all
   Dubins figures and counts.
 
+### 11.8 Input bounds (setting R2 fixed)
+
+What the theory needs: the terminal controller must respect the bounds on the
+terminal set. For R2, $\lvert\omega\rvert \le 0.16$ and $\lvert a\rvert \le 0.006$ on
+$\{\Psi \ge \delta\}$ ($0.2$ and $0.01$ on all of $\{\Psi \ge 0\}$), so any
+$\omega_{\max} \ge 0.2$, $a_{\max} \ge 0.01$ is admissible. Under the time scaling
+(14), $\omega \propto s$ and $a \propto s^2$: input bounds and the sampling period
+both limit the speed scale $s$ of the terminal controller, and at
+$T = 0.05$ s the sampling period is the binding one.
+
+The bounds are active in the MPC closed loop, not in the terminal
+controller. Study with the certificate, $\delta$, cost and $T = 0.05$ s fixed
+(`design/eval_bounds.py`; continuous plant, 300 initial states; "saturated"
+is the share of applied inputs within 2 % of the bound; vanilla is first-step
+feasibility of the terminal-target MPC):
+
+| $(\omega_{\max}, a_{\max})$ | vanilla, $N=25$ | RA-MPC, $N=25$ | saturated $\omega$ / $a$ | median $t_{\text{entry}}$ | vanilla, $N=40$ | RA-MPC, $N=40$ | saturated $\omega$ / $a$ |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| (5, 5) | 245 | 280 | 18 % / 79 % | 1.15 s | 288 | 292 | 8 % / 19 % |
+| **(3, 3)** | **147** | **233** | 31 % / 93 % | 1.40 s | 275 | 286 | 22 % / 62 % |
+| (2, 2) | 95 | 195 | 38 % / 95 % | 1.70 s | 209 | 254 | 33 % / 81 % |
+| (2, 1) | 51 | 167 | 27 % / 83 % | 2.50 s | 118 | 206 | 28 % / 96 % |
+| (1, 2) | 61 | 183 | 80 % / 85 % | 2.05 s | 166 | 225 | 73 % / 84 % |
+| (1, 1) | 27 | 153 | 51 % / 81 % | 2.70 s | 97 | 183 | 54 % / 96 % |
+| (1, 0.5) | 12 | 85 | 24 % / 61 % | 3.75 s | 52 | 148 | 36 % / 90 % |
+| (0.5, 0.5) | 7 | 50 | 73 % / 59 % | 4.50 s | 25 | 128 | 80 % / 83 % |
+
+In all 16 cases: no infeasible solve after $k = 0$, no violation of the cost
+decrease, no safety violation. RA-MPC reaches the target from every
+vanilla-feasible state except 0 to 4 per case.
+
+Reading:
+
+- Tighter bounds widen the gap. Vanilla MPC must hit the target within the
+  horizon; RA-MPC only needs the terminal set and then keeps going (median
+  entry time exceeds the horizon $NT = 1.25$ s for the tighter bounds).
+- At (5, 5) with $N = 40$ the two methods are equal and the bounds are
+  rarely active; this setting does not show the method.
+- Suggested: $(\omega_{\max}, a_{\max}) = (3, 3)$ with $N = 25$ (233 versus 147,
+  78 % versus 49 %), or $(2, 2)$ with $N = 40$ (254 versus 209). Both keep the
+  bounds active in more than half of the runs and are plausible for a small
+  ground vehicle moving at about 1 m/s.
+
+### 11.9 The continuous controller alone as a baseline
+
+`design/eval_ura.py`: $u^c$ applied in continuous time without MPC.
+
+| start | R2 ($s = 0.159$) | unscaled ($s = 1$) |
+| --- | --- | --- |
+| the 300 initial states: inside $\{\Psi \ge 0\}$ | 0 | 4 |
+| the 300 initial states: reached / left the safe set | 5 / 292 | 23 / 274 |
+| 60 states of $\{\Psi \ge 0.2 M_\Psi\}$: reached | 60 (median 19.8 s, max 39.5 s) | 60 (median 3.1 s, max 6.3 s) |
+| largest inputs on those runs | 0.11, 0.006 | 0.69, 0.23 |
+
+The certified set is thin in the velocity directions (radius
+$\sqrt{2\mu(\cdot)}$), and the backstepping law does not regulate the velocity
+mismatch ($\dot e = \mu\nabla\psi + \tfrac{\lambda}{2} e$), so from the paper's
+initial states (speeds up to 1 m/s in arbitrary direction) the continuous
+controller alone fails. The 197/300 of the committed controller came from its
+large uncertified gains. In the rigorous setting the three-way comparison of
+the paper becomes 5 (controller alone), 147 (vanilla), 233 (RA-MPC) at
+(3, 3), $N = 25$, and the baseline no longer illustrates input-bound
+violations: it is slow and gentle, with a small domain.
+
 ## 12. Reproduction
 
 ```
@@ -796,6 +860,8 @@ matlab -batch "run('run_design.m')"        # Section 11.3 (writes k1/*.txt)
 python validate.py                         # cert.py versus the MATLAB export
 python scan.py W3 0.06 0.02,0.05 0.2,0.3,0.4,0.5   # Section 11.4
 python eval_mpc.py 25,40                   # Section 11.5 (certified settings, both horizons)
+python eval_bounds.py 25,40                # Section 11.8 (input bounds, R2)
+python eval_ura.py                         # Section 11.9 (controller alone)
 # exports land in controllers/tmp_*.py: move them to out/ before anything else
 LAM=0.02 python check_full.py out/rigorous_mu0.1_vanilla_k1.py
 ```

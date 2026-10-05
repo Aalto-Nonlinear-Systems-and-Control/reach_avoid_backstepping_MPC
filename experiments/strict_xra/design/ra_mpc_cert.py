@@ -16,8 +16,9 @@ def terminal_stats(cert, delta, dt, n_y=120000):
 
 
 class CertMPC(rm.DubinsRAMPC):
-    def __init__(self, cert, dt=0.05, N=25, dfrac=0.3, omega=None, safe_margin=1e-3):
+    def __init__(self, cert, dt=0.05, N=25, dfrac=0.3, omega=None, safe_margin=1e-3, u_max=None):
         self.c = cert
+        self.u_max = np.asarray(rm.U_MAX if u_max is None else u_max, float)
         M_psi = 1.0 - cert.shift
         delta = dfrac * M_psi
         self.eps, self.sup_ell, self.uc_max = terminal_stats(cert, delta, dt)
@@ -68,7 +69,7 @@ class CertMPC(rm.DubinsRAMPC):
         return J + self.omega * (self.M_psi - float(self._psi(X[:, -1])[0]))
 
     def feasible(self, X, U, tol=1e-6):
-        return (np.all(np.abs(U) <= rm.U_MAX[:, None] + tol)
+        return (np.all(np.abs(U) <= self.u_max[:, None] + tol)
                 and np.all(rm.safe_np(*X[:, 1:]) >= self.safe_margin - tol)
                 and float(self._psi(X[:, -1])[0]) >= self.delta - tol)
 
@@ -85,8 +86,8 @@ class CertMPC(rm.DubinsRAMPC):
             J += rm.Q_Y * ca.dot(dy, dy) + rm.R_U * ca.dot(U[:, k], U[:, k])
         opti.subject_to(rm.safe_ca(X[:, N]) >= self.safe_margin)
         opti.subject_to(self.psi_ca(X[:, N]) >= self.delta)
-        opti.subject_to(opti.bounded(-rm.U_MAX[0], U[0, :], rm.U_MAX[0]))
-        opti.subject_to(opti.bounded(-rm.U_MAX[1], U[1, :], rm.U_MAX[1]))
+        opti.subject_to(opti.bounded(-self.u_max[0], U[0, :], self.u_max[0]))
+        opti.subject_to(opti.bounded(-self.u_max[1], U[1, :], self.u_max[1]))
         J += self.omega * (self.M_psi - self.psi_ca(X[:, N]))
         opti.minimize(self.cscale * J)
         if U_warm is not None:
@@ -123,10 +124,11 @@ class CertMPC(rm.DubinsRAMPC):
         for _ in range(10):
             xs = rm.rk4_np(xs, uN, self.dt / 10)
             touch = touch or float(rm.tgt_np(*xs)) <= 0
-        return Uc, Xc, bool(touch), bool(np.all(np.abs(uN) <= rm.U_MAX))
+        return Uc, Xc, bool(touch), bool(np.all(np.abs(uN) <= self.u_max))
 
 
 def vanilla_solve(mpc, x0, N, Qf=80.0):
+    um = getattr(mpc, "u_max", rm.U_MAX)
     """Terminal-target MPC of the paper's baseline (same dynamics, cost and safety constraint)."""
     opti = ca.Opti(); X = opti.variable(4, N + 1); U = opti.variable(2, N)
     x0 = np.asarray(x0, float); opti.subject_to(X[:, 0] == x0); J = 0; tgt = ca.DM(rm.TARGET_POS)
@@ -135,7 +137,7 @@ def vanilla_solve(mpc, x0, N, Qf=80.0):
         dy = X[:2, k] - tgt; J += rm.Q_Y * ca.dot(dy, dy) + rm.R_U * ca.dot(U[:, k], U[:, k])
     opti.subject_to(rm.safe_ca(X[:, N]) >= 0)
     opti.subject_to(X[1, N]**2 + (2 * (X[0, N] + 1.7))**2 - 0.4 <= 0)
-    opti.subject_to(opti.bounded(-rm.U_MAX[0], U[0, :], rm.U_MAX[0])); opti.subject_to(opti.bounded(-rm.U_MAX[1], U[1, :], rm.U_MAX[1]))
+    opti.subject_to(opti.bounded(-um[0], U[0, :], um[0])); opti.subject_to(opti.bounded(-um[1], U[1, :], um[1]))
     dyN = X[:2, N] - tgt; J += Qf * ca.dot(dyN, dyN); opti.minimize(J)
     tgt_full = np.array([*rm.TARGET_POS, x0[2], 0.0])
     opti.set_initial(X, np.array([(1 - k / N) * x0 + k / N * tgt_full for k in range(N + 1)]).T); opti.set_initial(U, 0)
@@ -146,19 +148,20 @@ def vanilla_solve(mpc, x0, N, Qf=80.0):
         return False, None
 
 
-def vanilla_feasible(x0, dt, N):
+def vanilla_feasible(x0, dt, N, u_max=None):
     class _M: pass
-    m = _M(); m.F = rm._rk4_ca(dt); m.opts = {"ipopt.print_level": 0, "print_time": 0, "ipopt.max_iter": 500, "ipopt.tol": 1e-4, "ipopt.acceptable_tol": 1e-3}
+    m = _M(); m.F = rm._rk4_ca(dt); m.u_max = np.asarray(rm.U_MAX if u_max is None else u_max, float); m.opts = {"ipopt.print_level": 0, "print_time": 0, "ipopt.max_iter": 500, "ipopt.tol": 1e-4, "ipopt.acceptable_tol": 1e-3}
     return vanilla_solve(m, x0, N)[0]
 
 
-def run_one(x0, k1_file, mu, scale, dt, N, dfrac, omega, T_max, plant):
+def run_one(x0, k1_file, mu, scale, dt, N, dfrac, omega, T_max, plant, u_max=None):
     from cert import Cert
     c = Cert(k1_file, mu=mu)
     if scale != 1.0:
         c = c.scaled(scale)
-    mpc = CertMPC(c, dt=dt, N=N, dfrac=dfrac, omega=omega)
+    mpc = CertMPC(c, dt=dt, N=N, dfrac=dfrac, omega=omega, u_max=u_max)
     log = mpc.run(x0, T_max=T_max, plant=plant)
+    log["uc_max_terminal"] = mpc.uc_max
     log["check"] = rm.corollary_check(log, dt)
     log["omega"] = mpc.omega; log["eps"] = mpc.eps
     return log
