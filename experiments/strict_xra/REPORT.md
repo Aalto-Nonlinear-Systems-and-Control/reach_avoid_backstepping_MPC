@@ -841,6 +841,92 @@ the paper becomes 5 (controller alone), 147 (vanilla), 233 (RA-MPC) at
 (3, 3), $N = 25$, and the baseline no longer illustrates input-bound
 violations: it is slow and gentle, with a small domain.
 
+### 11.10 Initial states for the three-way comparison (R2)
+
+With the rigorous certificate the box used so far ($\theta \in [2\pi/3, 4\pi/3]$,
+$v \in [-1, 1]$) has no state inside $\mathcal{X}_{RA} = \{\Psi \ge 0\}$, so the
+comparison "controller alone, vanilla MPC, RA-MPC" has no group on which the
+controller is guaranteed. Scripts: `design/eval_init.py`, `design/eval_init2.py`,
+`design/plot_init.py`. All runs use the 300 positions of the previous sections,
+the continuous plant and $T = 0.05$ s.
+
+**States at rest are never inside $\mathcal{X}_{RA}$.** At $v = 0$,
+$\Psi = \psi(y) - \delta_s/\lambda - \lVert k_1(y)\rVert^2/(2\mu)$. On a
+$1601^2$ grid of the safe positions outside the target the largest value is
+$-0.009$. The ratio $\lVert k_1\rVert^2/(2\mu)$ is invariant under the time
+scaling, so the speed scale $s$ does not change this. It is also structural:
+$u^c$ divides by $v$ ($\omega = \ddot y \cdot n / v$), so a certified set on
+which $u^c$ is bounded must exclude $v = 0$. For R2 the speeds inside
+$\mathcal{X}_{RA}$ lie in $[0.007, 0.113]$ m/s ($[0.026, 0.107]$ on the
+terminal set).
+
+**Settings tested** at $(\omega_{\max}, a_{\max}) = (3, 3)$, $N = 25$:
+
+| initial velocity | inside $\mathcal{X}_{RA}$ | $u^c$ alone reaches | vanilla | RA-MPC |
+| --- | --- | --- | --- | --- |
+| at rest, heading in $[2\pi/3, 4\pi/3]$ | 0 | not defined | 161 | 233 |
+| at rest, any heading | 0 | not defined | 157 | 235 |
+| speed 0.02, any heading | 1 | 43 (256 leave the safe set) | 154 | 235 |
+| speed 0.05, any heading | 6 | 42 (258 leave the safe set) | 150 | 236 |
+| $\dot y(0) = k_1(y) + w$, $\lVert w\rVert \le 0.02$ | 136 | 259 | 165 | 240 |
+| $\dot y(0) = k_1(y) + w$, $\lVert w\rVert \le 0.05$ | 25 | 155 | 164 | 244 |
+| $\dot y(0) = k_1(y) + w$, $\lVert w\rVert \le 0.1$ | 4 | 63 | 165 | 234 |
+
+In every row all states inside $\mathcal{X}_{RA}$ reach the target under
+$u^c$ (1/1, 6/6, 136/136, 25/25, 4/4), and RA-MPC has no infeasible solve
+after $k = 0$. A small initial speed does not help the controller alone: what
+matters is that the velocity is close to $k_1(y)$, not that it is small. The
+single family around the field mixes certified and uncertified successes of
+$u^c$ (259 with only 136 guaranteed), which makes the count hard to interpret.
+
+**Proposed: two initial sets on the same 300 positions.**
+
+- $S_{RA}$: for the 234 positions with $\psi(y) > \delta_s/\lambda$, the velocity
+  is drawn uniformly from the disc
+  $\lVert \dot y - k_1(y)\rVert^2 \le 2\mu(\psi(y) - \delta_s/\lambda)$. All 234
+  states are in $\mathcal{X}_{RA}$, 65 of them in the terminal set
+  $\mathcal{X}_{RA}^{\delta}$.
+- $S_0$: all 300 positions at rest with heading uniform in $[-\pi, \pi]$. No
+  state is in $\mathcal{X}_{RA}$ and $u^c$ is not defined.
+
+Controller alone on $S_{RA}$: 234/234 in continuous time and 234/234 under
+zero-order hold with $T = 0.05$ s, median time to the target 26.1 s (max
+99.6 s), largest inputs 0.14 rad/s and 0.006 m/s$^2$. MPC results:
+
+| $(\omega_{\max}, a_{\max})$, $N$ | $S_{RA}$: $u^c$ alone | $S_{RA}$: vanilla | $S_{RA}$: RA-MPC | $S_0$: $u^c$ alone | $S_0$: vanilla | $S_0$: RA-MPC |
+| --- | --- | --- | --- | --- | --- | --- |
+| (3, 3), 25 | 234 | 163 | 226 | n/a | 159 | 231 |
+| **(3, 3), 30** | **234** | **206** | **234** | **n/a** | **206** | **268** |
+| (3, 3), 40 | 234 | 234 | 234 | n/a | 286 | 298 |
+| (2, 2), 25 | 234 | 125 | 204 | n/a | 102 | 208 |
+| (2, 2), 30 | 234 | 158 | 224 | n/a | 144 | 226 |
+| (2, 2), 40 | 234 | 234 | 234 | n/a | 246 | 285 |
+
+In all 12 MPC runs: no infeasible solve after $k = 0$; RA-MPC succeeds from all
+65 states of the terminal set and from all 133 positions with
+$\psi(y) - \delta_s/\lambda \ge \delta$ in both sets, at rest included; vanilla
+succeeds where RA-MPC fails in one state only ($S_0$, (2, 2), $N = 40$). Median
+time to the target under RA-MPC is 1.15 to 1.95 s.
+
+Reading:
+
+- $S_{RA}$ validates the certificate: every state reaches under $u^c$, in
+  continuous time and under sampling, with inputs far below the bounds, but
+  slowly (26 s against 1.2 s for RA-MPC at (3, 3), $N = 30$).
+- RA-MPC is guaranteed from $\mathcal{X}_{RA}^{\delta}$, not from all of
+  $\mathcal{X}_{RA}$. At $N = 25$ it misses 8 states of $S_{RA}$, all at the far
+  tips of the certified region with $\psi - \delta_s/\lambda \le 0.013$, from
+  which $\mathcal{X}_{RA}^{\delta}$ is out of reach in 1.25 s. At $N = 30$ it
+  covers all of $S_{RA}$.
+- $S_0$ shows the enlargement: none of these states is in $\mathcal{X}_{RA}$,
+  yet RA-MPC succeeds from 268 of 300 against 206 for vanilla MPC at
+  (3, 3), $N = 30$. The remaining 32 lie on the far side where no certificate
+  exists (`design/figs/init_sets_3_3_N30.png`).
+- Suggested setting for the paper: both sets, $(\omega_{\max}, a_{\max}) = (3, 3)$,
+  $N = 30$. Then RA-MPC contains both baselines on both sets. $N = 25$ gives a
+  larger gap to vanilla MPC (226 against 163, 231 against 159) at the price of
+  the 8 states above.
+
 ## 12. Reproduction
 
 ```
@@ -862,6 +948,9 @@ python scan.py W3 0.06 0.02,0.05 0.2,0.3,0.4,0.5   # Section 11.4
 python eval_mpc.py 25,40                   # Section 11.5 (certified settings, both horizons)
 python eval_bounds.py 25,40                # Section 11.8 (input bounds, R2)
 python eval_ura.py                         # Section 11.9 (controller alone)
+python eval_init.py                        # Section 11.10 (rest, near rest, field-relative)
+python eval_init2.py && python eval_init2.py sweep   # Section 11.10 (two initial sets)
+python plot_init.py 3_3 30                 # outcome map, figs/init_sets_3_3_N30.png
 # exports land in controllers/tmp_*.py: move them to out/ before anything else
 LAM=0.02 python check_full.py out/rigorous_mu0.1_vanilla_k1.py
 ```

@@ -1,0 +1,165 @@
+[
+ {
+  "name": "at rest, heading in [2pi/3,4pi/3]",
+  "u_max": [
+   3.0,
+   3.0
+  ],
+  "N": 25,
+  "n": 300,
+  "in_xra": 0,
+  "in_terminal": 0,
+  "vanilla": 161,
+  "rampc": 233,
+  "inf_later": 0
+ },
+ {
+  "name": "at rest, any heading",
+  "u_max": [
+   3.0,
+   3.0
+  ],
+  "N": 25,
+  "n": 300,
+  "in_xra": 0,
+  "in_terminal": 0,
+  "vanilla": 157,
+  "rampc": 235,
+  "inf_later": 0
+ },
+ {
+  "name": "at rest, heading in [2pi/3,4pi/3]",
+  "u_max": [
+   5.0,
+   5.0
+  ],
+  "N": 25,
+  "n": 300,
+  "in_xra": 0,
+  "in_terminal": 0,
+  "vanilla": 247,
+  "rampc": 283,
+  "inf_later": 0
+ },
+ {
+  "name": "at rest, any heading",
+  "u_max": [
+   5.0,
+   5.0
+  ],
+  "N": 25,
+  "n": 300,
+  "in_xra": 0,
+  "in_terminal": 0,
+  "vanilla": 253,
+  "rampc": 280,
+  "inf_later": 0
+ },
+ {
+  "name": "near rest v0=0.02, any heading",
+  "u_max": [
+   3.0,
+   3.0
+  ],
+  "N": 25,
+  "n": 300,
+  "in_xra": 1,
+  "in_terminal": 0,
+  "vanilla": 154,
+  "rampc": 235,
+  "inf_later": 0,
+  "ura": 43,
+  "ura_inside": 1,
+  "ura_viol": 6,
+  "ura_status": {
+   "unsafe": 256,
+   "reached": 43,
+   "v=0": 1
+  }
+ },
+ {
+  "name": "near rest v0=0.05, any heading",
+  "u_max": [
+   3.0,
+   3.0
+  ],
+  "N": 25,
+  "n": 300,
+  "in_xra": 6,
+  "in_terminal": 4,
+  "vanilla": 150,
+  "rampc": 236,
+  "inf_later": 0,
+  "ura": 42,
+  "ura_inside": 6,
+  "ura_viol": 2,
+  "ura_status": {
+   "unsafe": 258,
+   "reached": 42
+  }
+ },
+ {
+  "name": "field-relative, |ydot - k1| <= 0.02",
+  "u_max": [
+   3.0,
+   3.0
+  ],
+  "N": 25,
+  "n": 300,
+  "in_xra": 136,
+  "in_terminal": 64,
+  "vanilla": 165,
+  "rampc": 240,
+  "inf_later": 0,
+  "ura": 259,
+  "ura_inside": 136,
+  "ura_viol": 0,
+  "ura_status": {
+   "unsafe": 41,
+   "reached": 259
+  }
+ },
+ {
+  "name": "field-relative, |ydot - k1| <= 0.05",
+  "u_max": [
+   3.0,
+   3.0
+  ],
+  "N": 25,
+  "n": 300,
+  "in_xra": 25,
+  "in_terminal": 11,
+  "vanilla": 164,
+  "rampc": 244,
+  "inf_later": 0,
+  "ura": 155,
+  "ura_inside": 25,
+  "ura_viol": 1,
+  "ura_status": {
+   "unsafe": 145,
+   "reached": 155
+  }
+ },
+ {
+  "name": "field-relative, |ydot - k1| <= 0.1",
+  "u_max": [
+   3.0,
+   3.0
+  ],
+  "N": 25,
+  "n": 300,
+  "in_xra": 4,
+  "in_terminal": 1,
+  "vanilla": 165,
+  "rampc": 234,
+  "inf_later": 0,
+  "ura": 63,
+  "ura_inside": 4,
+  "ura_viol": 1,
+  "ura_status": {
+   "unsafe": 235,
+   "reached": 63,
+   "v=0": 2
+  }
+ }
+]
