@@ -879,7 +879,8 @@ matters is that the velocity is close to $k_1(y)$, not that it is small. The
 single family around the field mixes certified and uncertified successes of
 $u^c$ (259 with only 136 guaranteed), which makes the count hard to interpret.
 
-**Proposed: two initial sets on the same 300 positions.**
+**Two initial sets on the same 300 positions** (superseded by Section 11.11:
+the comparison has to use one initial set for all methods).
 
 - $S_{RA}$: for the 234 positions with $\psi(y) > \delta_s/\lambda$, the velocity
   is drawn uniformly from the disc
@@ -922,10 +923,96 @@ Reading:
   yet RA-MPC succeeds from 268 of 300 against 206 for vanilla MPC at
   (3, 3), $N = 30$. The remaining 32 lie on the far side where no certificate
   exists (`design/figs/init_sets_3_3_N30.png`).
-- Suggested setting for the paper: both sets, $(\omega_{\max}, a_{\max}) = (3, 3)$,
+- Setting suggested at this stage (see Section 11.11 for the one adopted): both sets, $(\omega_{\max}, a_{\max}) = (3, 3)$,
   $N = 30$. Then RA-MPC contains both baselines on both sets. $N = 25$ gives a
   larger gap to vanilla MPC (226 against 163, 231 against 159) at the price of
   the 8 states above.
+
+### 11.11 One initial set for all three methods (R2)
+
+Requirement: the three methods are compared on the same initial states; the
+positions come from $\mathcal{X}_S \setminus \mathcal{X}_T$ and need not lie in
+$\mathcal{X}_{RA}$; the initial velocity is drawn uniformly from a range that
+leaves the controller alone enough admissible starts. Rule used
+(`design/eval_single.py`, `build(r0)`):
+
+- positions: the 300 points drawn uniformly from the safe ring outside the
+  target (unchanged, `eval_mpc.py`);
+- velocity: $\dot y(0) = k_1(y(0)) + w$ with $w$ uniform in the disc of radius
+  $r_0$, then $\theta(0)$ and $v(0)$ from $\dot y(0)$. The same unit-disc draws
+  are used for every $r_0$, so the sets are nested.
+
+The velocity disc of $\mathcal{X}_{RA}$ at a position has radius
+$\sqrt{2\mu(\psi(y) - \delta_s/\lambda)}$, at most 0.030 over the 300 positions
+(median 0.015), so $r_0 = 0.03$ is the smallest radius whose tube contains
+every velocity that $\mathcal{X}_{RA}$ admits.
+
+**Radius scan, controller alone (URA, continuous time).**
+
+| $r_0$ | inside $\mathcal{X}_{RA}$ | inside $\mathcal{X}_{RA}^{\delta}$ | URA reaches | URA leaves the safe set | URA median time |
+| --- | --- | --- | --- | --- | --- |
+| 0.01 | 191 | 107 | 291 | 9 | 31.7 s |
+| 0.02 | 124 | 67 | 267 | 33 | 29.9 s |
+| 0.03 | 69 | 32 | 229 | 71 | 25.7 s |
+| 0.04 | 36 | 20 | 192 | 108 | 24.3 s |
+| 0.05 | 23 | 11 | 149 | 151 | 21.2 s |
+
+Every state inside $\mathcal{X}_{RA}$ reaches the target under URA in all five
+rows.
+
+**Three methods on the same 300 states** (continuous plant, $T = 0.05$ s;
+vanilla is first-step feasibility as before; A minus B counts the states where
+A succeeds and B does not):
+
+| $r_0$ | $(\omega_{\max}, a_{\max})$, $N$ | URA | vanilla | RA-MPC | RA-MPC minus vanilla | vanilla minus RA-MPC | RA-MPC minus URA | URA minus RA-MPC |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 0.02 | (3, 3), 25 | 267 | 166 | 238 | 72 | 0 | 4 | 33 |
+| 0.02 | (3, 3), 30 | 267 | 216 | 281 | 65 | 0 | 21 | 7 |
+| 0.02 | (2, 2), 40 | 267 | 256 | 282 | 26 | 0 | 21 | 6 |
+| **0.03** | **(3, 3), 25** | **229** | **166** | **236** | **70** | **0** | **22** | **15** |
+| 0.03 | (3, 3), 30 | 229 | 214 | 272 | 58 | 0 | 45 | 2 |
+| 0.03 | (2, 2), 40 | 229 | 252 | 290 | 38 | 0 | 62 | 1 |
+
+In all six runs every vanilla-feasible state is RA-MPC feasible, RA-MPC
+succeeds from every state inside $\mathcal{X}_{RA}$ (124/124 and 69/69), and no
+solve is infeasible after $k = 0$.
+
+**URA against RA-MPC on the common successes.** Cost is the accumulated stage
+cost $\int (5\lVert y - y^\star\rVert^2 + 0.05\lVert u\rVert^2)\,dt$ up to the
+entry into the target.
+
+| $r_0$ | $(\omega_{\max}, a_{\max})$, $N$ | common | median time URA / RA-MPC | median cost URA / RA-MPC | peak inputs URA | peak inputs RA-MPC |
+| --- | --- | --- | --- | --- | --- | --- |
+| 0.02 | (3, 3), 25 | 234 | 25.2 s / 1.30 s | 261 / 15.5 | 0.16, 0.006 | 3.0, 3.0 |
+| 0.02 | (3, 3), 30 | 260 | 29.1 s / 1.33 s | 309 / 17.1 | 0.31, 0.006 | 3.0, 3.0 |
+| 0.02 | (2, 2), 40 | 261 | 29.1 s / 1.40 s | 310 / 19.8 | 0.16, 0.006 | 2.0, 2.0 |
+| 0.03 | (3, 3), 25 | 214 | 24.2 s / 1.25 s | 219 / 14.2 | 0.15, 0.007 | 3.0, 3.0 |
+| 0.03 | (3, 3), 30 | 227 | 25.6 s / 1.15 s | 263 / 14.6 | 0.15, 0.007 | 3.0, 3.0 |
+| 0.03 | (2, 2), 40 | 228 | 25.7 s / 1.30 s | 264 / 16.8 | 0.15, 0.007 | 2.0, 2.0 |
+
+Reading:
+
+- RA-MPC against vanilla MPC: on the same states RA-MPC is feasible wherever
+  vanilla MPC is, plus 26 to 72 more. The gap is largest for the short
+  horizon.
+- RA-MPC against URA: neither set of successes contains the other. URA has no
+  horizon, so it also succeeds from far positions that RA-MPC cannot connect
+  to the terminal set within $NT$; RA-MPC succeeds from states whose velocity
+  is too far from $k_1$ for URA, which then leaves the safe set. The order of
+  the two counts depends on $r_0$ and $N$.
+- What the URA comparison shows is the optimisation under input bounds: about
+  20 times faster and 15 to 18 times cheaper on the common successes, with
+  inputs at the bounds, whereas URA uses at most 10 % of $\omega_{\max}$ and
+  0.2 % of $a_{\max}$.
+- URA never exceeds the bounds in the rigorous design (it must be admissible on
+  the terminal set, and the time scaling that makes $T = 0.05$ s certifiable
+  makes it slow). The sentence of the paper that the unconstrained controller
+  "severely violates actuator limits" does not hold any more and has to become
+  a statement about speed and cost.
+- Suggested: $r_0 = 0.03$ with $(3, 3)$, $N = 25$ (URA 229, vanilla 166,
+  RA-MPC 236; `design/figs/single_r0.03_3_3_N25.png`). $r_0 = 0.02$ gives URA
+  more starts (267, of which 124 inside $\mathcal{X}_{RA}$) with the same MPC
+  picture (166 against 238).
 
 ## 12. Reproduction
 
@@ -951,6 +1038,8 @@ python eval_ura.py                         # Section 11.9 (controller alone)
 python eval_init.py                        # Section 11.10 (rest, near rest, field-relative)
 python eval_init2.py && python eval_init2.py sweep   # Section 11.10 (two initial sets)
 python plot_init.py 3_3 30                 # outcome map, figs/init_sets_3_3_N30.png
+python eval_single.py                      # Section 11.11 (one initial set, three methods)
+python plot_single.py 0.03 3_3 25          # figs/single_r0.03_3_3_N25.png
 # exports land in controllers/tmp_*.py: move them to out/ before anything else
 LAM=0.02 python check_full.py out/rigorous_mu0.1_vanilla_k1.py
 ```
