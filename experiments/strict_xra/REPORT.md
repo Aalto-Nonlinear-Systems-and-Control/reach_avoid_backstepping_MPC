@@ -576,7 +576,208 @@ $\{\Psi = \delta\}$ only.
 
 Script: `lemma2_tightness.py`.
 
-## 11. Reproduction
+### 10.4 Uniform period versus terminal level (certificate of Section 9)
+
+Largest uniform period for which $\Psi$ increases from every sampled state of
+$\{\Psi \ge \delta\} \setminus \mathcal{X}_T$ (script `t_vs_delta.py`, box
+sampling): 2 ms for $\delta \le 0.2 \max\Psi$, 5 ms at $0.3$, 10 ms at $0.5$,
+100 ms at $0.7$. The slowest states sit at the edge of the target,
+$(-1.78, \pm 0.56)$, where the ring is flat and $\psi$ of Section 9 barely
+changes along it. This motivates the cross term of Section 11.
+
+---
+
+## 11. Parameter design for the Dubins car
+
+Folder `design/`. Goal: one consistent set ($\psi$, $\lambda$, $\mu$, $\delta$, $T$)
+with a rigorous certificate, inputs within bounds, and $T = 0.05$ s covered by
+the second-order bound (11).
+
+### 11.1 Sampling without a state box
+
+The earlier analysis sampled a box in $(\theta, v)$ chosen by hand. It is not
+needed: by (4), in the coordinates $(y, \dot y)$ with
+$\dot y = v(\cos\theta, \sin\theta)$,
+
+$$
+\{\Psi \ge \delta\} = \Big\{ (y, \dot y) :
+\lVert \dot y - k_1(y) \rVert^2 \le 2\mu\big(\psi(y) - \tfrac{\delta_s}{\lambda} - \delta\big) \Big\},
+\tag{12}
+$$
+
+a velocity disc of radius $r(y) = \sqrt{2\mu(\psi - \delta_s/\lambda - \delta)}$
+around the field $k_1(y)$. `design/cert.py` samples $y$ in the ring and
+$\dot y$ in the disc (half of the samples on its boundary, where $\Psi = \delta$),
+so all constants are taken on the set itself, for every heading. The speed
+singularity $v = 0$ of the decoupling matrix is inside the set exactly when
+$\lVert k_1(y) \rVert \le r(y)$ somewhere; the smallest speed
+$\min_y(\lVert k_1 \rVert - r)$ is reported below. `cert.py` builds $\Psi$ and
+$u^c$ directly from $k_1$ and agrees with the MATLAB export to $10^{-14}$
+(`design/validate.py`).
+
+### 11.2 Weight with a cross term
+
+For a weight depending on $y_1$ only, $\lvert\nabla\psi\rvert \ge 0.02$ is the best
+lower bound on any level set outside the target (flat near side, Section
+10.4), and $\dot\Psi \le \sqrt{2}\,K\,\lvert\nabla\psi\rvert$ caps the margin $\eta$.
+A term $c\,y_1 y_2^2\,(\cdot)$ has positive $y_2$-curvature on the far side
+(keeps the saddle) and negative curvature on the target side (pulls towards
+$y_2 = 0$). Screening (`design/screen_weights.py`, $\psi$ normalised to
+$\max\psi = 1$; "share" is the part of the ring outside $\mathcal{X}_T$ with
+$\psi \ge c$):
+
+| weight $\alpha$ | critical points outside $\mathcal{X}_T$ | $\min\lvert\nabla\psi\rvert$ on $\{\psi \ge 0.1\}$ (share) | on $\{\psi \ge 0.3\}$ (share) |
+| --- | --- | --- | --- |
+| $(2.5 - y_1)^2$ | far saddle, 0.032 | 0.020 (54 %) | 0.020 (32 %) |
+| $(2.5 - y_1)^2 + 0.5\,y_1 y_2^2$ | far saddle, 0.032 | 0.079 (63 %) | 0.079 (31 %) |
+| $(2.5 - y_1)^2 + 0.2\,y_1 y_2^2 (2.5 - y_1)$ | far saddle, 0.032 | 0.119 (58 %) | 0.119 (31 %) |
+| $\mathbf{(2.5 - y_1)^2 + 0.3\,y_1 y_2^2 (2.5 - y_1)}$ | far saddle, 0.032 | **0.131 (59 %)** | **0.141 (30 %)** |
+| $(2.5 - y_1)^2 + 0.5\,y_1 y_2^2 (2.5 - y_1)$ | far saddle, 0.032 | 0.034 (62 %) | 0.034 (27 %) |
+| $(2.5 - y_1)^2 + 0.7\,y_1 y_2^2 (2.5 - y_1)$ | two new maxima, 0.344 | 0.002 | 0.002 |
+
+Chosen:
+
+$$
+\psi(y) = \frac{\alpha(y)\,h(y)}{661.409}, \qquad
+\alpha(y) = (2.5 - y_1)^2 + 0.3\,y_1 y_2^2\,(2.5 - y_1),
+\tag{13}
+$$
+
+of degree 12, with $\alpha \ge 0.25$ on the safe set.
+
+### 11.3 $\lambda$, the field speed, and time scaling
+
+The SOS minimises $\delta_s$ only, so the field it returns is as slow as the
+constraints allow. With (13), scaled coordinates, $K = 1$, degree 8:
+
+| $\lambda$ | $\delta_s/\lambda$ | $\max\lvert k_{1,i}\rvert$ | $\min m$ on the grid | certified ring area |
+| --- | --- | --- | --- | --- |
+| 0.005 | 0.0321 | 0.099 | $-1.3 \times 10^{-6}$ | 82 % |
+| 0.02 | 0.0324 | 0.233 | $-5.6 \times 10^{-7}$ | 82 % |
+| 0.05 | 0.0333 | 0.523 | $+4.7 \times 10^{-5}$ | 81 % |
+| **0.06** | **0.0410** | **0.626** | $+4.4 \times 10^{-4}$ | **76 %** |
+| 0.08 | 0.0484 | 0.804 | $+9.0 \times 10^{-4}$ | 73 % |
+| 0.1 | 0.1428 | 0.927 | $+1.0 \times 10^{-3}$ | 51 % |
+
+(The $y_1$-only weight loses the saddle bound already at $\lambda = 0.02$.) A
+slow field with a fixed $\mu$ puts $v = 0$ inside the velocity discs:
+for $\lambda = 0.005$, $\mu = 0.1$ the smallest speed is $-0.37$ and
+$\lvert\omega\rvert$ reaches 35. $\lambda = 0.06$ is the base solution used below.
+
+Time scaling. If $(k_1, \lambda, \delta_s)$ satisfies (2), so does
+$s\,(k_1, \lambda, \delta_s)$ for $s > 0$. Together with $\mu \to s^2\mu$,
+
+$$
+\Psi_s(y, \dot y) = \Psi(y, \dot y / s), \qquad
+\text{closed loop } y_s(t) = y(s t), \qquad
+T^\star_s = T^\star / s .
+\tag{14}
+$$
+
+Hence the certified period depends on the product of $T$ and the field
+speed, and a slower terminal controller buys a larger certified $T$. Only
+the terminal controller is slowed; the MPC closed loop is not.
+
+### 11.4 Scan over $\mu$ and $\delta$ at $s = 1$ ($\lambda = 0.06$)
+
+$\delta$ in units of $M_\Psi = 1 - \delta_s/\lambda = 0.959$. "share": 4D volume of
+$\{\Psi \ge \delta\} \setminus \mathcal{X}_T$ relative to $\delta = 0$. $T^\star = 2\eta/M_2$
+with sampled $\eta = \min\dot\Psi$ and $M_2$ along arcs. "sim": largest $T$ of the
+grid for which $\Psi$ increases from every sampled state.
+
+| $\mu$ | $\delta/M_\Psi$ | share | min speed | $\max\lvert\omega\rvert$ | $\eta$ | $M_2$ | $T^\star$ | sim |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 0.02 | 0.2 | 46 % | 0.16 | 1.0 | 0.0134 | 3.2 | 8.4 ms | 50 ms |
+| 0.02 | 0.3 | 30 % | 0.17 | 0.8 | 0.0193 | 2.8 | 14.0 ms | 50 ms |
+| 0.02 | 0.4 | 19 % | 0.19 | 0.8 | 0.0254 | 2.3 | 21.8 ms | 100 ms |
+| 0.02 | 0.5 | 11 % | 0.20 | 0.7 | 0.0307 | 1.9 | 32.6 ms | 100 ms |
+| 0.05 | 0.2 | 46 % | 0.06 | 2.8 | 0.0134 | 4.6 | 5.8 ms | 10 ms |
+| 0.05 | 0.3 | 30 % | 0.08 | 2.2 | 0.0193 | 3.9 | 9.9 ms | 25 ms |
+| 0.05 | 0.5 | 11 % | 0.13 | 1.6 | 0.0307 | 2.2 | 27.6 ms | 50 ms |
+
+Smaller $\mu$ is better on every period metric (thinner discs, less velocity
+mismatch); it only thins the set in the velocity directions. On the whole
+certified set $\{\Psi \ge 0\}$ ($\mu = 0.02$): smallest speed 0.04, inputs within
+the bounds on 100 % of the samples, $\max\lvert\omega\rvert = 1.3$,
+$\max\lvert a\rvert = 0.25$. The bounded-input SOP stage is therefore not needed
+for this example.
+
+### 11.5 Certified settings and MPC closed loop
+
+$s$ is chosen as $0.95\,T^\star(\delta)/T$ with $T = 0.05$ s, so that (11) covers
+the sampling period. Verification on $4 \times 10^5$ samples, two seeds:
+
+| setting | $s$ | $\lambda$ | $\mu$ | $\delta$ | $T^\star = 2\eta/M_2$ | speeds on the terminal set | $\max\lvert\omega\rvert$, $\max\lvert a\rvert$ | min one-step increase at 0.05 s |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| R1 | 0.266 | 0.0160 | $1.42 \times 10^{-3}$ | $0.3 M_\Psi = 0.288$ | 52 ms | $\ge 0.046$ | 0.22, 0.016 | $+2.1 \times 10^{-4}$ |
+| R2 | 0.159 | 0.0096 | $5.06 \times 10^{-4}$ | $0.2 M_\Psi = 0.192$ | 52 ms | $\ge 0.026$ | 0.16, 0.006 | $+8.6 \times 10^{-5}$ |
+
+In both, $\Psi$ still increases from every sampled state at $T = 0.1$ s.
+
+MPC (Algorithm 1, `design/ra_mpc_cert.py`): stage cost as in the paper,
+$V_f = \omega(M_\Psi - \Psi)$ with $\omega = 1.2\,\sup\ell/\varepsilon_T$
+($\varepsilon_T$ the sampled minimal one-step increase), safety back-off
+$10^{-3}$, $T = 0.05$ s, the 300 initial states of the paper, continuous plant
+(20 s). "Vanilla" is first-step feasibility of the terminal-target MPC.
+
+| | $N = 25$ | $N = 40$ |
+| --- | --- | --- |
+| vanilla MPC | 245 | 288 |
+| RA-MPC, R1 | 252 | 292 |
+| RA-MPC, R2 | **280** | 292 |
+
+| | infeasible after $k = 0$ | steps violating $J^*_{k+1} \le J^*_k - \underline{\ell}$ | $t_{\text{entry}}$ median (max) | $t_{\text{bound}}$ median | $\omega$ |
+| --- | --- | --- | --- | --- | --- |
+| R1, $N = 25$ | 0 | 0 / 4950 | 1.00 s (1.65 s) | 571 s | $1.7 \times 10^5$ |
+| R1, $N = 40$ | 0 | 0 / 5927 | 1.10 s (2.00 s) | 43 s | $1.7 \times 10^5$ |
+| R2, $N = 25$ | 0 | 0 / 5867 | 1.15 s (1.95 s) | 6030 s | $5.9 \times 10^5$ |
+| R2, $N = 40$ | 0 | 0 / 6160 | 1.10 s (2.30 s) | 46 s | $5.9 \times 10^5$ |
+
+All failures are infeasibility at $k = 0$ (terminal set not reachable within
+$N$ steps); none occurs later. Nominal and continuous plants give the same
+counts (R1, $N = 25$: 252 both).
+
+Two implementation points were needed for this:
+
+- The MPC model uses 4 RK4 sub-steps per sampling interval. With one RK4 step
+  the prediction differs from the continuous plant by about $10^{-5}$, which
+  is enough to break the terminal constraint of the candidate (29 to 42
+  mid-run infeasibilities) because $\partial\Psi/\partial\dot y \sim 1/\mu$ is large.
+- The cost is evaluated on the rolled-out trajectory of the returned inputs,
+  not on the solver iterate, and the constraint tolerance is $10^{-8}$. With
+  $\omega \sim 10^5$ a residual of $10^{-4}$ in the dynamics constraints shows
+  up as spurious violations of the cost decrease.
+
+### 11.6 Recommended parameters
+
+- $\psi$ as in (13); $k_1$ from the scaled SOS ($\sigma = 2$, degree 8,
+  $\lvert k_{1,i}\rvert \le K$), file `design/k1/W3_l0.06.txt` scaled by $s$.
+- R2 (larger terminal set, clear gain over vanilla at $N = 25$):
+  $K = 0.159$, $\lambda = 0.0096$, $\delta_s = 3.9 \times 10^{-4}$,
+  $\mu = 5.06 \times 10^{-4}$, $\delta = 0.192$, $T = 0.05$ s, $N = 25$.
+- R1 (more margin in the one-step increase, smaller $\omega$):
+  $K = 0.266$, $\lambda = 0.0160$, $\delta_s = 6.6 \times 10^{-4}$,
+  $\mu = 1.42 \times 10^{-3}$, $\delta = 0.288$, $T = 0.05$ s.
+
+### 11.7 Consequences and limits
+
+- $\eta$ and $M_2$ are sampled. A rigorous version needs an SOS or interval
+  bound for both; the $k_1$ margin itself is positive on a $1601^2$ grid.
+- The paper's Lemma 2 must be replaced by the second-order statement (11) for
+  $T^\star \approx 52$ ms to be the certified bound; with the current proof the
+  bound stays near $10^{-7}$ s.
+- The certified period has only 4 % margin over $T$. A smaller $s$ gives more.
+- The terminal controller is slow (0.03 to 0.17 m/s), so the guaranteed
+  increase per step is small, $\omega$ is of order $10^5$ and the bound of
+  Corollary 1 is 40 s to 6000 s against an actual entry time near 1 s.
+- With $N = 40$ vanilla MPC and RA-MPC are almost equal (288 versus 292). The
+  advantage of the terminal set shows at shorter horizons.
+- The input-constrained SOP stage is inactive for this example with the new
+  design. Whether it matters for the manipulator has to be checked.
+- Example 1 of the paper changes: $\psi$, the certificate parameters, all
+  Dubins figures and counts.
+
+## 12. Reproduction
 
 ```
 cd experiments/strict_xra
@@ -588,6 +789,13 @@ matlab -batch "run('run_full.m')"    # Section 5, full synthesis
 matlab -batch "run('run_alpha.m')"   # Section 9.2, weight (2.5 - y1)^2
 matlab -batch "run('run_full_alpha.m')" # Section 9.3
 python lemma2_tightness.py out/rigorous_alpha2_mu0.1_vanilla_k1.py 0.005   # Section 10
+python t_vs_delta.py                       # Section 10.4
+cd design
+python screen_weights.py && python screen_w3.py   # Section 11.2
+matlab -batch "run('run_design.m')"        # Section 11.3 (writes k1/*.txt)
+python validate.py                         # cert.py versus the MATLAB export
+python scan.py W3 0.06 0.02,0.05 0.2,0.3,0.4,0.5   # Section 11.4
+python eval_mpc.py 25,40                   # Section 11.5 (certified settings, both horizons)
 # exports land in controllers/tmp_*.py: move them to out/ before anything else
 LAM=0.02 python check_full.py out/rigorous_mu0.1_vanilla_k1.py
 ```
