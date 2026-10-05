@@ -1014,6 +1014,16 @@ Reading:
   more starts (267, of which 124 inside $\mathcal{X}_{RA}$) with the same MPC
   picture (166 against 238).
 
+### 11.12 Final setting and data for the paper
+
+The setting adopted for the paper ($r_0 = 0.03$, bounds $(3, 3)$, $N = 25$,
+$T = 0.05$ s), the verification of Lemma 2, Theorem 2 and Corollary 1, the
+sampling-period sweep and the paper figures are in `PAPER_DUBINS.md`, produced
+by `final/`. Two changes with respect to Section 11.11: the state constraint
+is imposed at the RK4 sub-step nodes with a small back-off, after
+inter-sample excursions of up to 1.2 mm were found, and vanilla MPC uses the
+same model and constraints as RA-MPC. Counts: URA 229, vanilla 165, RA-MPC 236.
+
 ## 12. Reproduction
 
 ```

@@ -16,8 +16,12 @@ def terminal_stats(cert, delta, dt, n_y=120000):
 
 
 class CertMPC(rm.DubinsRAMPC):
-    def __init__(self, cert, dt=0.05, N=25, dfrac=0.3, omega=None, safe_margin=1e-3, u_max=None):
+    def __init__(self, cert, dt=0.05, N=25, dfrac=0.3, omega=None, safe_margin=1e-3, u_max=None, nsub=None, safe_sub=False):
         self.c = cert
+        if nsub is not None:
+            self.NSUB = int(nsub)
+        # safe_sub: enforce the safety constraint at the RK4 sub-step nodes as well (inter-sample safety)
+        self.safe_sub = safe_sub
         self.u_max = np.asarray(rm.U_MAX if u_max is None else u_max, float)
         M_psi = 1.0 - cert.shift
         delta = dfrac * M_psi
@@ -39,10 +43,19 @@ class CertMPC(rm.DubinsRAMPC):
 
     def _build_model(self):
         f1 = rm._rk4_ca(self.dt / self.NSUB)
-        xc, uc = ca.SX.sym("x", 4), ca.SX.sym("u", 2); xn = xc
-        for _ in range(self.NSUB):
+        xc, uc = ca.SX.sym("x", 4), ca.SX.sym("u", 2); xn = xc; mids = []
+        for i in range(self.NSUB):
             xn = f1(xn, uc)
+            if i < self.NSUB - 1:
+                mids.append(xn)
         self.F = ca.Function("F", [xc, uc], [xn])
+        self.Fmid = ca.Function("Fmid", [xc, uc], [ca.horzcat(*mids)]) if mids else None
+
+    def _mids(self, x, u):
+        out = []
+        for _ in range(self.NSUB - 1):
+            x = rm.rk4_np(x, u, self.dt / self.NSUB); out.append(x)
+        return np.array(out).T
 
     def _step(self, x, u):
         for _ in range(self.NSUB):
@@ -69,9 +82,15 @@ class CertMPC(rm.DubinsRAMPC):
         return J + self.omega * (self.M_psi - float(self._psi(X[:, -1])[0]))
 
     def feasible(self, X, U, tol=1e-6):
-        return (np.all(np.abs(U) <= self.u_max[:, None] + tol)
-                and np.all(rm.safe_np(*X[:, 1:]) >= self.safe_margin - tol)
-                and float(self._psi(X[:, -1])[0]) >= self.delta - tol)
+        ok = (np.all(np.abs(U) <= self.u_max[:, None] + tol)
+              and np.all(rm.safe_np(*X[:, 1:]) >= self.safe_margin - tol)
+              and float(self._psi(X[:, -1])[0]) >= self.delta - tol)
+        if ok and self.safe_sub and self.NSUB > 1:
+            for k in range(U.shape[1]):
+                m = self.safe_margin if k > 0 else min(self.safe_margin, float(rm.safe_np(*X[:, 0])))
+                if np.any(rm.safe_np(*self._mids(X[:, k], U[:, k])) < m - tol):
+                    return False
+        return bool(ok)
 
     def solve(self, x0, N, U_warm=None):
         opti = ca.Opti()
@@ -81,7 +100,16 @@ class CertMPC(rm.DubinsRAMPC):
         J = 0; tgt = ca.DM(rm.TARGET_POS)
         for k in range(N):
             opti.subject_to(X[:, k + 1] == self.F(X[:, k], U[:, k]))
-            opti.subject_to(rm.safe_ca(X[:, k]) >= self.safe_margin)
+            if not self.safe_sub:
+                opti.subject_to(rm.safe_ca(X[:, k]) >= self.safe_margin)
+            else:
+                # the current state is given; later samples and all sub-step nodes are constrained
+                if k > 0:
+                    opti.subject_to(rm.safe_ca(X[:, k]) >= self.safe_margin)
+                if self.Fmid is not None:
+                    Xm = self.Fmid(X[:, k], U[:, k]); m = self.safe_margin if k > 0 else min(self.safe_margin, float(rm.safe_np(*x0)))
+                    for j in range(self.NSUB - 1):
+                        opti.subject_to(rm.safe_ca(Xm[:, j]) >= m)
             dy = X[:2, k] - tgt
             J += rm.Q_Y * ca.dot(dy, dy) + rm.R_U * ca.dot(U[:, k], U[:, k])
         opti.subject_to(rm.safe_ca(X[:, N]) >= self.safe_margin)
@@ -154,12 +182,12 @@ def vanilla_feasible(x0, dt, N, u_max=None):
     return vanilla_solve(m, x0, N)[0]
 
 
-def run_one(x0, k1_file, mu, scale, dt, N, dfrac, omega, T_max, plant, u_max=None):
+def run_one(x0, k1_file, mu, scale, dt, N, dfrac, omega, T_max, plant, u_max=None, nsub=None, safe_sub=False, safe_margin=1e-3):
     from cert import Cert
     c = Cert(k1_file, mu=mu)
     if scale != 1.0:
         c = c.scaled(scale)
-    mpc = CertMPC(c, dt=dt, N=N, dfrac=dfrac, omega=omega, u_max=u_max)
+    mpc = CertMPC(c, dt=dt, N=N, dfrac=dfrac, omega=omega, u_max=u_max, nsub=nsub, safe_sub=safe_sub, safe_margin=safe_margin)
     log = mpc.run(x0, T_max=T_max, plant=plant)
     log["uc_max_terminal"] = mpc.uc_max
     log["check"] = rm.corollary_check(log, dt)

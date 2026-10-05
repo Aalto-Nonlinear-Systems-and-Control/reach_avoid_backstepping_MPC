@@ -260,6 +260,10 @@ per system that returns the constants together with `delta(T)` and
 
 ## 6. Results: Dubins car (branch `tac-revision`, for confirmation)
 
+Superseded for the paper: these results use the committed controller, whose
+certificate is not rigorous. The final Dubins setting, data and figures are in
+`experiments/strict_xra/PAPER_DUBINS.md`.
+
 Implementation: `python/ra_mpc_dubins.py` (Algorithm 1: terminal set
 $\{\Psi \ge \delta\}$, $V_f = \omega(M_\Psi - \Psi)$, shifted candidate with
 cheaper-of rule, adaptive horizon), `python/ra_mpc_constants.py` (Lemma 2
