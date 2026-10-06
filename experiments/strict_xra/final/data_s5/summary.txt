@@ -1,0 +1,92 @@
+## setting
+{'T': 0.05, 'N': 25.0, 'U_MAX': (3.0, 3.0), 'R0': 0.943396, 'DELTA': 0.191802, 'M_PSI': 0.959009, 'shift': 0.040991, 'lam': 0.009557, 'mu': 0.000506, 'omega': 593721.461668, 'eps': 9.3e-05, 'H_SUB': 0.0125, 'SAFE_MARGIN': 0.05, 'SET_SCALE': 5.0, 'URA_SCALE': 5.0}
+speeds of the initial set: [0.1530, 3.6192]
+
+## main counts
+| subset | states | URA | vanilla MPC | RA-MPC |
+| --- | --- | --- | --- | --- |
+| all | 300 | 229 | 213 | 258 |
+| inside $\mathcal{X}_{RA}$ | 0 | 0 | 0 | 0 |
+| inside $\mathcal{X}_{RA}^{\delta}$ | 0 | 0 | 0 | 0 |
+| outside $\mathcal{X}_{RA}$ | 300 | 229 | 213 | 258 |
+pairwise: RA&~van 45, van&~RA 0, RA&~URA 33, URA&~RA 4, all three 199, none 38
+sampled-data URA (T=0.05): 42 reached, same states as continuous URA: False; URA statuses: {'unsafe': 71, 'reached': 229}
+RA-MPC statuses: {'infeasible': 42, 'reached': 258} | infeasible at k=0: 42 later: 0
+vanilla closed loop: {'reached': 213} min h 0.13435038588814366
+
+## performance on common successes
+URA and RA-MPC: 225 states | time median: URA 0.8 (max 4.3), RA 0.70 (max 2.10) | cost median: URA 8.7, RA 6.8 | median ratio time 1.1, cost 1.1
+all three: 199 states | time median: URA 0.8 (max 3.2), RA 0.65 (max 1.80), vanilla 0.60 | cost median: URA 6.1, RA 6.1, vanilla 5.8 | median ratio time 1.0, cost 1.0
+peaks: URA on its successes [4.5989 6.6906], all URA runs [5.3956 6.6906]; RA-MPC [2.9999 2.9999]; vanilla [3. 3.]
+RA-MPC share of applied inputs within 2% of the bound: omega 26%, a 80%; RA entry time max 2.10
+solve time per step [ms]: RA-MPC mean 132.0 median 133.0 (first solve 243.3, later 125.7, n=4844); vanilla mean 91.6 median 89.5 (n=2789)
+
+## Theorem 2 / Corollary 1
+runs feasible at k=0: 258; reached 258; solves 4844; candidate kept 2763; u^c of the candidate within bounds: True
+decrease: 4586 steps, min 2.082, min ratio dJ/ell 0.9999988, below ell(1-1e-4): 0, below ell_min: 0; ell range [2.01, 73.4]
+horizon: nonincreasing 258/258, shrinks in 251 runs, min 1, median final 11.0
+safety: min h over all closed loops 0.1640; runs with h_min<0: 0
+entry time: median 0.75, max 2.10; bound: min 0.75, median 434, max 45625; holds 258/258; J0 range [7.1, 4.56e+05]; median bound/entry 954
+condition (22) on 76809 sampled states (every 8th stored): min omega*dPsi - ell = 61.824, violations 0, sup ell 46.08, eps_big 1.042e-04, omega*eps_big 61.86
+
+## Lemma 2
+samples: 9298 in X_RA^delta, big 76896; eta 2.0055e-03 (lambda*delta 1.8331e-03); M2 0.0797; T* = 2eta/M2 = 50.3 ms (self-consistent 51.6 ms); paper bound T* = 5.119e-04 s (M_g [ 3.618 52.55 ], l_uc [4.94 0.1 ], M_v 0.155)
+u^c on X_RA^delta: [0.1521 0.0059], on X_RA: [0.2054 0.0062]; speeds in X_RA^delta [0.0261 0.1068]
+| $T$ [s] | arcs | smallest increase of $\Psi$ | increasing | end in $\mathcal{X}_{RA}^{\delta}$ | arc inside $\mathcal{X}_{RA}$ | second-order bound |
+| --- | --- | --- | --- | --- | --- | --- |
+| 0.005 | 9298 | +1.33e-05 | 100.00 % | 100.00 % | 100.00 % | +1.24e-05 |
+| 0.01 | 9298 | +2.64e-05 | 100.00 % | 100.00 % | 100.00 % | +2.29e-05 |
+| 0.02 | 9295 | +5.21e-05 | 100.00 % | 100.00 % | 100.00 % | +3.78e-05 |
+| 0.03 | 9293 | +7.71e-05 | 100.00 % | 100.00 % | 100.00 % | +4.50e-05 |
+| 0.05 | 9288 | +1.23e-04 | 100.00 % | 100.00 % | 100.00 % | +3.56e-05 |
+| 0.075 | 9282 | +1.74e-04 | 100.00 % | 100.00 % | 100.00 % | -2.03e-05 |
+| 0.1 | 9276 | +2.18e-04 | 100.00 % | 100.00 % | 100.00 % | -1.25e-04 |
+| 0.15 | 9267 | +2.80e-04 | 100.00 % | 100.00 % | 100.00 % | -4.83e-04 |
+| 0.2 | 9249 | +3.00e-04 | 100.00 % | 100.00 % | 100.00 % | -1.04e-03 |
+| 0.3 | 9234 | +3.46e-04 | 100.00 % | 100.00 % | 100.00 % | -2.75e-03 |
+| 0.5 | 9176 | -5.65e-04 | 99.93 % | 99.93 % | 100.00 % | -8.62e-03 |
+| 0.75 | 9112 | -4.79e-03 | 99.45 % | 99.51 % | 100.00 % | -2.11e-02 |
+| 1 | 9070 | -1.27e-02 | 98.39 % | 98.59 % | 100.00 % | -4.02e-02 |
+| 1.5 | 8956 | -4.25e-02 | 94.81 % | 95.78 % | 100.00 % | -1.02e-01 |
+| 2 | 8870 | -9.19e-02 | 90.87 % | 92.99 % | 100.00 % | -2.15e-01 |
+| 3 | 8644 | -2.78e-01 | 81.63 % | 86.51 % | 99.44 % | -6.76e-01 |
+| 5 | 8123 | -1.06e+00 | 64.51 % | 71.67 % | 90.14 % | -3.56e+00 |
+| $T$ [s] | from $\mathcal{X}_{RA}^{\delta}$: reach | $\Psi$ increasing at every sample | from $\mathcal{X}_{RA}$: reach | $\Psi$ increasing at every sample | median time |
+| --- | --- | --- | --- | --- | --- |
+| 0.01 | 600/600 | 600/600 | 600/600 | 600/600 | 17.2 s |
+| 0.02 | 600/600 | 600/600 | 600/600 | 600/600 | 17.2 s |
+| 0.05 | 600/600 | 600/600 | 600/600 | 600/600 | 17.2 s |
+| 0.1 | 600/600 | 600/600 | 600/600 | 600/600 | 17.2 s |
+| 0.2 | 600/600 | 600/600 | 600/600 | 600/600 | 17.2 s |
+| 0.3 | 600/600 | 600/600 | 600/600 | 597/600 | 17.1 s |
+| 0.5 | 600/600 | 596/600 | 600/600 | 589/600 | 17.5 s |
+| 0.75 | 600/600 | 582/600 | 600/600 | 564/600 | 17.2 s |
+| 1 | 600/600 | 563/600 | 600/600 | 539/600 | 17.0 s |
+| 1.5 | 600/600 | 513/600 | 600/600 | 464/600 | 18.0 s |
+| 2 | 600/600 | 452/600 | 600/600 | 384/600 | 18.0 s |
+| 3 | 600/600 | 313/600 | 600/600 | 258/600 | 18.0 s |
+| 5 | 600/600 | 234/600 | 579/600 | 157/600 | 20.0 s |
+
+## sweep
+omega fixed at 5.937e+05
+| $T$ [s] | $N$ | vanilla | sampled URA | RA-MPC | feasible at $k=0$ | infeasible later | unsafe | timeout | decrease violations | $\min\Delta\Psi$ on $\mathcal{X}_{RA}^{\delta}$ | median entry | ms/solve |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 0.025 | 50 | 213 | 42 | 258 | 258 | 0 | 0 | 0 | 0/9692 | +5.2e-05 | 0.73 s | 148 |
+| 0.03125 | 40 | 213 | 42 | 259 | 259 | 0 | 0 | 0 | 0/7714 | +6.3e-05 | 0.72 s | 130 |
+| 0.05 | 25 | 213 | 42 | 258 | 258 | 0 | 0 | 0 | 0/4586 | +9.3e-05 | 0.75 s | 144 |
+| 0.0625 | 20 | 213 | 42 | 259 | 259 | 0 | 0 | 0 | 0/3649 | +1.1e-04 | 0.75 s | 149 |
+| 0.125 | 10 | 213 | 42 | 257 | 257 | 0 | 0 | 0 | 0/1664 | +1.6e-04 | 0.75 s | 164 |
+| 0.25 | 5 | 213 | 42 | 253 | 253 | 0 | 0 | 0 | 0/740 | +6.2e-05 | 0.75 s | 207 |
+| 0.3125 | 4 | 213 | 42 | 245 | 245 | 0 | 0 | 0 | 0/579 | -7.7e-05 | 0.94 s | 221 |
+| 0.625 | 2 | 209 | 42 | 235 | 235 | 0 | 0 | 0 | 0/345 | -2.0e-03 | 1.25 s | 323 |
+sweep base row equals main: True True
+T=0.025: vanilla&~RA 0, RA&~vanilla 45, status {'infeasible': 42, 'reached': 258}
+T=0.03125: vanilla&~RA 0, RA&~vanilla 46, status {'infeasible': 41, 'reached': 259}
+T=0.05: vanilla&~RA 0, RA&~vanilla 45, status {'infeasible': 42, 'reached': 258}
+T=0.0625: vanilla&~RA 0, RA&~vanilla 46, status {'infeasible': 41, 'reached': 259}
+T=0.125: vanilla&~RA 0, RA&~vanilla 44, status {'infeasible': 43, 'reached': 257}
+T=0.25: vanilla&~RA 0, RA&~vanilla 40, status {'infeasible': 47, 'reached': 253}
+T=0.3125: vanilla&~RA 0, RA&~vanilla 32, status {'infeasible': 55, 'reached': 245}
+T=0.625: vanilla&~RA 2, RA&~vanilla 28, status {'infeasible': 65, 'reached': 235}
+
+shared x0: {'i0': 6, 'x0': array([ 1.32977056,  1.77623736, -2.82029617,  1.73260594]), 't_van': 1.2000000000000004, 't_ura': 1.471593629480743, 't_ra': 1.7500000000000009, 'all3': 199, 'far': {'i_ura_ra': 297, 'x0': array([ 1.87788173, -1.30590194, -3.07032701,  0.38870027]), 'i_van': 65, 'x0_van': array([1.77163882, 0.73303505, 2.16494365, 1.3691759 ]), 't_ura': 2.612077563170745, 't_ra': 1.850000000000001, 't_van': 1.4500000000000006}}

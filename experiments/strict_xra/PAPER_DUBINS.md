@@ -427,3 +427,42 @@ python summarize.py     # prints the numbers and tables of this file
 constraint handling). The MPC class is `design/ra_mpc_cert.py`; the options
 `nsub`, `safe_sub`, `safe_margin` added for Section 4.2 are off by default, so
 the earlier scripts of `design/` reproduce the earlier numbers.
+
+## 10. Variant under review: URA at time scale $s = 5$ (`final/data_s5`, `final/figs_s5`)
+
+Run with `TAG=_s5 SET_SCALE=5 URA_SCALE=5`. Only two things change with respect
+to Sections 1 to 6: the URA baseline is the same synthesis at time scale
+$s = 5$ ($k_1 \to 5 k_1$, $\lambda = 0.30$, $\mu = 0.51$, field speeds up to
+3.1 m/s), and the initial velocities are drawn around that field with the
+radius scaled accordingly ($r_0 = 0.943$, speeds 0.15 to 3.6 m/s). Terminal
+controller ($s = 0.159$), bounds, horizon, period, certificate and the
+Lemma 2 data are unchanged.
+
+| | URA ($s = 5$) | vanilla MPC | RA-MPC |
+| --- | --- | --- | --- |
+| reach $\mathcal{X}_T$ safely | 229 | 213 | 258 |
+| runs exceeding the bounds | 170 (158 among the successes) | 0 | 0 |
+| peak $\lvert\omega\rvert$, $\lvert a\rvert$ over all runs | 5.4, 6.7 | 3, 3 | 3, 3 |
+| time to the target, median (225 common successes of URA and RA-MPC) | 0.80 s | | 0.70 s |
+| vanilla-feasible but RA-MPC-infeasible | | 0 | |
+| infeasible solves after $k = 0$ | | | 0 |
+
+Theorem 2 checks on the 258 runs: no infeasible solve after $k = 0$, cost
+decrease at least 2.08 per step, horizon nonincreasing in all runs, smallest
+$h$ along the closed loops 0.164, Corollary 1 bound holds in 258 of 258.
+Sweep: $\rho$ = 86.0, 86.3, 86.0, 86.3, 85.7, 84.3, 81.7, 78.3 % for
+$T$ = 0.025 to 0.625 s, no infeasible solve after $k = 0$ at any $T$. Solve
+times (one process): RA-MPC 73.4 ms, vanilla 48.1 ms per step.
+
+Shared start: state 6, $x_0 = (1.330, 1.776, -2.820, 1.733)$, 3.5 from the
+target; vanilla 1.20 s, URA 1.47 s with peaks $\omega$ 3.5 and $a$ 5.7 (0.66 s
+above the bounds), RA-MPC 1.75 s within the bounds.
+
+| vanilla MPC, 213/300 | URA, 229/300 | RA-MPC, 258/300 |
+| --- | --- | --- |
+| ![vanilla](final/figs_s5/fig_dubins_vanilla.png) | ![ura](final/figs_s5/fig_dubins_uncon.png) | ![rampc](final/figs_s5/fig_dubins_rampc.png) |
+
+![compare s5](final/figs_s5/fig_dubins_compare.png)
+
+Verification figures of this variant: `final/figs_s5/verify_outcomes.png`,
+`verify_theorem2.png`, `verify_sweep.png`.

@@ -9,7 +9,7 @@ from config import C, rm
 M = pickle.load(open(f"{cf.DATA}/main.pkl", "rb")); L2 = pickle.load(open(f"{cf.DATA}/lemma2.pkl", "rb")); SW = pickle.load(open(f"{cf.DATA}/sweep.pkl", "rb"))
 X0, P0, logs = M["X0"], M["Psi0"], M["logs"]; n = X0.shape[1]
 # URA baseline: the scaled controller (M["ura"]) or, with cf.URA_SCALE != cf.SCALE, the evaluation stored by run_ura_scale.py
-URA_LIST = M["ura"] if abs(cf.URA_SCALE - cf.SCALE) < 1e-12 else pickle.load(open(f"{cf.DATA}/ura_s{cf.URA_SCALE:g}.pkl", "rb"))["out"]
+URA_LIST = M["ura"]
 ura = np.array([u["status"] == "reached" for u in URA_LIST]); fv = M["fv"].astype(bool); ra = np.array([L["status"] == "reached" for L in logs])
 ura_viol = np.array([(np.asarray(u["upeak"]) > np.asarray(cf.U_MAX)).any() for u in URA_LIST])
 t_ura = np.array([u["t"] for u in URA_LIST]); t_ra = np.array([L["check"]["t_entry"] if L["status"] == "reached" else np.nan for L in logs])
@@ -39,14 +39,15 @@ def sets(ax, cert_region=False):
 
 # ── V1: outcome of the three methods on the same initial set ─────────────────────────────────────────────
 fig, ax = plt.subplots(1, 4, figsize=(17, 4.4), constrained_layout=True)
-for a, ok, ttl, col in zip(ax, (fv, ura, ra), ("vanilla MPC", r"URA ($u^c$ alone)", "RA-MPC"), (COL["van"], COL["ura"], COL["ra"])):
+URA_TTL = r"URA ($u^c$ alone)" if abs(cf.URA_SCALE - cf.SCALE) < 1e-12 else rf"URA (same synthesis at time scale $s = {cf.URA_SCALE:g}$)"
+for a, ok, ttl, col in zip(ax, (fv, ura, ra), ("vanilla MPC", URA_TTL, "RA-MPC"), (COL["van"], COL["ura"], COL["ra"])):
     sets(a, True); a.scatter(*X0[:2, ok], s=14, c=col); a.scatter(*X0[:2, ~ok], s=18, c="0.45", marker="x", linewidths=0.9)
     a.scatter(*X0[:2, P0 >= 0], s=42, facecolors="none", edgecolors="k", linewidths=0.4); a.set_title(f"{ttl}: {ok.sum()}/{n}", fontsize=11)
 both = ura & ra; a = ax[3]; a.scatter(t_ura[both], t_ra[both], s=12, c=COL["ra"]); a.set_xscale("log"); a.set_yscale("log"); lim = [0.05, 300]
 a.plot(lim, lim, "k--", lw=0.8); a.set_xlim(lim); a.set_ylim(lim); a.grid(alpha=0.3, which="both")
 a.set_xlabel("time to target, URA (s)"); a.set_ylabel("time to target, RA-MPC (s)")
 a.set_title(f"{both.sum()} common successes: median {np.median(t_ura[both]):.1f} s vs {np.median(t_ra[both]):.2f} s", fontsize=10)
-fig.suptitle(rf"Same {n} initial states for all methods: positions uniform in $\mathcal{{X}}_S \setminus \mathcal{{X}}_T$, $\|\dot y(0) - k_1(y(0))\| \leq {cf.R0}$.  "
+fig.suptitle(rf"Same {n} initial states for all methods: positions uniform in $\mathcal{{X}}_S \setminus \mathcal{{X}}_T$, $\|\dot y(0) - k_1(y(0))\| \leq {cf.R0:.3g}$ (field at scale $s = {cf.SET_SCALE:g}$).  "
              rf"Circled: the {int((P0 >= 0).sum())} states in $\mathcal{{X}}_{{RA}}$; shading: positions of $\mathcal{{X}}_{{RA}}$ and $\mathcal{{X}}_{{RA}}^{{\delta}}$", fontsize=9.5)
 save(fig, "verify_outcomes"); plt.close(fig)
 
@@ -118,7 +119,7 @@ fig, ax = plt.subplots(1, 2, figsize=(12, 4.3), constrained_layout=True)
 a = ax[0]; a.axvspan(Tsw.min() * 0.8, TS, color="g", alpha=0.10, label=rf"certified range $T < T^\star$ = {TS*1e3:.0f} ms")
 a.plot(Tsw, [100 * r["ra"].mean() for r in rows], "s-", color=COL["ra"], lw=2, label="RA-MPC")
 a.plot(Tsw, [100 * r["fv"].mean() for r in rows], "o-", color=COL["van"], lw=1.5, label="vanilla MPC")
-a.plot(Tsw, [100 * r["zoh"].mean() for r in rows], "^-", color=COL["ura"], lw=1.5, label="sampled-data URA")
+a.plot(Tsw, [100 * r["zoh"].mean() for r in rows], "^-", color=COL["ura"], lw=1.5, label="terminal controller $u^c$ alone, sampled-data")
 a.axvline(cf.T, color="r", ls=":"); a.set_xscale("log"); a.set_ylim(0, 100); a.set_xlim(Tsw.min() * 0.8, Tsw.max() * 1.25)
 a.set_xlabel("sampling period $T$ (s),  $N = 1.25/T$"); a.set_ylabel(r"success rate $\rho$ (%)"); a.legend(fontsize=8, loc="lower left"); a.grid(alpha=0.3, which="both")
 a.set_title(f"(a) success rate on the {n} initial states, terminal design fixed", fontsize=9.5)

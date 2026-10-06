@@ -16,8 +16,12 @@ import ra_mpc_cert as R                    # noqa: E402
 # ── certificate (REPORT.md Section 11): psi = alpha*h/661.409, k1 of design/k1/W3_l0.06.txt, time scale s ──
 K1_FILE = os.path.join(DESIGN, "k1", "W3_l0.06.txt")
 MU_BASE, SCALE, DFRAC = 0.02, 0.159, 0.2
-# URA baseline of the figures: the synthesized controller at its own time scale (no scaling for the bounds or the period)
-URA_SCALE = SCALE
+# URA baseline (the synthesis without regard to the bounds or the period) at time scale URA_SCALE; the initial velocities
+# are drawn around the field of scale SET_SCALE with the radius scaled accordingly. Defaults: the terminal controller's scale.
+# Environment overrides (SET_SCALE, URA_SCALE, TAG) allow a variant to be run into data<TAG>/ and figs<TAG>/.
+SET_SCALE = float(os.environ.get("SET_SCALE", SCALE))
+URA_SCALE = float(os.environ.get("URA_SCALE", SCALE))
+TAG = os.environ.get("TAG", "")
 # ── MPC ──
 T, N, U_MAX = 0.05, 25, (3.0, 3.0)
 T_HOR = T * N
@@ -28,8 +32,10 @@ MPC_OPTS = {"ipopt.print_level": 0, "print_time": 0, "ipopt.max_iter": 300, "ipo
             "ipopt.acceptable_tol": 1e-4, "ipopt.acceptable_constr_viol_tol": 1e-7, "ipopt.acceptable_iter": 5}
 T_MAX_MPC, T_MAX_URA = 20.0, 600.0
 # ── initial set: positions uniform in X_S minus X_T, velocity uniform in the disc of radius R0 around k1(y) ──
-R0, SEED_POS, SEED_VEL, N_INIT = 0.03, 42, 2026, 300
-DATA, FIGS = os.path.join(HERE, "data"), os.path.join(HERE, "figs")
+R0_BASE, SEED_POS, SEED_VEL, N_INIT = 0.03, 42, 2026, 300
+R0 = R0_BASE * SET_SCALE / SCALE            # the largest velocity radius of X_RA at the set's scale
+DATA, FIGS = os.path.join(HERE, "data" + TAG), os.path.join(HERE, "figs" + TAG)
+os.makedirs(DATA, exist_ok=True); os.makedirs(FIGS, exist_ok=True)
 
 
 def cert():
@@ -49,10 +55,11 @@ def positions():
     return S[:2, cand]
 
 
-def initial_set(r0=R0):
+def initial_set(r0=R0, set_scale=SET_SCALE):
     P = positions(); n = P.shape[1]; r = np.random.default_rng(SEED_VEL)
     w = np.sqrt(r.random(n)) * np.exp(1j * r.uniform(0, 2 * np.pi, n))
-    k = np.array([np.broadcast_to(np.asarray(a, float), (n,)) for a in C.k1(*P)])
+    cs = C if abs(set_scale - SCALE) < 1e-12 else Cert(K1_FILE, mu=MU_BASE).scaled(set_scale)
+    k = np.array([np.broadcast_to(np.asarray(a, float), (n,)) for a in cs.k1(*P)])
     yd = k + r0 * np.array([w.real, w.imag])
     return np.vstack([P, np.arctan2(yd[1], yd[0]), np.hypot(yd[0], yd[1])])
 
