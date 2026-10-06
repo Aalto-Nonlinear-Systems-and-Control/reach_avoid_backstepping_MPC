@@ -428,6 +428,12 @@ constraint handling). The MPC class is `design/ra_mpc_cert.py`; the options
 `nsub`, `safe_sub`, `safe_margin` added for Section 4.2 are off by default, so
 the earlier scripts of `design/` reproduce the earlier numbers.
 
+## 9b. Time-scaling derivation
+
+The derivation behind $s$ (scaled family, admissible range from the input
+bounds and from the sampling period, relation to (12) and (14), manipulator
+case) is Section 7 of `TAC_EXPERIMENT_UPDATE.md`.
+
 ## 10. Variant under review: URA at time scale $s = 5$ (`final/data_s5`, `final/figs_s5`)
 
 Run with `TAG=_s5 SET_SCALE=5 URA_SCALE=5`. Only two things change with respect

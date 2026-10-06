@@ -347,3 +347,206 @@ constraint tightened to $\psi_{\text{safe}} \ge 10^{-3}$ (see 6.3).
 5. The non-monotone `dt` sweep and the new counts (258 / 300, figure 4 and 5 of the paper).
 6. Whether to update the paper figures now (`figures/fig_dubins_*.png`
    regenerated on this branch; not yet copied to `TAC/figs/`).
+
+## 7. Time scaling of the backstepping design (derivation, for confirmation)
+
+Purpose: replace the input-constraint part of the synthesis by a scalar
+design variable $s$ (the time scale of the terminal controller), with the
+admissible range of $s$ derived from the backstepping relations, and tie the
+sampling condition of Lemma 2 to the same variable. Written for the
+relative-degree-two case of the examples; the extension to higher relative
+degree needs level-dependent exponents and is not written here.
+
+### 7.1 Base design
+
+System $\dot x = f(x) + g(x)u$, output $y = h(x) \in \mathbb{R}^p$, and in
+output coordinates
+
+$$
+\ddot y = b(x) + A(x)\,u ,
+$$
+
+with $A$ nonsingular on $\overline{\mathcal{X}_S \setminus \mathcal{X}_T}$
+(Assumption 1). The state is split as $x = (q, \dot q)$ into configuration and
+velocity coordinates, with $y = h(q)$ and $\dot y = J(q)\dot q$.
+
+Program (12) solved with $\lambda$ **fixed** and the normalisation
+$\lvert k_{1,i} \rvert \le K$ on $\{\psi \ge 0\}$ returns $(k_1, \delta_s)$ with
+
+$$
+\nabla\psi^\top k_1 - \lambda\psi + \delta_s \;\ge\; 0
+\quad \text{on } \mathcal{X}_S \setminus \mathcal{X}_T
+\tag{7.1}
+$$
+
+(the SOS multipliers are omitted). With a chosen $\mu > 0$ the certificate and
+the controller are
+
+$$
+\Psi(x) = \psi(y) - \frac{\delta_s}{\lambda} - \frac{\lVert e \rVert^2}{2\mu},
+\qquad e = \dot y - k_1(y),
+\tag{7.2}
+$$
+
+$$
+u^c(x) = A(x)^{-1}\big(\ddot y_{des}(x) - b(x)\big), \qquad
+\ddot y_{des} = \mu\nabla\psi + J_{k_1}(y)\,\dot y + \tfrac{\lambda}{2}\,e .
+\tag{7.3}
+$$
+
+Along the closed loop $\ddot y = \ddot y_{des}$, so
+$\dot\Psi = \nabla\psi^\top\dot y - e^\top(\ddot y - J_{k_1}\dot y)/\mu
+= \nabla\psi^\top k_1 - \lambda\lVert e\rVert^2/(2\mu) \ge \lambda\Psi$ by (7.1).
+This is the ECGBF condition of the paper; (7.3) is what `design/cert.py`
+implements (`uc`).
+
+### 7.2 The scaled family
+
+For $s > 0$ define the dilation $D_s(q, \dot q) = (q, s\dot q)$ and the scaled
+design
+
+$$
+k_1^s = s\,k_1, \qquad \lambda^s = s\lambda, \qquad \delta_s^s = s\,\delta_s,
+\qquad \mu^s = s^2\mu .
+\tag{7.4}
+$$
+
+Claims, each one line to check:
+
+1. **(7.1) is preserved.** Multiplying (7.1) by $s$ gives
+   $\nabla\psi^\top k_1^s - \lambda^s\psi + \delta_s^s \ge 0$; the SOS
+   multipliers are multiplied by $s$ and stay SOS. The ratio
+   $\delta_s^s/\lambda^s = \delta_s/\lambda$ and the position set
+   $\{\psi \ge \delta_s/\lambda\}$ do not change. The bound becomes
+   $\lvert k^s_{1,i}\rvert \le sK$.
+2. **Certificate.** $\Psi^s(q, \dot q) = \psi - \delta_s/\lambda
+   - \lVert \dot y - s k_1\rVert^2/(2 s^2\mu) = \Psi(q, \dot q/s)$, i.e.
+   $\Psi^s = \Psi \circ D_s^{-1}$. Hence $\mathcal{X}_{RA}^s = D_s\mathcal{X}_{RA}$,
+   the same positions with velocities scaled by $s$; $M_\Psi$, $\delta$ and
+   the share of certified positions are unchanged.
+3. **Closed loop.** If $y(t)$ solves $\ddot y = \ddot y_{des}$ for the base
+   design, then $y^s(t) = y(st)$ solves it for the scaled design:
+   $\ddot y^s(t) = s^2\ddot y_{des}(x(st))$, and the scaled desired acceleration
+   at $D_s x$ is
+   $s^2\mu\nabla\psi + J_{sk_1}(s\dot y) + \tfrac{s\lambda}{2}(s\dot y - sk_1)
+   = s^2\ddot y_{des}(x)$. Consequently $\Psi^s(x^s(t)) = \Psi(x(st))$: the same
+   path, $s$ times faster, with the same certificate values.
+4. **Inputs.** At corresponding states,
+   $u^{c,s}(D_s x) = A(D_s x)^{-1}\big(s^2\ddot y_{des}(x) - b(D_s x)\big)$.
+   Expanding $b$ and $A$ by their homogeneity in the velocities gives a finite
+   sum
+   $$
+   u^{c,s}(D_s x) = \sum_{k} s^{k}\,u_k(x),
+   \tag{7.5}
+   $$
+   with the $u_k$ computable from the base design. Two cases of the paper:
+   - Dubins car: $b = 0$, $A(D_s x) = A(x)\,\mathrm{diag}(s, 1)$, so
+     $\omega^s = s\,\omega_1$, $a^s = s^2 a_1$.
+   - Manipulator: $A = J M^{-1}$ depends on $q$ only;
+     $b = J M^{-1}(-C\dot q - G) + \dot J\dot q$ with $C\dot q$ and
+     $\dot J\dot q$ quadratic in $\dot q$ and $G$ independent of it, so
+     $\tau^s = G(q) + s^2\,\tilde\tau_1(x)$, where $\tilde\tau_1$ is the base
+     torque without the gravity term.
+
+### 7.3 Admissible scales
+
+**Input bounds.** Theorem 2 needs $u^c \in \mathcal{U}$ on the terminal set
+$\mathcal{X}_{RA}^{\delta}$ only. With (7.5) this is, for every
+$x \in \mathcal{X}_{RA}^{\delta}$ of the base design, a polynomial inequality
+in $s$; the admissible range is $s \le s_U$ with
+
+$$
+s_U = \sup\Big\{ s > 0 : \sum_k s^k u_k(x) \in \mathcal{U}
+\ \ \forall x \in \mathcal{X}_{RA}^{\delta} \Big\}.
+\tag{7.6}
+$$
+
+For box bounds and the Dubins car this is explicit,
+
+$$
+s_U = \min\Big( \frac{\omega_{\max}}{\sup_{\mathcal{X}_{RA}^{\delta}} \lvert\omega_1\rvert},\
+\sqrt{\frac{a_{\max}}{\sup_{\mathcal{X}_{RA}^{\delta}} \lvert a_1\rvert}} \Big);
+\tag{7.7}
+$$
+
+for the manipulator it is the smallest root over the set of the quadratic
+inequalities $\lvert G_i(q) + s^2\tilde\tau_{1,i}(x)\rvert \le \tau_{\max,i}$,
+which requires the static condition $\lvert G_i(q)\rvert < \tau_{\max,i}$ on the
+set. If the zero-order term alone violates the bounds, no $s$ helps and the
+shape or the set has to change; that is the case left for (14).
+
+**Sampling period.** In the second-order form of Lemma 2,
+$\Psi(x^s(t_{k+1})) \ge \Psi(x^s(t_k)) + \eta T - \tfrac12 M_2 T^2$ with
+$\eta = \min_{\mathcal{X}_{RA}^{\delta}}\dot\Psi$ and
+$M_2 = \sup\lvert\ddot\Psi\rvert$ along ZOH arcs, so $T^\star = 2\eta/M_2$.
+Under (7.4), $\eta^s = s\,\eta_1$. For a plant with the dilation symmetry
+(Dubins: $(t, \dot q, u) \to (t/s, s\dot q, \mathrm{diag}(s^k)u)$ leaves the
+dynamics invariant) a ZOH arc of period $T$ of the scaled design is the base
+arc of period $sT$, hence $M_2^s = s^2 M_{2,1}$ and
+
+$$
+T^\star(s) = \frac{T^\star_1}{s}, \qquad s_T = \frac{T^\star_1}{T}.
+\tag{7.8}
+$$
+
+For the manipulator the frozen gravity compensation $G(q_k)$ differs from
+$G(q(t))$ along the arc by a term of first order in $s$, so
+$M_2^s = s^2 c_2 + s c_1$ and $T^\star(s) = 2\eta_1/(s c_2 + c_1)$: still
+decreasing in $s$, $s_T$ by bisection, but with the ceiling
+$T^\star \to 2\eta_1/c_1$ as $s \to 0$. The chosen $T$ must lie below that
+ceiling.
+
+**Design rule.** $s = \min(s_U, s_T)$; then $\delta$ as a fraction of $M_\Psi$,
+$\varepsilon^s(T) = \varepsilon_1(sT)$ for the one-step increase (because
+$\Psi^s = \Psi\circ D_s^{-1}$), and $\omega \ge \sup\ell/\varepsilon^s(T)$ as in
+the Remark on the terminal cost.
+
+### 7.4 What this changes with respect to (12) and (14)
+
+- In (12), $\lambda$ is fixed (the program is positively homogeneous in
+  $(k_1, \lambda, \delta_s)$, so minimising $\delta$ with $\lambda$ free is
+  ill-posed and returns solver-tolerance values); the bound
+  $\lvert k_{1,i}\rvert \le K$ is added so that the unconstrained program is
+  bounded. (12) then fixes the **shape** of $k_1$; $s$ is the only scale.
+- The input constraints of (14) are replaced by $s \le s_U$, which is exact
+  on $\mathcal{X}_{RA}^{\delta}$, needs no sampled states and no sign
+  condition on $\det A$. (14) is kept for systems whose zero-order drift
+  alone is near the bounds, or when reshaping $k_1$ is wanted for strongly
+  asymmetric bounds.
+- The sampling condition and the input bounds act on the same variable, so
+  Algorithm 1 gets one offline line: solve (12) at the normalised scale,
+  compute $s_U$ and $s_T$, set $s = \min(s_U, s_T)$.
+- The comparison with the unconstrained controller becomes a statement about
+  scales: URA is the same shape at a performance scale $s_{\text{URA}} > s_U$,
+  the terminal controller is at $s \le \min(s_U, s_T)$.
+
+### 7.5 Numbers for the Dubins car (sampled suprema, base scale $s = 1$)
+
+From `experiments/strict_xra/final/data/lemma2.pkl` and the terminal-set
+inputs of `PAPER_DUBINS.md` Section 1.2, rescaled to $s = 1$:
+
+| quantity | value |
+| --- | --- |
+| $\sup_{\mathcal{X}_{RA}^{\delta}}\lvert\omega_1\rvert$, $\sup\lvert a_1\rvert$ | 0.957 rad/s, 0.233 m/s$^2$ |
+| $s_U$ from (7.7) with $(\omega_{\max}, a_{\max}) = (3, 3)$ | $\min(3.13, 3.59) = 3.1$ |
+| $\eta_1$, $M_{2,1}$ | $1.26 \times 10^{-2}$, 3.15 |
+| $T^\star_1 = 2\eta_1/M_{2,1}$ | 8.0 ms |
+| $s_T$ from (7.8) with $T = 0.05$ s | 0.16 (0.146 with the certified rate $\lambda\delta$ in place of $\eta_1$) |
+| terminal controller | $s = 0.159 = \min(s_U, s_T)$; the input bounds are inactive by a factor 20 |
+| URA of Section 10 of `PAPER_DUBINS.md` | $s = 5 > s_U$: inputs up to 5.4 rad/s and 6.7 m/s$^2$ |
+
+For the manipulator, with the parameters of `python/systems.py`
+($m_i = 1$, $l_i = 4$, $l_{c,i} = 2$): $\max\lvert G_1\rvert = 78.5$ N m and
+$\max\lvert G_2\rvert = 19.6$ N m against the bounds 680 and 500, so the static
+condition holds with room, and (7.6) reduces to a quadratic inequality in
+$s^2$ per state. Its $s_U$, $T^\star(s)$ and the ceiling $2\eta_1/c_1$ are the
+first things to compute in the manipulator audit.
+
+### 7.6 Code
+
+`design/cert.py`, `scaled(s)` implements (7.4) exactly; `uc` is (7.3). $s_U$
+and $s_T$ are currently sampled (`design/scan.py`, `final/run_lemma2.py`);
+certified values would need SOS or interval bounds for the two suprema and
+for $\eta_1$, $M_{2,1}$. `final/run_direct.m` shows that solving (12) directly
+at the final $\lambda$ and $K$ reproduces the scaled $k_1$ within 6.5 %, with
+a slightly larger certified set.
