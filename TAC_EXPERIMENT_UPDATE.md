@@ -414,31 +414,45 @@ $$
 Claims, each one line to check:
 
 1. **(7.1) is preserved.** Multiplying (7.1) by $s$ gives
-   $\nabla\psi^\top k_1^s - \lambda^s\psi + \delta_s^s \ge 0$; the SOS
-   multipliers are multiplied by $s$ and stay SOS. The ratio
+   $\nabla\psi^\top k_1^s - \lambda^s\psi + \delta_s^s \ge 0$, and the SOS
+   multipliers, multiplied by $s$, stay SOS. The ratio
    $\delta_s^s/\lambda^s = \delta_s/\lambda$ and the position set
    $\{\psi \ge \delta_s/\lambda\}$ do not change. The bound becomes
    $\lvert k^s_{1,i}\rvert \le sK$.
-2. **Certificate.** $\Psi^s(q, \dot q) = \psi - \delta_s/\lambda
-   - \lVert \dot y - s k_1\rVert^2/(2 s^2\mu) = \Psi(q, \dot q/s)$, i.e.
-   $\Psi^s = \Psi \circ D_s^{-1}$. Hence $\mathcal{X}_{RA}^s = D_s\mathcal{X}_{RA}$,
-   the same positions with velocities scaled by $s$; $M_\Psi$, $\delta$ and
-   the share of certified positions are unchanged.
+2. **Certificate.** With $\dot y = J(q)\dot q$,
+
+   $$
+   \Psi^s(q, \dot q)
+   = \psi(y) - \frac{\delta_s}{\lambda} - \frac{\lVert \dot y - s\,k_1(y)\rVert^2}{2 s^2\mu}
+   = \Psi\big(q, \dot q/s\big),
+   $$
+
+   that is $\Psi^s = \Psi \circ D_s^{-1}$. Hence
+   $\mathcal{X}_{RA}^s = D_s\mathcal{X}_{RA}$: the same positions with the
+   velocities scaled by $s$, while $M_\Psi$, $\delta$ and the share of
+   certified positions are unchanged.
 3. **Closed loop.** If $y(t)$ solves $\ddot y = \ddot y_{des}$ for the base
-   design, then $y^s(t) = y(st)$ solves it for the scaled design:
-   $\ddot y^s(t) = s^2\ddot y_{des}(x(st))$, and the scaled desired acceleration
-   at $D_s x$ is
-   $s^2\mu\nabla\psi + J_{sk_1}(s\dot y) + \tfrac{s\lambda}{2}(s\dot y - sk_1)
-   = s^2\ddot y_{des}(x)$. Consequently $\Psi^s(x^s(t)) = \Psi(x(st))$: the same
-   path, $s$ times faster, with the same certificate values.
-4. **Inputs.** At corresponding states,
+   design, then $y^s(t) = y(st)$ solves it for the scaled design, because
+   $\ddot y^s(t) = s^2\,\ddot y_{des}(x(st))$ and the desired acceleration of
+   the scaled design at $D_s x$ is
+
+   $$
+   s^2\mu\nabla\psi + J_{s k_1}\,(s\dot y) + \frac{s\lambda}{2}\,(s\dot y - s k_1)
+   = s^2\,\ddot y_{des}(x).
+   $$
+
+   Consequently $\Psi^s(x^s(t)) = \Psi(x(st))$: the same path, $s$ times
+   faster, with the same certificate values.
+4. **Inputs.** At corresponding states
    $u^{c,s}(D_s x) = A(D_s x)^{-1}\big(s^2\ddot y_{des}(x) - b(D_s x)\big)$.
    Expanding $b$ and $A$ by their homogeneity in the velocities gives a finite
    sum
+
    $$
    u^{c,s}(D_s x) = \sum_{k} s^{k}\,u_k(x),
    \tag{7.5}
    $$
+
    with the $u_k$ computable from the base design. Two cases of the paper:
    - Dubins car: $b = 0$, $A(D_s x) = A(x)\,\mathrm{diag}(s, 1)$, so
      $\omega^s = s\,\omega_1$, $a^s = s^2 a_1$.
