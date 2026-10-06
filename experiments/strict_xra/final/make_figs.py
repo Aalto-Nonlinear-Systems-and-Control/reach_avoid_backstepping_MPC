@@ -8,8 +8,11 @@ from config import C, rm
 
 M = pickle.load(open(f"{cf.DATA}/main.pkl", "rb")); L2 = pickle.load(open(f"{cf.DATA}/lemma2.pkl", "rb")); SW = pickle.load(open(f"{cf.DATA}/sweep.pkl", "rb"))
 X0, P0, logs = M["X0"], M["Psi0"], M["logs"]; n = X0.shape[1]
-ura = np.array([u["status"] == "reached" for u in M["ura"]]); fv = M["fv"].astype(bool); ra = np.array([L["status"] == "reached" for L in logs])
-t_ura = np.array([u["t"] for u in M["ura"]]); t_ra = np.array([L["check"]["t_entry"] if L["status"] == "reached" else np.nan for L in logs])
+# URA baseline: the scaled controller (M["ura"]) or, with cf.URA_SCALE != cf.SCALE, the evaluation stored by run_ura_scale.py
+URA_LIST = M["ura"] if abs(cf.URA_SCALE - cf.SCALE) < 1e-12 else pickle.load(open(f"{cf.DATA}/ura_s{cf.URA_SCALE:g}.pkl", "rb"))["out"]
+ura = np.array([u["status"] == "reached" for u in URA_LIST]); fv = M["fv"].astype(bool); ra = np.array([L["status"] == "reached" for L in logs])
+ura_viol = np.array([(np.asarray(u["upeak"]) > np.asarray(cf.U_MAX)).any() for u in URA_LIST])
+t_ura = np.array([u["t"] for u in URA_LIST]); t_ra = np.array([L["check"]["t_entry"] if L["status"] == "reached" else np.nan for L in logs])
 TS = L2["Tstar2"]; COL = dict(van="#e08214", ura="#2166ac", ra="#8856a7")
 g = np.linspace(-2.1, 2.1, 400); G1, G2 = np.meshgrid(g, g)
 Zs = rm.safe_np(G1, G2, 0 * G1, 0 * G1); Zt = rm.tgt_np(G1, G2, 0 * G1, 0 * G1)
@@ -19,9 +22,11 @@ save = lambda fig, name, pdf=False: [fig.savefig(os.path.join(cf.FIGS, f"{name}.
 # ── shared initial state: farthest state from which all three methods succeed ─────────────────────────────
 van_ok = np.array([i in M["van"] and M["van"][i]["status"] == "reached" for i in range(n)])
 all3 = ura & ra & fv & van_ok
-d2 = ((X0[:2] - rm.TARGET_POS[:, None])**2).sum(0); i0 = int(np.where(all3)[0][np.argmax(d2[all3])]); x0s = X0[:, i0]
-U = cf.ura_run(x0s, dense=True); V = M["van"][i0]; Rr = logs[i0]
-print(f"shared x0 = state {i0}: {np.round(x0s, 4)}; all-three successes {all3.sum()}; times: vanilla {V['t'][-1]:.2f} s, URA {U['t']:.2f} s, RA-MPC {Rr['t'][-1]:.2f} s")
+pref = all3 & ura_viol if (all3 & ura_viol).any() else all3          # prefer a start where URA exceeds the bounds
+d2 = ((X0[:2] - rm.TARGET_POS[:, None])**2).sum(0); i0 = int(np.where(pref)[0][np.argmax(d2[pref])]); x0s = X0[:, i0]
+U = cf.ura_run(x0s, dense=True, scale=cf.URA_SCALE); V = M["van"][i0]; Rr = logs[i0]
+print(f"shared x0 = state {i0}: {np.round(x0s, 4)}; all-three successes {all3.sum()} (URA exceeding the bounds among them: {(all3 & ura_viol).sum()}); "
+      f"times: vanilla {V['t'][-1]:.2f} s, URA {U['t']:.2f} s (peak inputs {np.round(U['upeak'], 2)}), RA-MPC {Rr['t'][-1]:.2f} s")
 
 
 def sets(ax, cert_region=False):
@@ -132,44 +137,65 @@ px = 1 / plt.rcParams["figure.dpi"]; FS_P = 30
 C_GRAY = (178 / 255, 187 / 255, 205 / 255, 0.45); C_START = (1.0, 0.549, 0.0); C_END = (0.102, 0.596, 0.314)
 yv = np.linspace(-2.1, 2.1, 30); VY1, VY2 = np.meshgrid(yv, yv); kk = C.k1(VY1, VY2)
 KU = np.broadcast_to(np.asarray(kk[0], float), VY1.shape).astype(float); KV = np.broadcast_to(np.asarray(kk[1], float), VY1.shape).astype(float)
-PAN = {"fig_dubins_vanilla": (fv, V["x"][:, :2], False), "fig_dubins_uncon": (ura, U["x"][:, :2], True), "fig_dubins_rampc": (ra, Rr["x"][:, :2], True)}
-for name, (mask, yt, field) in PAN.items():
-    fig, ax = plt.subplots(figsize=(650 * px, 600 * px), layout="constrained"); fig.set_dpi(200)
-    if field:
-        ax.streamplot(yv, yv, KU, KV, color=C_GRAY, linewidth=0.9, density=0.9, arrowsize=0.9, zorder=1)
-    ax.contourf(G1, G2, Zs, levels=[0, np.inf], colors=["#e6f2ff"], alpha=0.3, zorder=1); ax.contour(G1, G2, Zs, levels=[0], colors=["#2166ac"], linewidths=2, zorder=2)
-    ax.contourf(G1, G2, Zt, levels=[-np.inf, 0], colors=["#fee0d2"], alpha=1.0, zorder=3); ax.contour(G1, G2, Zt, levels=[0], colors=["#d6604d"], linewidths=2, zorder=4)
-    ax.scatter(*X0[:2, ~mask], s=50, color="#d73027", alpha=0.85, marker="x", linewidths=3, zorder=8)
-    ax.scatter(*X0[:2, mask], s=50, color="#2166ac", alpha=0.35, marker="o", zorder=9)
-    ax.plot(yt[:, 0], yt[:, 1], color="black", lw=3, alpha=0.65, linestyle="--", zorder=10)
-    ax.scatter([yt[0, 0]], [yt[0, 1]], s=70, c=[C_START], marker="o", linewidths=0.4, zorder=20)
-    ax.scatter([yt[-1, 0]], [yt[-1, 1]], s=70, c=[C_END], marker="x", linewidths=3, zorder=20)
-    ax.text(0, 1.5, r"$\mathcal{X}_S$", zorder=100, fontsize=FS_P); ax.text(-1.9, 0, r"$\mathcal{X}_T$", zorder=100, fontsize=FS_P)
-    ax.set_xlabel("$y_1$", fontsize=FS_P - 4); ax.set_ylabel("$y_2$", fontsize=FS_P - 4)
-    ax.xaxis.set_tick_params(labelsize=22); ax.yaxis.set_tick_params(labelsize=22); ax.set_xlim(-2.1, 2.1); ax.set_ylim(-2.1, 2.1); ax.set_aspect("equal")
-    save(fig, name, pdf=True); plt.close(fig)
+def paper_figs(V, U, Rr, suffix=""):
+  PAN = {"fig_dubins_vanilla": (fv, V["x"][:, :2], False), "fig_dubins_uncon": (ura, U["x"][:, :2], True), "fig_dubins_rampc": (ra, Rr["x"][:, :2], True)}
+  for name, (mask, yt, field) in PAN.items():
+      fig, ax = plt.subplots(figsize=(650 * px, 600 * px), layout="constrained"); fig.set_dpi(200)
+      if field:
+          ax.streamplot(yv, yv, KU, KV, color=C_GRAY, linewidth=0.9, density=0.9, arrowsize=0.9, zorder=1)
+      ax.contourf(G1, G2, Zs, levels=[0, np.inf], colors=["#e6f2ff"], alpha=0.3, zorder=1); ax.contour(G1, G2, Zs, levels=[0], colors=["#2166ac"], linewidths=2, zorder=2)
+      ax.contourf(G1, G2, Zt, levels=[-np.inf, 0], colors=["#fee0d2"], alpha=1.0, zorder=3); ax.contour(G1, G2, Zt, levels=[0], colors=["#d6604d"], linewidths=2, zorder=4)
+      ax.scatter(*X0[:2, ~mask], s=50, color="#d73027", alpha=0.85, marker="x", linewidths=3, zorder=8)
+      ax.scatter(*X0[:2, mask], s=50, color="#2166ac", alpha=0.35, marker="o", zorder=9)
+      ax.plot(yt[:, 0], yt[:, 1], color="black", lw=3, alpha=0.65, linestyle="--", zorder=10)
+      ax.scatter([yt[0, 0]], [yt[0, 1]], s=70, c=[C_START], marker="o", linewidths=0.4, zorder=20)
+      ax.scatter([yt[-1, 0]], [yt[-1, 1]], s=70, c=[C_END], marker="x", linewidths=3, zorder=20)
+      ax.text(0, 1.5, r"$\mathcal{X}_S$", zorder=100, fontsize=FS_P); ax.text(-1.9, 0, r"$\mathcal{X}_T$", zorder=100, fontsize=FS_P)
+      ax.set_xlabel("$y_1$", fontsize=FS_P - 4); ax.set_ylabel("$y_2$", fontsize=FS_P - 4)
+      ax.xaxis.set_tick_params(labelsize=22); ax.yaxis.set_tick_params(labelsize=22); ax.set_xlim(-2.1, 2.1); ax.set_ylim(-2.1, 2.1); ax.set_aspect("equal")
+      save(fig, name + suffix, pdf=True); plt.close(fig)
 
-FS_C = 24
-fig, (axR, axW, axA) = plt.subplots(3, 1, figsize=(650 * px, 600 * px), layout="constrained", gridspec_kw={"height_ratios": [0.7, 1.0, 1.0]}); fig.set_dpi(200)
-axR.axvspan(Tsw.min() * 0.8, TS, color="g", alpha=0.12)
-axR.plot(Tsw, [100 * r["ra"].mean() for r in rows], color=COL["ra"], marker="s", lw=2.5, ms=9, alpha=0.9)
-axR.axvline(cf.T, color="gray", lw=1, ls="--", alpha=0.6); axR.set_xscale("log"); axR.set_xlim(Tsw.min() * 0.8, Tsw.max() * 1.25); axR.set_ylim(0, 100)
-axR.set_xlabel("$T$ [s]", fontsize=FS_C - 6); axR.set_ylabel(r"$\rho$ [%]", fontsize=FS_C - 2)
-axR.xaxis.set_tick_params(labelsize=14); axR.yaxis.set_tick_params(labelsize=14); axR.grid(True, alpha=0.3, which="both")
-tu, uu = U["tt"], U["u"]; tr_, ur = Rr["t"], Rr["u"]
-for ax, ch, ub, lbl in zip((axW, axA), (0, 1), cf.U_MAX, (r"$\omega$", r"$a$")):
-    ax.axhspan(-ub, ub, color="#f0f0f0", alpha=0.6, zorder=0); ax.axhline(ub, color="black", lw=1.5, ls="--", alpha=0.85, zorder=5); ax.axhline(-ub, color="black", lw=1.5, ls="--", alpha=0.85, zorder=5)
-    ax.axhline(0, color="gray", lw=0.8, ls=":", zorder=4)
-    ax.plot(np.maximum(tu, 1e-3), uu[:, ch], color=COL["ura"], lw=3, alpha=0.9, zorder=10)
-    ax.step(np.maximum(np.append(tr_[:-1], tr_[-1]), 1e-3), np.append(ur[:, ch], ur[-1, ch]), where="post", color=COL["ra"], lw=3, alpha=0.9, zorder=10)
-    ax.set_xscale("log"); ax.set_xlim(cf.T / 2, tu[-1] * 1.15); ax.set_ylabel(lbl, fontsize=FS_C); ax.set_ylim(-1.25 * ub, 1.25 * ub)
-    ax.xaxis.set_tick_params(labelsize=14); ax.yaxis.set_tick_params(labelsize=14); ax.grid(True, alpha=0.25, which="both")
-axA.set_xlabel("Time [s]", fontsize=FS_C - 6)
-save(fig, "fig_dubins_compare", pdf=True); plt.close(fig)
+  FS_C = 24
+  fig, (axR, axW, axA) = plt.subplots(3, 1, figsize=(650 * px, 600 * px), layout="constrained", gridspec_kw={"height_ratios": [0.7, 1.0, 1.0]}); fig.set_dpi(200)
+  axR.axvspan(Tsw.min() * 0.8, TS, color="g", alpha=0.12)
+  axR.plot(Tsw, [100 * r["ra"].mean() for r in rows], color=COL["ra"], marker="s", lw=2.5, ms=9, alpha=0.9)
+  rho = np.array([100 * r["ra"].mean() for r in rows]); axR.set_ylim(5 * np.floor((rho.min() - 3) / 5), 5 * np.ceil((rho.max() + 3) / 5))
+  axR.axvline(cf.T, color="gray", lw=1, ls="--", alpha=0.6); axR.set_xscale("log"); axR.set_xlim(Tsw.min() * 0.8, Tsw.max() * 1.25)
+  axR.set_xlabel("$T$ [s]", fontsize=FS_C - 6); axR.set_ylabel(r"$\rho$ [%]", fontsize=FS_C - 2)
+  axR.xaxis.set_tick_params(labelsize=14); axR.yaxis.set_tick_params(labelsize=14); axR.grid(True, alpha=0.3, which="both")
+  tu, uu = U["tt"], U["u"]; tr_, ur = Rr["t"], Rr["u"]
+  for ax, ch, ub, lbl in zip((axW, axA), (0, 1), cf.U_MAX, (r"$\omega$", r"$a$")):
+      ax.axhspan(-ub, ub, color="#f0f0f0", alpha=0.6, zorder=0); ax.axhline(ub, color="black", lw=1.5, ls="--", alpha=0.85, zorder=5); ax.axhline(-ub, color="black", lw=1.5, ls="--", alpha=0.85, zorder=5)
+      ax.axhline(0, color="gray", lw=0.8, ls=":", zorder=4)
+      LOGT = tu[-1] > 6 * tr_[-1]                      # logarithmic time axis only when the two durations differ a lot
+      ax.plot(np.maximum(tu, 1e-3) if LOGT else tu, uu[:, ch], color=COL["ura"], lw=3, alpha=0.9, zorder=10)
+      ts_ = np.append(tr_[:-1], tr_[-1]); ax.step(np.maximum(ts_, 1e-3) if LOGT else ts_, np.append(ur[:, ch], ur[-1, ch]), where="post", color=COL["ra"], lw=3, alpha=0.9, zorder=10)
+      if LOGT:
+          ax.set_xscale("log"); ax.set_xlim(cf.T / 2, tu[-1] * 1.15)
+      else:
+          ax.set_xlim(0, tu[-1] * 1.02)
+      ym = max(ub, np.abs(uu[:, ch]).max()); ax.set_ylabel(lbl, fontsize=FS_C); ax.set_ylim(-1.25 * ym, 1.25 * ym)
+      ax.xaxis.set_tick_params(labelsize=14); ax.yaxis.set_tick_params(labelsize=14); ax.grid(True, alpha=0.25, which="both")
+  axA.set_xlabel("Time [s]", fontsize=FS_C - 6)
+  save(fig, "fig_dubins_compare" + suffix, pdf=True); plt.close(fig)
 
-tt = Rr["t"][:-1]
-fig, (axJ, axN) = plt.subplots(2, 1, figsize=(650 * px, 520 * px), sharex=True, layout="constrained", gridspec_kw={"height_ratios": [1.3, 1.0]}); fig.set_dpi(200)
-axJ.plot(tt, Rr["J"], color=COL["ra"], lw=3); axJ.set_yscale("log"); axJ.set_ylabel(r"$J^*_k$", fontsize=20); axJ.grid(True, alpha=0.3, which="both")
-axN.step(tt, Rr["N"], where="post", color=COL["ra"], lw=3); axN.set_ylabel(r"$N$", fontsize=20); axN.set_xlabel("Time [s]", fontsize=16); axN.grid(True, alpha=0.3)
-save(fig, "fig_dubins_cost", pdf=True); plt.close(fig)
-pickle.dump(dict(i0=i0, x0=x0s, t_van=float(V["t"][-1]), t_ura=float(U["t"]), t_ra=float(Rr["t"][-1]), all3=int(all3.sum())), open(f"{cf.DATA}/shared_x0.pkl", "wb"))
+  tt = Rr["t"][:-1]
+  fig, (axJ, axD, axN) = plt.subplots(3, 1, figsize=(650 * px, 650 * px), sharex=True, layout="constrained", gridspec_kw={"height_ratios": [1.0, 1.0, 0.8]}); fig.set_dpi(200)
+  axJ.plot(tt, Rr["J"], color=COL["ra"], lw=3); axJ.set_yscale("log"); axJ.set_ylabel(r"$J^*_k$", fontsize=20); axJ.grid(True, alpha=0.3, which="both")
+  dJ = -np.diff(Rr["J"]); axD.plot(tt[:-1], dJ, color=COL["ra"], lw=3, label=r"$J^*_k - J^*_{k+1}$")
+  axD.plot(tt[:-1], Rr["ell"][:-1], "o", color="black", ms=3.5, label=r"$\ell(x_k, u_k)$"); axD.axhline(rm.ELL_LOWER, color="black", ls="--", lw=1.2, label=r"$\ell_{\min}$")
+  axD.set_yscale("log"); axD.set_ylabel("decrease", fontsize=16); axD.grid(True, alpha=0.3, which="both"); axD.legend(fontsize=10, loc="upper right", ncol=3)
+  axN.step(tt, Rr["N"], where="post", color=COL["ra"], lw=3); axN.set_ylabel(r"$N$", fontsize=20); axN.set_xlabel("Time [s]", fontsize=16); axN.grid(True, alpha=0.3)
+  save(fig, "fig_dubins_cost" + suffix, pdf=True); plt.close(fig)
+
+
+
+paper_figs(V, U, Rr)
+# variant: URA and RA-MPC from the farthest state where both succeed, vanilla MPC from its own farthest feasible state
+both = ura & ra; i_far = int(np.where(both)[0][np.argmax(d2[both])]); i_van = int(np.where(fv & van_ok)[0][np.argmax(d2[fv & van_ok])])
+U2 = cf.ura_run(X0[:, i_far], dense=True, scale=cf.URA_SCALE); R2 = logs[i_far]; V2 = M["van"][i_van]
+print(f"far variant: URA and RA-MPC from state {i_far} {np.round(X0[:, i_far], 4)} (distance {np.sqrt(d2[i_far]):.2f}; URA {U2['t']:.2f} s, peaks {np.round(U2['upeak'], 2)}; RA-MPC {R2['t'][-1]:.2f} s), "
+      f"vanilla from state {i_van} {np.round(X0[:, i_van], 4)} (distance {np.sqrt(d2[i_van]):.2f}, {V2['t'][-1]:.2f} s)")
+paper_figs(V2, U2, R2, "_far")
+pickle.dump(dict(i0=i0, x0=x0s, t_van=float(V["t"][-1]), t_ura=float(U["t"]), t_ra=float(Rr["t"][-1]), all3=int(all3.sum()),
+                 far=dict(i_ura_ra=i_far, x0=X0[:, i_far], i_van=i_van, x0_van=X0[:, i_van], t_ura=float(U2["t"]), t_ra=float(R2["t"][-1]), t_van=float(V2["t"][-1]))), open(f"{cf.DATA}/shared_x0.pkl", "wb"))

@@ -16,6 +16,8 @@ import ra_mpc_cert as R                    # noqa: E402
 # ── certificate (REPORT.md Section 11): psi = alpha*h/661.409, k1 of design/k1/W3_l0.06.txt, time scale s ──
 K1_FILE = os.path.join(DESIGN, "k1", "W3_l0.06.txt")
 MU_BASE, SCALE, DFRAC = 0.02, 0.159, 0.2
+# URA baseline of the figures: the synthesized controller at its own time scale (no scaling for the bounds or the period)
+URA_SCALE = SCALE
 # ── MPC ──
 T, N, U_MAX = 0.05, 25, (3.0, 3.0)
 T_HOR = T * N
@@ -170,10 +172,10 @@ def safety_until_target(x_samples, u_applied, dt, nsub=20):
     return m, False
 
 
-def ura_run(x0, T_max=T_MAX_URA, dense=False):
+def ura_run(x0, T_max=T_MAX_URA, dense=False, scale=SCALE):
     """u^c alone in continuous time: status, time, peak inputs, accumulated stage cost, smallest safe-set value."""
     from scipy.integrate import solve_ivp
-    c = cert()
+    c = Cert(K1_FILE, mu=MU_BASE).scaled(scale)
     def rhs(t, z):
         x = z[:4]; u = c.uc(x.reshape(4, 1))[:, 0]; dy = x[:2] - rm.TARGET_POS
         return [x[3] * np.cos(x[2]), x[3] * np.sin(x[2]), u[0], u[1], rm.Q_Y * dy @ dy + rm.R_U * u @ u]
@@ -186,7 +188,8 @@ def ura_run(x0, T_max=T_MAX_URA, dense=False):
         return dict(status="error", t=np.nan, upeak=np.zeros(2), cost=np.nan)
     u = c.uc(s.y[:4])
     st = "reached" if s.t_events[0].size else "unsafe" if s.t_events[1].size else "v=0" if s.t_events[2].size else "timeout"
-    out = dict(status=st, t=float(s.t[-1]), upeak=np.abs(u).max(1), cost=float(s.y[4, -1]), psi0=float(c.Psi(s.y[:4, :1])[0]))
+    out = dict(status=st, t=float(s.t[-1]), upeak=np.abs(u).max(1), cost=float(s.y[4, -1]), psi0=float(c.Psi(s.y[:4, :1])[0]),
+               t_viol=float(np.sum(np.diff(s.t) * (np.abs(u[:, 1:]) > np.asarray(U_MAX)[:, None]).any(0))))
     if dense:
         out.update(tt=s.t, x=s.y[:4].T, u=u.T, psi=c.Psi(s.y[:4]))
     return out

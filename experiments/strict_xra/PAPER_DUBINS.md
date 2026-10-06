@@ -315,18 +315,63 @@ the shared initial state, the grey streamlines are $k_1$.
 ![compare](final/figs/fig_dubins_compare.png)
 
 Top: $\rho$ of RA-MPC against $T$ (Section 5), shaded for $T < T^\star$, dashed
-line at $T = 0.05$ s. Below: $\omega$ and $a$ from the shared initial state, URA
-in blue (36.5 s) and RA-MPC in purple (1.70 s), bounds dashed. The time axis is
-logarithmic because the two durations differ by a factor 20; this is a change
-with respect to the current figure and needs your confirmation.
+line at $T = 0.05$ s; the $\rho$ axis is zoomed to the range of the data (65 to
+85 %). Below: $\omega$ and $a$ from the shared initial state, URA in blue
+(36.5 s) and RA-MPC in purple (1.70 s), bounds dashed. The time axis is
+logarithmic because the two durations differ by a factor 20 (the script
+switches to a linear axis automatically when they differ by less than a
+factor 6).
 
 ### 6.3 Optional: cost and horizon (`fig_dubins_cost`)
 
 ![cost](final/figs/fig_dubins_cost.png)
 
-$J^*_k$ and the horizon used at step $k$ for the shared initial state. Not in
-the paper at present. If a figure for Theorem 2 and Corollary 1 is wanted,
-panels (c), (d) and (f) of the figure in Section 4 are the candidates.
+Three rows for the shared initial state: $J^*_k$, the decrease
+$J^*_k - J^*_{k+1}$ against the stage cost $\ell(x_k, u_k)$ and
+$\underline{\ell}$, and the horizon used at step $k$. $J^*_k$ looks flat after
+0.55 s because the terminal cost $\omega\,(M_\Psi - \Psi)$ of the shortened
+plan stays at about $2.8 \times 10^4$ while each step removes only
+$\ell(x_k, u_k)$, between 3 and 30; the middle row shows this decrease
+directly, equal to $\ell(x_k, u_k)$ once the horizon is being shortened and
+far above it before. Not in the paper at present.
+
+### 6.4 Variant with a farther start (`*_far` files)
+
+Under the rule "one start from which all three methods succeed", the farthest
+start is state 230 at $(0.38, -1.76)$, 2.7 from the target, because vanilla
+MPC is only feasible within about 1.25 s of the target. The `_far` files drop
+vanilla MPC from the rule: URA and RA-MPC start from state 236 at
+$(1.78, -1.51)$, 3.8 from the target, on the far side of the ring (URA 62.1 s,
+RA-MPC 2.20 s), and the vanilla panel keeps its own farthest feasible start,
+state 230 (1.35 s).
+
+| vanilla MPC, own start | URA, far start | RA-MPC, far start |
+| --- | --- | --- |
+| ![vanilla](final/figs/fig_dubins_vanilla_far.png) | ![ura](final/figs/fig_dubins_uncon_far.png) | ![rampc](final/figs/fig_dubins_rampc_far.png) |
+
+![compare far](final/figs/fig_dubins_compare_far.png)
+
+### 6.5 URA and the input bounds
+
+With this certificate the controller alone does not exceed the bounds, at any
+start of the initial set and at any time scale that keeps it useful
+(`final/run_ura_scale.py`, `final/alt_set.py`):
+
+| URA | initial set | reaches | exceeds the bounds | peak $\lvert\omega\rvert$, $\lvert a\rvert$ | median time |
+| --- | --- | --- | --- | --- | --- |
+| terminal controller, $s = 0.159$ (paper) | confirmed set | 229 | 0 of 300 | 0.17, 0.007 | 24 s |
+| unscaled design, $s = 1$ | confirmed set | 84 (215 leave $\mathcal{X}_S$) | 64, all $\omega$ spikes near $v = 0$ | 108, 0.20 | 20 s |
+| unscaled design, $s = 1$ | set around its own field, $r_0 = 0.19$, speeds 0.03 to 0.72 | 229 | 0 of 300 | 1.1, 0.27 | 4.1 s |
+| $s = 2$ | confirmed set | 51 | 136, $\omega$ spikes near $v = 0$ | 1255, 0.85 | 11 s |
+| $s = 3$ | confirmed set | 48 | 198, $\omega$ spikes near $v = 0$ | 2061, 1.8 | 7.5 s |
+
+The only violations are the $1/v$ singularity of $\omega = \ddot y \cdot n / v$
+at starts that are almost at rest, and they occur at starts within 0.85 of
+the target. A trajectory on which URA exceeds the bounds while RA-MPC stays
+inside therefore does not exist for this design; the old figure had one
+because the old gains were uncertified. On the set around the unscaled
+field (third row) the counts are URA 229, vanilla 183, RA-MPC 239, with
+vanilla-feasible states again a subset of the RA-MPC ones.
 
 ## 7. Places to update in the paper
 
