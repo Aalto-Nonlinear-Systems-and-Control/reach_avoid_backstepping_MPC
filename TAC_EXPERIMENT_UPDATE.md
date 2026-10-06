@@ -394,9 +394,13 @@ u^c(x) = A(x)^{-1}\big(\ddot y_{des}(x) - b(x)\big), \qquad
 \tag{7.3}
 $$
 
-Along the closed loop $\ddot y = \ddot y_{des}$, so
-$\dot\Psi = \nabla\psi^\top\dot y - e^\top(\ddot y - J_{k_1}\dot y)/\mu
-= \nabla\psi^\top k_1 - \lambda\lVert e\rVert^2/(2\mu) \ge \lambda\Psi$ by (7.1).
+Along the closed loop $\ddot y = \ddot y_{des}$, so by (7.1)
+
+$$
+\dot\Psi = \nabla\psi^\top\dot y - \frac{e^\top(\ddot y - J_{k_1}\dot y)}{\mu}
+= \nabla\psi^\top k_1 - \frac{\lambda\lVert e\rVert^2}{2\mu} \;\ge\; \lambda\Psi .
+$$
+
 This is the ECGBF condition of the paper; (7.3) is what `design/cert.py`
 implements (`uc`).
 
