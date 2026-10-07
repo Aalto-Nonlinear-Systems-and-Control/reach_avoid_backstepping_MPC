@@ -1,14 +1,17 @@
 # Dubins car: final setting, data and figures for the paper
 
-Setting confirmed on 2026-10-05: certificate R2 of `REPORT.md` Section 11, one
-initial set with $r_0 = 0.03$ for all methods, $(\omega_{\max}, a_{\max}) = (3, 3)$,
-$N = 25$, $T = 0.05$ s. Everything below is produced by the scripts in
-`final/` (Section 9) on the continuous plant. Numbers are final for this
-setting; the paper and the notebooks are not yet changed.
+Setting of 2026-10-07: shape of $k_1$ from (12) at the normalised scale, terminal
+controller at the time scale $s = 0.764$ chosen from the input bounds and the
+sampled one-step increase at $T = 0.05$ s (`TAC_EXPERIMENT_UPDATE.md`
+Section 7), URA = the same synthesis at the performance scale $s = 5$, one
+initial set for all methods with velocities around the URA's field,
+$(\omega_{\max}, a_{\max}) = (3, 3)$, $N = 25$. Everything below is produced by
+the scripts in `final/` (Section 9) on the continuous plant. The paper and the
+notebooks are not yet changed. Earlier settings are listed in Section 10.
 
 Contents: 1 setting, 2 three-method comparison, 3 Lemma 2, 4 Theorem 2 and
 Corollary 1, 5 sampling-period sweep, 6 figures for the paper, 7 places to
-update in the paper, 8 open points, 9 reproduction.
+update in the paper, 8 open points, 9 reproduction, 10 earlier settings.
 
 ## 1. Setting (Example 1)
 
@@ -21,205 +24,209 @@ update in the paper, 8 open points, 9 reproduction.
 | $\psi$ | $\psi(y) = \alpha(y)\,h(y)/661.409$ | replaces $10^{-3}(300 - \phi)\,h$ |
 | $h$ | $h(y) = -(y_1^4 + y_2^4 - 16)(y_1^4 + y_2^4 - 4)$ | unchanged |
 | $\alpha$ | $\alpha(y) = (2.5 - y_1)^2 + 0.3\,y_1 y_2^2\,(2.5 - y_1)$ | positive on the ring, minimum 0.25 |
-| maximum of $\psi$ | 1, at $y = (-1.794, 0) \in \mathcal{X}_T$ | unique maximum inside the target, as the assumption on the safe and target sets asks |
+| maximum of $\psi$ | 1, at $y = (-1.794, 0) \in \mathcal{X}_T$ | unique maximum inside the target, as the assumption on the sets asks |
 | target set | $\mathcal{X}_T = \{\phi(y) < 0\}$, $\phi(y) = 4(y_1 + 1.7)^2 + y_2^2 - 0.4$ | the paper prints $y_1^2 + 4(y_2 + 1.7)^2 - 0.4$, indices swapped with respect to the code and the figures |
 | input set | $\lvert\omega\rvert \le 3$, $\lvert a\rvert \le 3$ | was 5 |
 
-### 1.2 Certificate and controller
+### 1.2 Shape of $k_1$ and the scaled family
+
+Program (12) is solved once at the normalised scale ($\lambda_0 = 0.06$,
+$\lvert k_{1,i}\rvert \le 1$ on $\{\psi \ge 0\}$, scaled outputs $y/2$, degree 8;
+`design/run_design.m`). The base design is then scaled in time by $s$
+(`TAC_EXPERIMENT_UPDATE.md` Section 7): $k_1 \to s k_1$, $\lambda \to s\lambda_0$,
+$\delta_s \to s\delta_s$, $\mu \to s^2\mu_0$ with $\mu_0 = 0.02$. The certificate
+$\Psi$, $\delta_s/\lambda = 0.0410$, $M_\Psi = 0.959$, the position part of
+$\mathcal{X}_{RA}$ (76.5 % of $\mathcal{X}_S \setminus \mathcal{X}_T$) and of
+$\mathcal{X}_{RA}^{\delta}$ (37.9 %) do not depend on $s$; the velocities,
+the inputs ($\omega \propto s$, $a \propto s^2$) and the speed of the closed
+loop do.
+
+### 1.3 Choice of the time scale of the terminal controller
+
+`final/solve_scale.py`, `final/verify_inputs_grid.py`, $T = 0.05$ s,
+$\delta = 0.2\,M_\Psi = 0.192$:
+
+| bound on $s$ | how | value |
+| --- | --- | --- |
+| input bounds on $\mathcal{X}_{RA}^{\delta}$, sampled suprema (61 322 states) | $s_U = \min(3/\sup\lvert\omega_1\rvert,\ \sqrt{3/\sup\lvert a_1\rvert}) = \min(3/0.994, \sqrt{3/0.237})$ | 3.02 |
+| input bounds, analytic bound over each velocity fibre on a $2001^2$ position grid (no velocity sampling) | $\lvert\omega_1\rvert \le 1.73$, $\lvert a_1\rvert \le 0.40$ | 1.74 |
+| one-step increase of $\Psi$ under ZOH at the period $T$ (sampled, 61 322 states) | positive for base arcs up to $\tau_\varepsilon = 47.7$ ms, $s_\varepsilon = \tau_\varepsilon/T$ | 0.95 |
+| second-order bound of Lemma 2, for reference | $s_T = T^\star_1/T$, $T^\star_1 = 2\eta_1/M_{2,1} = 8.1$ ms | 0.16 |
+| closed-form bound of the current proof, for reference | $T^\star = 0.35$ ms at $s = 0.764$ | about 0.005 |
+
+The period, not the input bounds, limits the terminal controller. Chosen
+$s = 0.8\,s_\varepsilon = 0.764$ (safety factor 0.8 on the sampled threshold;
+within both input bounds by a factor 2.3 and 4). The conservative bounds are
+not used for the choice; they are reported because Lemma 2 and Theorem 2 are
+stated with them.
+
+### 1.4 Terminal controller (the design used by RA-MPC)
 
 | item | value |
 | --- | --- |
-| $k_1$ | degree 8, from the SOS program (12) solved in scaled outputs $y/2$ with $\lvert k_{1,i}\rvert \le 1$ and $\lambda$ fixed, then time scaled by $s = 0.159$ (file `design/k1/W3_l0.06.txt`) |
-| $\lambda$ | $9.56 \times 10^{-3}$ |
-| SOS slack $\delta_s$ | $3.92 \times 10^{-4}$, so $\delta_s/\lambda = 0.0410$ |
-| largest field speed | $\max \lvert k_{1,i}\rvert = 0.0996$ m/s on the ring |
-| $\mu$ | $5.06 \times 10^{-4}$ |
-| $\Psi$ | $\Psi(x) = \psi(y) - \delta_s/\lambda - \lVert \dot y - k_1(y)\rVert^2/(2\mu)$, $M_\Psi = 0.959$ |
-| $\mathcal{X}_{RA} = \{\Psi \ge 0\}$ | positions: 76.5 % of $\mathcal{X}_S \setminus \mathcal{X}_T$; speeds between 0.007 and 0.113 m/s |
-| terminal margin | $\delta = 0.2\,M_\Psi = 0.192$ |
-| $\mathcal{X}_{RA}^{\delta} = \{\Psi \ge \delta\}$ | positions: 37.9 % of $\mathcal{X}_S \setminus \mathcal{X}_T$; speeds between 0.026 and 0.107 m/s |
-| $u^c$ on $\mathcal{X}_{RA}^{\delta}$ | $\lvert\omega\rvert \le 0.152$, $\lvert a\rvert \le 0.0059$ (on $\mathcal{X}_{RA}$: 0.205 and 0.0062) |
-| offline synthesis | one SOS solve, 1.9 s (MOSEK, this machine); the bounded-input stage is not needed because $u^c$ is far inside the bounds |
+| scale | $s = 0.764$ |
+| $\lambda$, $\delta_s$, $\mu$ | $0.0459$, $1.88 \times 10^{-3}$, $0.0117$ |
+| largest field speed | $\max\lvert k_{1,i}\rvert = 0.478$ m/s |
+| $\mathcal{X}_{RA}$ | speeds 0.03 to 0.54 m/s; $u^c$ up to 1.02 rad/s, 0.145 m/s$^2$ |
+| $\mathcal{X}_{RA}^{\delta}$ | speeds 0.12 to 0.51 m/s; $u^c$ up to 0.72 rad/s, 0.138 m/s$^2$ |
+| one-step increase at $T = 0.05$ s on $\mathcal{X}_{RA}^{\delta}$ | $\varepsilon = 1.07 \times 10^{-4}$ (76 809 arcs), all increasing |
+| offline time | one SOS solve, 1.9 s, plus the sampled quantities above |
 
-### 1.3 MPC
+### 1.5 URA baseline
+
+The same $k_1$ at the performance scale $s = 5$: $\lambda = 0.30$, $\mu = 0.50$,
+field speeds up to 3.13 m/s. It is the synthesis without regard to the input
+bounds or the period; $s = 5$ exceeds $s_U$, so its inputs leave the bounds on
+part of its runs (Section 2).
+
+### 1.6 MPC
 
 | item | value |
 | --- | --- |
 | sampling period, horizon | $T = 0.05$ s, $N = 25$ |
 | stage cost | $\ell(x, u) = 5\lVert y - y^\star\rVert^2 + 0.05\lVert u\rVert^2$, $y^\star = (-1.7, 0)$, $\underline{\ell} = 0.5$ |
-| terminal cost | $V_f = \omega\,(M_\Psi - \Psi)$ with $\omega = 5.94 \times 10^{5}$ |
-| how $\omega$ is set | $\omega = 1.2\,\sup\ell/\varepsilon$, with $\varepsilon = 9.3 \times 10^{-5}$ the smallest one-step increase of $\Psi$ on $\mathcal{X}_{RA}^{\delta}$ under ZOH and $\sup \ell = 46.1$ there (both sampled) |
+| terminal cost | $V_f = \omega\,(M_\Psi - \Psi)$, $\omega = 1.2\,\sup\ell/\varepsilon$ with $\varepsilon$ the sampled one-step increase (seed of `terminal_stats`) and $\sup\ell = 46.1$ |
 | vanilla MPC | same model, stage cost, constraints and solver; terminal constraint $\hat x(NT) \in \mathcal{X}_T$, terminal cost $80\lVert y_N - y^\star\rVert^2$ |
 | prediction model | RK4 with 4 sub-steps per period (12.5 ms) |
-| state constraint | imposed at every sub-step node with a back-off of about 1.2 mm (Section 4.2) |
+| state constraint | at every sub-step node with a back-off of about 1.2 mm |
+| initial guesses at $k = 0$ (both MPCs) | cold start; on failure a steer-to-target rollout; RA-MPC also the vanilla solution and a continuation over the terminal set's scale ($s/4$, $s/2$, $s$) |
 | plant | continuous time, input held over $T$ (RK4 at 5 ms) |
 
-### 1.4 Initial states
+### 1.7 Initial states
 
-One set of 300 states for all methods (`final/config.py`, `initial_set()`).
+One set of 300 states for all methods (`final/config.py`, `initial_set()`
+with `SET_SCALE = 5`).
 
-- Positions: uniform in $\mathcal{X}_S \setminus \mathcal{X}_T$ (the same 300 positions as before).
-- Velocities: $\dot y(0) = k_1(y(0)) + w$ with $w$ uniform in the disc of radius
-  $r_0 = 0.03$ m/s; $\theta(0)$ and $v(0)$ follow from $\dot y(0)$. The value 0.03
-  is the largest velocity radius that $\mathcal{X}_{RA}$ admits, so the sampled
-  tube contains every velocity of $\mathcal{X}_{RA}$. Speeds range from 0.005 to
-  0.115 m/s.
-- 69 of the 300 states lie in $\mathcal{X}_{RA}$ and 32 in $\mathcal{X}_{RA}^{\delta}$.
-- Success: the closed-loop trajectory enters $\mathcal{X}_T$ and stays in
-  $\mathcal{X}_S$ until then. URA is run for 600 s, the MPC schemes for 20 s.
-  For vanilla MPC a state counts when the first problem is feasible; its
-  receding-horizon closed loop was then run from all these states and reached
-  the target from every one of them.
+- Positions: uniform in $\mathcal{X}_S \setminus \mathcal{X}_T$ (unchanged).
+- Velocities: $\dot y(0) = k_1^{(5)}(y(0)) + w$ with $k_1^{(5)}$ the URA's field
+  and $w$ uniform in the disc of radius $r_0 = 0.943$ m/s, the largest velocity
+  radius of the URA's $\mathcal{X}_{RA}$. Speeds range from 0.15 to 3.6 m/s.
+- 69 states lie in the URA's $\mathcal{X}_{RA}$; none lies in the terminal
+  controller's $\mathcal{X}_{RA}$, which is 6.5 times slower.
+- Success: the closed loop enters $\mathcal{X}_T$ and stays in $\mathcal{X}_S$
+  until then (URA run for 600 s, MPC for 20 s; vanilla counted by first-step
+  feasibility, its closed loop then run from all those states).
 
 ## 2. Three-method comparison
 
 ### 2.1 Success counts (subfigure captions)
 
-| subset of the initial set | states | URA | vanilla MPC | RA-MPC |
-| --- | --- | --- | --- | --- |
-| **all** | **300** | **229** | **165** | **236** |
-| inside $\mathcal{X}_{RA}$ | 69 | 69 | 64 | 68 |
-| inside $\mathcal{X}_{RA}^{\delta}$ | 32 | 32 | 32 | 32 |
-| outside $\mathcal{X}_{RA}$ | 231 | 160 | 101 | 168 |
+| | URA ($s = 5$) | vanilla MPC | RA-MPC |
+| --- | --- | --- | --- |
+| **reach $\mathcal{X}_T$ safely, of 300** | **229** | **213** | **263** |
+| runs that exceed the input bounds | 170 (158 among the successes) | 0 | 0 |
+| peak $\lvert\omega\rvert$, $\lvert a\rvert$ over all runs | 5.4 rad/s, 6.7 m/s$^2$ | 3, 3 | 3, 3 |
+| inside the URA's $\mathcal{X}_{RA}$ (69 states) | 69 | | |
 
 | pair | count |
 | --- | --- |
-| RA-MPC succeeds, vanilla MPC does not | 71 |
+| RA-MPC succeeds, vanilla MPC does not | 50 |
 | vanilla MPC succeeds, RA-MPC does not | 0 |
-| RA-MPC succeeds, URA does not | 23 |
-| URA succeeds, RA-MPC does not | 16 |
-| all three succeed | 162 |
-| none succeeds | 48 |
+| RA-MPC succeeds, URA does not | 38 |
+| URA succeeds, RA-MPC does not | 4 |
+| all three succeed | 199 |
+| none succeeds | 33 |
 
-- URA: 229 reach, 71 leave the safe set. The sampled-data URA with $T = 0.05$ s
-  succeeds from exactly the same 229 states.
-- RA-MPC: the 64 failures are all infeasible at $k = 0$. No solve is infeasible
-  afterwards (Section 4).
-- The single state of $\mathcal{X}_{RA}$ that RA-MPC misses lies outside
-  $\mathcal{X}_{RA}^{\delta}$ ($\Psi = 0.09$, far side of the ring) and becomes
-  feasible with $N = 30$. The guarantee of Theorem 2 concerns the states
-  feasible at $k = 0$, which include all of $\mathcal{X}_{RA}^{\delta}$ (32 of 32).
+- URA: 229 reach, 71 leave the safe set; on 158 of the 229 the inputs exceed
+  the bounds (mostly $a$, up to 6.7 m/s$^2$; $\omega$ up to 5.4 rad/s).
+- RA-MPC: the 37 failures are all infeasible at $k = 0$; no solve is
+  infeasible afterwards (Section 4). The terminal controller alone reaches
+  from 46 of the 300 states (the set is 6.5 times faster than its field).
 
 ![outcomes](final/figs/verify_outcomes.png)
 
 ### 2.2 URA against RA-MPC: time, cost, inputs
 
-On the 213 states where both succeed (cost: accumulated stage cost
-$\int \ell\,dt$ up to the entry into $\mathcal{X}_T$):
+On the 225 states where both succeed (cost: accumulated stage cost up to the
+entry into $\mathcal{X}_T$):
 
 | quantity | URA | RA-MPC |
 | --- | --- | --- |
-| time to the target, median | 24.0 s | 1.25 s |
-| time to the target, maximum | 135.7 s | 2.20 s |
-| accumulated cost, median | 214.8 | 14.0 |
-| largest $\lvert\omega\rvert$ | 0.146 rad/s | 3.0 rad/s (bound) |
-| largest $\lvert a\rvert$ | 0.0068 m/s$^2$ | 3.0 m/s$^2$ (bound) |
-| share of applied inputs within 2 % of the bound | none | $\omega$ 15 %, $a$ 91 % |
+| time to the target, median (maximum) | 0.80 s (4.3 s) | 0.70 s (2.4 s) |
+| accumulated cost, median | 8.7 | 7.0 |
+| largest $\lvert\omega\rvert$ | 4.6 rad/s | 3.0 rad/s (bound) |
+| largest $\lvert a\rvert$ | 6.7 m/s$^2$ | 3.0 m/s$^2$ (bound) |
+| share of applied inputs within 2 % of the bound | | $\omega$ 28 %, $a$ 77 % |
 
-Median ratios per state: URA is 20 times slower and 16 times more costly. On
-the 162 states where all three succeed the medians are 18.4 s (URA), 0.90 s
-(vanilla MPC) and 1.05 s (RA-MPC).
+On the 199 states where all three succeed the median times are 0.80 s (URA),
+0.60 s (vanilla MPC) and 0.65 s (RA-MPC), costs 6.1, 5.8 and 6.2. The point of
+the comparison: URA is as fast only by exceeding the actuator limits, on
+two thirds of its successful runs; RA-MPC matches its speed within the limits
+and succeeds from 34 more states.
 
-URA never exceeds the input bounds here (at most 6 % of $\omega_{\max}$ and
-0.2 % of $a_{\max}$ over all 300 runs). The statement of the current text that the unconstrained
-controller "severely violates actuator limits" no longer holds. What the
-comparison shows is that URA has to be slow to be certifiable, whereas the MPC
-uses the admissible inputs up to the bounds and is faster by a factor 20.
-
-Shared initial state of the trajectory panels and of the input plot: state
-230, $x_0 = (0.3765, -1.7589, -2.9683, 0.0688)$, the farthest state from which
-all three methods succeed. Times to the target: vanilla MPC 1.35 s, URA 36.5 s,
-RA-MPC 1.70 s.
+Shared initial state of the trajectory panels and of the input plot: state 6,
+$x_0 = (1.330, 1.776, -2.820, 1.733)$, 3.5 from the target, the farthest state
+from which all three methods succeed and URA exceeds the bounds. Times to
+the target: vanilla MPC 1.20 s, URA 1.47 s with peaks $\omega$ 3.5 rad/s and
+$a$ 5.7 m/s$^2$ (0.66 s above the bounds), RA-MPC 1.55 s within the bounds.
 
 ### 2.3 Computation time (Table I)
 
 Measured on this machine (Apple M5, one process, 12 runs per method), not on
-the i5-13400 named in the paper. The values of the table have to be measured
-again on the paper's machine.
+the i5-13400 named in the paper; to be measured again there.
 
 | method | offline | online per step, mean (median) |
 | --- | --- | --- |
-| vanilla MPC | none | 49.8 ms (43.4 ms) |
+| vanilla MPC | none | 47.0 ms (45.0 ms) |
 | URA | 1.9 s | 0.23 ms |
-| RA-MPC | 1.9 s | 68.7 ms (66.7 ms) |
+| RA-MPC | 1.9 s | 69.7 ms (68.9 ms) |
 
-- Both MPC schemes now use the 4-sub-step model with the state constraint at
-  the sub-step nodes and tight solver tolerances, which is why they are
-  slower than the 28.9 ms and 30.8 ms of the current table.
-- The RA-MPC step takes longer than $T = 0.05$ s on this machine. No effort
-  went into solver speed (IPOPT through `casadi.Opti`, problem rebuilt at
-  every step).
-- The offline time of RA-MPC equals that of URA because the bounded-input
-  synthesis stage is not active. The sampled constants ($\varepsilon$, $\omega$,
-  $\eta$, $M_2$) take a few seconds more.
+- Both MPC schemes use the 4-sub-step model with the state constraint at the
+  sub-step nodes and tight solver tolerances, hence slower than the 28.9 ms
+  and 30.8 ms of the current table. Under the parallel evaluation the means
+  are 97 ms and 141 ms.
+- The first solve of RA-MPC takes 114 ms on average because of the fallback
+  initial guesses (1.6); later solves 66.5 ms. The RA-MPC step exceeds
+  $T = 0.05$ s on this machine.
+- The offline time is one SOS solve (shared with URA) plus the sampled
+  quantities of 1.3 and 1.6, a few seconds.
 
 ## 3. Verification of Lemma 2
 
-Lemma 2: for $T < T^\star$ the sampled-data closed loop under $u^c$ stays in
-$\mathcal{X}_S$ and enters $\mathcal{X}_T$ in finite time; the proof shows that
-$\Psi$ increases by a uniform amount from one sampling instant to the next.
-Script `final/run_lemma2.py`, states sampled inside the sets (half of them on
-the boundary in the velocity directions).
+Terminal controller at $s = 0.764$; `final/run_lemma2.py`, states sampled
+inside the sets (half on the velocity boundary).
 
-![lemma 2](final/figs/verify_lemma2.png)
-
-### 3.1 At the paper's period $T = 0.05$ s
+### 3.1 At $T = 0.05$ s
 
 | check | result |
 | --- | --- |
-| one ZOH step from 76 896 states of $\mathcal{X}_{RA}^{\delta}$ (76 809 arcs that do not enter $\mathcal{X}_T$): $\Psi$ increases | all, smallest increase $1.04 \times 10^{-4}$ |
+| one ZOH step from 76 896 states of $\mathcal{X}_{RA}^{\delta}$ (76 809 arcs outside $\mathcal{X}_T$): $\Psi$ increases | all, smallest increase $1.07 \times 10^{-4}$ |
 | same arcs: end state in $\mathcal{X}_{RA}^{\delta}$, arc inside $\mathcal{X}_{RA}$ | all |
-| closed loop from 600 states of $\mathcal{X}_{RA}^{\delta}$: reach $\mathcal{X}_T$ inside $\mathcal{X}_S$ | 600 of 600, median 17.2 s |
-| same runs: $\Psi$ increases at every sampling instant | 600 of 600, smallest step $9.8 \times 10^{-5}$ |
-| closed loop from 600 states of $\mathcal{X}_{RA}$ | 600 of 600 reach, $\Psi$ increasing in all |
-
-Panel (a) shows $\Psi$ at the sampling instants for 60 of these runs.
+| closed loop from 600 states of $\mathcal{X}_{RA}^{\delta}$: reach $\mathcal{X}_T$ inside $\mathcal{X}_S$ | 600 of 600 |
+| same runs: $\Psi$ increasing at every sampling instant | 600 of 600, smallest step $2.0 \times 10^{-4}$ |
+| closed loop from 600 states of $\mathcal{X}_{RA}$ | 600 of 600 reach; $\Psi$ increasing in 597 |
 
 ### 3.2 Against the sampling period
 
-One ZOH step from 9 298 states of $\mathcal{X}_{RA}^{\delta}$ (arcs that enter
-$\mathcal{X}_T$ are left out):
+One ZOH step from 9 295 states of $\mathcal{X}_{RA}^{\delta}$ (arcs entering
+$\mathcal{X}_T$ left out) and the sampled-data closed loop from 600 states:
 
-| $T$ [s] | smallest increase of $\Psi$ | arcs with increasing $\Psi$ | end in $\mathcal{X}_{RA}^{\delta}$ | second-order bound $\eta T - \tfrac12 M_2 T^2$ |
-| --- | --- | --- | --- | --- |
-| 0.005 | $+1.3 \times 10^{-5}$ | 100 % | 100 % | $+1.2 \times 10^{-5}$ |
-| 0.01 | $+2.6 \times 10^{-5}$ | 100 % | 100 % | $+2.3 \times 10^{-5}$ |
-| 0.02 | $+5.2 \times 10^{-5}$ | 100 % | 100 % | $+3.8 \times 10^{-5}$ |
-| 0.05 | $+1.2 \times 10^{-4}$ | 100 % | 100 % | $+3.6 \times 10^{-5}$ |
-| 0.1 | $+2.2 \times 10^{-4}$ | 100 % | 100 % | negative |
-| 0.2 | $+3.0 \times 10^{-4}$ | 100 % | 100 % | negative |
-| 0.3 | $+3.5 \times 10^{-4}$ | 100 % | 100 % | negative |
-| 0.5 | $-5.6 \times 10^{-4}$ | 99.93 % | 99.93 % | negative |
-| 1 | $-1.3 \times 10^{-2}$ | 98.4 % | 98.6 % | negative |
-| 2 | $-9.2 \times 10^{-2}$ | 90.9 % | 93.0 % | negative |
-| 5 | $-1.1$ | 64.5 % | 71.7 % | negative |
+| $T$ [s] | smallest increase | arcs with increasing $\Psi$ | end in $\mathcal{X}_{RA}^{\delta}$ | closed loop from $\mathcal{X}_{RA}^{\delta}$: reach | $\Psi$ increasing at every sample | from $\mathcal{X}_{RA}$: reach |
+| --- | --- | --- | --- | --- | --- | --- |
+| 0.01 | $+1.2 \times 10^{-4}$ | 100 % | 100 % | 600 | 600 | 600 |
+| 0.02 | $+2.1 \times 10^{-4}$ | 100 % | 100 % | 600 | 600 | 600 |
+| 0.05 | $+2.9 \times 10^{-4}$ | 100 % | 100 % | 600 | 600 | 600 |
+| 0.075 | $+2.1 \times 10^{-4}$ | 100 % | 100 % | | | |
+| 0.1 | $-4.3 \times 10^{-4}$ | 99.97 % | 99.97 % | 600 | 597 | 600 |
+| 0.2 | $-1.1 \times 10^{-2}$ | 98.6 % | 98.8 % | 600 | 570 | 600 |
+| 0.5 | $-0.15$ | 86.8 % | 90.1 % | 600 | 405 | 600 |
+| 1 | $-0.95$ | 66.1 % | 73.4 % | 600 | 233 | 582 |
+| 2 | $-6.8$ | 30.5 % | 33.4 % | 410 | 262 | 323 |
 
-Sampled-data closed loop from 600 states of each set (run for 400 s):
-
-| $T$ [s] | from $\mathcal{X}_{RA}^{\delta}$: reach safely | $\Psi$ increasing at every sample | from $\mathcal{X}_{RA}$: reach safely | $\Psi$ increasing at every sample |
-| --- | --- | --- | --- | --- |
-| 0.01 to 0.2 | 600 | 600 | 600 | 600 |
-| 0.3 | 600 | 600 | 600 | 597 |
-| 0.5 | 600 | 596 | 600 | 589 |
-| 1 | 600 | 563 | 600 | 539 |
-| 2 | 600 | 452 | 600 | 384 |
-| 3 | 600 | 313 | 600 | 258 |
-| 5 | 600 | 234 | 579 | 157 |
-
-### 3.3 Sampling-period bounds
+### 3.3 Sampling-period bounds at $s = 0.764$
 
 | bound on $T$ | value |
 | --- | --- |
-| closed form of the current proof, $\beta(T)/\lambda < \delta$, constants sampled on $\mathcal{X}_{RA}^{\delta}$ ($M_g = 3.6,\ 52.6$; $\ell_{u^c} = 4.94,\ 0.10$; $M_v = 0.155$) | 0.51 ms |
-| second-order bound $2\eta/M_2$ with the certified rate $\eta = \lambda\delta = 1.83 \times 10^{-3}$, $M_2 = 0.0797$ | 46.0 ms |
-| second-order bound with the sampled $\eta = \min\dot\Psi = 2.01 \times 10^{-3}$ | 50.3 ms |
-| observed: $\Psi$ increases over one step from every sampled state of $\mathcal{X}_{RA}^{\delta}$ | up to 0.3 s |
-| observed: the sampled-data closed loop reaches $\mathcal{X}_T$ safely from every sampled state | up to 3 s |
+| closed form of the current proof ($M_g = 3.6,\ 10.9$; $\ell_{u^c} = 7.55,\ 0.59$; $M_v = 0.75$) | 0.35 ms |
+| second-order bound $2\eta/M_2$ ($\eta = 9.6 \times 10^{-3}$, certified rate $\lambda\delta = 8.8 \times 10^{-3}$; $M_2 = 1.85$) | 10.4 ms (9.5 ms with $\lambda\delta$) |
+| observed: $\Psi$ increases over one step from every sampled state | up to 75 ms |
+| observed: the closed loop reaches $\mathcal{X}_T$ safely from every sampled state | up to 1 s |
 
-Reading: the conclusion of Lemma 2 holds at $T = 0.05$ s with a factor 6 to the
-first violation of the increase and a factor 60 to the first failure. The
-bounds are conservative, and $T = 0.05$ s sits at the edge of the second-order
-bound (Section 8, point 1).
+Reading: with $T = 0.05$ s the conclusion of Lemma 2 holds with a factor 1.5
+to the first one-step violation and a factor 20 to the first closed-loop
+failure; both bounds are below $T$ (5 times for the second-order one), so the
+paper's hypothesis $\delta > \beta(T)/\lambda$ is not met by the bounds and is
+met by the sampled check, as decided for the experiments.
 
 ## 4. Verification of Theorem 2 and Corollary 1
 
@@ -231,20 +238,20 @@ Data: the 300 RA-MPC runs of Section 2 (`final/run_main.py`).
 
 | claim | check | result |
 | --- | --- | --- |
-| hypothesis (22) on the terminal cost | $\omega\,[\Psi(x^s(t_{k+1})) - \Psi(x^s(t_k))] \ge \ell(x^s(t_k), u^c)$ on 76 809 sampled states of $\mathcal{X}_{RA}^{\delta}$ | all; $\omega$ times the smallest increase is 61.9 against $\sup \ell = 46.1$ |
+| hypothesis (22) on the terminal cost | $\omega\,[\Psi(x^s(t_{k+1})) - \Psi(x^s(t_k))] \ge \ell(x^s(t_k), u^c)$ on 76 490 sampled states of $\mathcal{X}_{RA}^{\delta}$ | all; $\omega$ times the smallest increase is 74.8 against $\sup \ell = 46.1$ |
 | terminal controller admissible | $u^c$ of the appended candidate step within the bounds | every step of every run |
-| recursive feasibility | solves after $k = 0$ in the 236 runs feasible at $k = 0$ | 5 921 solves, none infeasible |
-| reaches $\mathcal{X}_T$ | runs feasible at $k = 0$ that enter the target | 236 of 236 |
+| recursive feasibility | solves after $k = 0$ in the 263 runs feasible at $k = 0$ | 5 217 solves, none infeasible |
+| reaches $\mathcal{X}_T$ | runs feasible at $k = 0$ that enter the target | 263 of 263 |
 | strictly inside $\mathcal{X}_S$ | smallest $h$ along the continuous closed loop before the entry, 2.5 ms resolution | 0.165 > 0, no run with a negative value |
-| cost decrease | $J^*_k - J^*_{k+1}$ over 5 685 steps | smallest 1.60; never below $\underline{\ell} = 0.5$; never below $\ell(x_k, u_k)$ beyond solver tolerance (ratio at least 0.999 998 8) |
-| adaptive horizon | $N$ along each run | nonincreasing in 236 of 236, shortened in all of them, smallest value 1 |
-| Corollary 1 | entry time against $(\lfloor J^*_0/\underline{\ell}\rfloor + 1)\,T$ | holds in 236 of 236 |
+| cost decrease | $J^*_k - J^*_{k+1}$ over 4 954 steps | smallest 1.99; never below $\underline{\ell} = 0.5$; never below $\ell(x_k, u_k)$ beyond solver tolerance (ratio at least 0.999 999) |
+| adaptive horizon | $N$ along each run | nonincreasing in 263 of 263, shortened in 256, smallest value 1 |
+| Corollary 1 | entry time against $(\lfloor J^*_0/\underline{\ell}\rfloor + 1)\,T$ | holds in 263 of 263 |
 
-- Entry times: median 1.30 s, maximum 2.20 s. Bound of Corollary 1: between
-  0.95 s and 45 704 s, median 12 344 s. The bound is loose by four orders of
-  magnitude for most states because $V_f$ with $\omega = 5.9 \times 10^5$
-  dominates $J^*_0$. It is tight only near the target.
-- The candidate was kept instead of the solver output in 3 356 of the 5 921
+- Entry times: median 0.75 s, maximum 2.40 s. Bound of Corollary 1: between
+  0.40 s and 53 541 s, median 404 s. It is loose by three orders of magnitude
+  for most states because $V_f$ with $\omega = 7.0 \times 10^5$ dominates
+  $J^*_0$, and tight only near the target.
+- The candidate was kept instead of the solver output in 2 959 of the 5 217
   solves. Once the horizon is being shortened the tail of the previous plan is
   optimal, the decrease equals $\ell(x_k, u_k)$, and the points of panel (c)
   lie on the diagonal.
@@ -252,49 +259,47 @@ Data: the 300 RA-MPC runs of Section 2 (`final/run_main.py`).
 ### 4.2 Safety between sampling instants
 
 With the state constraint imposed at the sampling instants only, as in all
-earlier runs and in the L-CSS code, 114 of the 236 successful RA-MPC runs left
-$\mathcal{X}_S$ between two sampling instants, by at most 1.2 mm
-($h \ge -0.16$). The MPC problem of Theorem 2 constrains
-$\hat x(\tau \mid k)$ for all $\tau$, so this was an implementation gap and not a
-counterexample. The final runs impose the constraint at the four RK4 sub-step
-nodes of every period with a back-off of 0.05 in the units of the safe-set
-function (about 1.2 mm at the inner boundary). Both MPC schemes use it. Effect
-on the counts: vanilla MPC 166 to 165, RA-MPC 236 to 236 (two states lost, two
-gained).
+earlier runs and in the L-CSS code, about half of the successful RA-MPC runs
+of the earlier setting left $\mathcal{X}_S$ between two sampling instants, by
+at most 1.2 mm. The MPC problem of Theorem 2 constrains
+$\hat x(\tau \mid k)$ for all $\tau$, so this was an implementation gap. The
+final runs impose the constraint at the four RK4 sub-step nodes of every
+period with a back-off of 0.05 in the units of the safe-set function (about
+1.2 mm at the inner boundary), for both MPC schemes.
 
 ## 5. Sampling-period sweep
 
-`final/run_sweep.py`: $T$ varies with $NT = 1.25$ s, and the terminal design is
-kept at its base values ($\delta = 0.192$, $\omega = 5.94 \times 10^5$). Model
-sub-steps and constraint nodes stay at 12.5 ms for every $T$. Same 300 states.
+`final/run_sweep.py`: $T$ varies with $NT = 1.25$ s, the terminal design is kept
+at its base values ($s = 0.764$, $\delta = 0.192$, $\omega = 7.0 \times 10^5$),
+model sub-steps and constraint nodes stay at 12.5 ms. Same 300 states.
 
-| $T$ [s] | $N$ | vanilla MPC | sampled-data URA | RA-MPC | $\rho$ of RA-MPC | infeasible after $k=0$ | steps violating the decrease | $\min \Delta\Psi$ on $\mathcal{X}_{RA}^{\delta}$ |
+| $T$ [s] | $N$ | vanilla MPC | $u^c$ alone, sampled-data | RA-MPC | $\rho$ of RA-MPC | infeasible after $k=0$ | steps violating the decrease | $\min \Delta\Psi$ on $\mathcal{X}_{RA}^{\delta}$ |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 0.025 | 50 | 165 | 229 | 233 | 77.7 % | 0 | 0 of 11 572 | $+5.2 \times 10^{-5}$ |
-| 0.03125 | 40 | 165 | 229 | 235 | 78.3 % | 0 | 0 of 9 194 | $+6.3 \times 10^{-5}$ |
-| **0.05** | **25** | **165** | **229** | **236** | **78.7 %** | **0** | **0 of 5 685** | $+9.3 \times 10^{-5}$ |
-| 0.0625 | 20 | 165 | 230 | 236 | 78.7 % | 0 | 0 of 4 437 | $+1.1 \times 10^{-4}$ |
-| 0.125 | 10 | 162 | 231 | 235 | 78.3 % | 0 | 0 of 2 072 | $+1.6 \times 10^{-4}$ |
-| 0.25 | 5 | 165 | 231 | 231 | 77.0 % | 0 | 0 of 943 | $+6.2 \times 10^{-5}$ |
-| 0.3125 | 4 | 165 | 232 | 228 | 76.0 % | 0 | 0 of 732 | $-7.7 \times 10^{-5}$ |
-| 0.625 | 2 | 150 | 232 | 218 | 72.7 % | 0 | 0 of 508 | $-2.0 \times 10^{-3}$ |
+| 0.025 | 50 | 213 | 46 | 265 | 88.3 % | 0 | 0 of 10 373 | $+1.5 \times 10^{-4}$ |
+| 0.03125 | 40 | 213 | 46 | 264 | 88.0 % | 0 | 0 of 8 141 | $+1.6 \times 10^{-4}$ |
+| **0.05** | **25** | **213** | **46** | **263** | **87.7 %** | **0** | **0 of 4 954** | $+7.9 \times 10^{-5}$ |
+| 0.0625 | 20 | 213 | 46 | 264 | 88.0 % | 0 | 0 of 3 941 | $-4.4 \times 10^{-5}$ |
+| 0.125 | 10 | 213 | 47 | 264 | 88.0 % | 0 | 0 of 1 829 | $-1.6 \times 10^{-3}$ |
+| 0.25 | 5 | 213 | 47 | 264 | 88.0 % | 0 | 0 of 835 | $-2.4 \times 10^{-2}$ |
+| 0.3125 | 4 | 213 | 47 | 261 | 87.0 % | 0 | 0 of 649 | $-4.4 \times 10^{-2}$ |
+| 0.625 | 2 | 209 | 48 | 248 | 82.7 % | 0 | 0 of 364 | $-0.27$ |
 
 ![sweep](final/figs/verify_sweep.png)
 
-- For every $T$, every run that is feasible at $k = 0$ reaches the target, no
-  run is unsafe or times out, and vanilla-feasible states are RA-MPC feasible
+- For every $T$, every run feasible at $k = 0$ reaches the target, no run is
+  unsafe or times out, and vanilla-feasible states are RA-MPC feasible
   without exception.
-- Inside the range $T \le 0.05$ s the success rate is constant up to three
-  states (233 to 236). The three missing at $T = 0.025$ s are failures of the
-  first solve, not infeasibility: that problem contains the one at
-  $T = 0.05$ s.
-- Beyond it the rate falls slowly, to 72.7 % at $T = 0.625$ s. The loss is in
-  the set of states feasible at $k = 0$ (coarser input parametrisation), not in
-  recursive feasibility.
+- Up to $T = 0.25$ s the success rate is constant (263 to 265); it falls to
+  82.7 % at $T = 0.625$ s, through the set of states feasible at $k = 0$
+  (coarser input parametrisation), not through recursive feasibility.
+- The one-step increase of $\Psi$ on the terminal set is lost from
+  $T = 0.0625$ s on (last column), so hypothesis (22) fails on part of the
+  terminal set there, yet the closed loop never needs it: the candidate is
+  only a fallback and the solver always found a feasible plan.
 - The current sentence of the paper, that the drop of $\rho$ with $T$
-  "directly corroborates" Lemma 2, is not what these data show. They show that
-  the guarantees hold on the certified range and that nothing breaks for
-  periods six to twelve times longer, which is the conservatism of Section 3.3.
+  "directly corroborates" Lemma 2, is not supported: the drop sets in an
+  order of magnitude beyond the period at which the lemma's mechanism (the
+  one-step increase) stops holding.
 
 ## 6. Figures for the paper
 
@@ -303,7 +308,7 @@ figures in `TAC/figs/`, so they can be copied over once confirmed.
 
 ### 6.1 Three method panels (figure* in `method.tex`)
 
-| vanilla MPC, 165/300 | URA, 229/300 | RA-MPC, 236/300 |
+| vanilla MPC, 213/300 | URA, 229/300 | RA-MPC, 263/300 |
 | --- | --- | --- |
 | ![vanilla](final/figs/fig_dubins_vanilla.png) | ![ura](final/figs/fig_dubins_uncon.png) | ![rampc](final/figs/fig_dubins_rampc.png) |
 
@@ -314,36 +319,18 @@ the shared initial state, the grey streamlines are $k_1$.
 
 ![compare](final/figs/fig_dubins_compare.png)
 
-Top: $\rho$ of RA-MPC against $T$ (Section 5), shaded for $T < T^\star$, dashed
-line at $T = 0.05$ s; the $\rho$ axis is zoomed to the range of the data (65 to
-85 %). Below: $\omega$ and $a$ from the shared initial state, URA in blue
-(36.5 s) and RA-MPC in purple (1.70 s), bounds dashed. The time axis is
-logarithmic because the two durations differ by a factor 20 (the script
-switches to a linear axis automatically when they differ by less than a
-factor 6).
+Top: $\rho$ of RA-MPC against $T$ (Section 5), $\rho$ axis zoomed to the data,
+dashed line at $T = 0.05$ s (the shaded certified range of the second-order
+bound, $T < 10$ ms, lies left of the plotted range). Below: $\omega$ and $a$
+from the shared initial state, URA in blue (1.47 s, outside the bounds between
+0.24 s and 0.65 s and again at the end) and RA-MPC in purple (1.55 s, inside),
+bounds dashed, linear time axis.
 
-### 6.3 Optional: cost and horizon (`fig_dubins_cost`)
+### 6.3 Variant with a farther start (`*_far` files)
 
-![cost](final/figs/fig_dubins_cost.png)
-
-Three rows for the shared initial state: $J^*_k$, the decrease
-$J^*_k - J^*_{k+1}$ against the stage cost $\ell(x_k, u_k)$ and
-$\underline{\ell}$, and the horizon used at step $k$. $J^*_k$ looks flat after
-0.55 s because the terminal cost $\omega\,(M_\Psi - \Psi)$ of the shortened
-plan stays at about $2.8 \times 10^4$ while each step removes only
-$\ell(x_k, u_k)$, between 3 and 30; the middle row shows this decrease
-directly, equal to $\ell(x_k, u_k)$ once the horizon is being shortened and
-far above it before. Not in the paper at present.
-
-### 6.4 Variant with a farther start (`*_far` files)
-
-Under the rule "one start from which all three methods succeed", the farthest
-start is state 230 at $(0.38, -1.76)$, 2.7 from the target, because vanilla
-MPC is only feasible within about 1.25 s of the target. The `_far` files drop
-vanilla MPC from the rule: URA and RA-MPC start from state 236 at
-$(1.78, -1.51)$, 3.8 from the target, on the far side of the ring (URA 62.1 s,
-RA-MPC 2.20 s), and the vanilla panel keeps its own farthest feasible start,
-state 230 (1.35 s).
+URA and RA-MPC from state 297, $x_0 = (1.878, -1.306, -3.070, 0.389)$, 3.8 from
+the target (URA 2.61 s with peaks 2.9 and 4.1, RA-MPC 2.10 s); vanilla from its
+own farthest feasible state 65 at $(1.77, 0.73)$ (1.45 s).
 
 | vanilla MPC, own start | URA, far start | RA-MPC, far start |
 | --- | --- | --- |
@@ -351,124 +338,89 @@ state 230 (1.35 s).
 
 ![compare far](final/figs/fig_dubins_compare_far.png)
 
-### 6.5 URA and the input bounds
+### 6.4 Optional: cost and horizon (`fig_dubins_cost`)
 
-With this certificate the controller alone does not exceed the bounds, at any
-start of the initial set and at any time scale that keeps it useful
-(`final/run_ura_scale.py`, `final/alt_set.py`):
+![cost](final/figs/fig_dubins_cost.png)
 
-| URA | initial set | reaches | exceeds the bounds | peak $\lvert\omega\rvert$, $\lvert a\rvert$ | median time |
-| --- | --- | --- | --- | --- | --- |
-| terminal controller, $s = 0.159$ (paper) | confirmed set | 229 | 0 of 300 | 0.17, 0.007 | 24 s |
-| unscaled design, $s = 1$ | confirmed set | 84 (215 leave $\mathcal{X}_S$) | 64, all $\omega$ spikes near $v = 0$ | 108, 0.20 | 20 s |
-| unscaled design, $s = 1$ | set around its own field, $r_0 = 0.19$, speeds 0.03 to 0.72 | 229 | 0 of 300 | 1.1, 0.27 | 4.1 s |
-| $s = 2$ | confirmed set | 51 | 136, $\omega$ spikes near $v = 0$ | 1255, 0.85 | 11 s |
-| $s = 3$ | confirmed set | 48 | 198, $\omega$ spikes near $v = 0$ | 2061, 1.8 | 7.5 s |
-
-The only violations are the $1/v$ singularity of $\omega = \ddot y \cdot n / v$
-at starts that are almost at rest, and they occur at starts within 0.85 of
-the target. A trajectory on which URA exceeds the bounds while RA-MPC stays
-inside therefore does not exist for this design; the old figure had one
-because the old gains were uncertified. On the set around the unscaled
-field (third row) the counts are URA 229, vanilla 183, RA-MPC 239, with
-vanilla-feasible states again a subset of the RA-MPC ones.
+Three rows for the shared initial state: $J^*_k$, the decrease
+$J^*_k - J^*_{k+1}$ against $\ell(x_k, u_k)$ and $\underline{\ell}$, and the
+horizon used at step $k$. The plateau of $J^*_k$ is the terminal cost of the
+shortened plan; the middle row shows the decrease directly.
 
 ## 7. Places to update in the paper
 
 | file | place | change |
 | --- | --- | --- |
 | `Example_dubins.tex` | definition of $\psi$ and $\phi$ | new $\psi$ (1.1); fix the swapped indices in $\phi$ |
-| `Example_dubins.tex` | "300 safe initial states randomly sampled outside the target set" | describe the initial set (1.4) |
+| `Example_dubins.tex` | "300 safe initial states randomly sampled outside the target set" | describe the initial set (1.7) |
 | `Example_dubins.tex` | "actuator limits $\lvert u_{1,2}\rvert \le 5$" | 3; $N = 25$ and $T = 0.05$ s stay |
-| `Example_dubins.tex` | certificate data | $\lambda$, $\mu$, $\delta$, $\omega$ if they are to be reported (1.2, 1.3) |
-| `Example_dubins.tex` | URA "severely violates actuator limits and delays convergence" | URA respects the bounds; it is 20 times slower and 16 times more costly (2.2) |
+| `Example_dubins.tex` | certificate and controller data | the base design, the scale rule and the two scales (1.2 to 1.5) |
+| `Example_dubins.tex` | URA "severely violates actuator limits and delays convergence" | exceeds the limits on 158 of 229 runs (up to 5.4 rad/s and 6.7 m/s$^2$); not slower: 0.80 s against 0.70 s (2.2) |
 | `Example_dubins.tex` | sweep sentence on Lemma 2 | see Section 5, last point |
-| `method.tex` | captions of the figure* | 165/300, 229/300, 236/300 instead of 245, 197, 255 |
+| `method.tex` | captions of the figure* | 213/300, 229/300, 263/300 instead of 245, 197, 255 |
+| `method.tex` | Algorithm 1, offline part | the scale rule of Section 7 of `TAC_EXPERIMENT_UPDATE.md` if adopted |
 | `experiment.tex` | Table I | Dubins columns, after measuring on the paper's machine (2.3) |
-| `experiment.tex` | caption of `fig_dubins_compare` | shaded range and logarithmic time axis if the figure is adopted |
+| `experiment.tex` | caption of `fig_dubins_compare` | zoomed $\rho$ axis, URA outside the bounds |
 | `figs/` | `fig_dubins_vanilla`, `fig_dubins_uncon`, `fig_dubins_rampc`, `fig_dubins_compare` | replace by the files of `final/figs/` |
 
 ## 8. Open points
 
-1. **$T = 0.05$ s against the bound.** With the bound of the current proof the
-   hypothesis $\delta > \beta(T)/\lambda$ of Theorem 2 does not hold at
-   $T = 0.05$ s (it needs $T < 0.51$ ms). With the second-order bound,
-   $T^\star$ is 50.3 ms for the sampled rate and 46.0 ms for the certified rate
-   $\lambda\delta$, so $T = 0.05$ s is on the edge. A slower time scale
-   $s = 0.14$ in place of 0.159 gives 52 ms with the certified rate (everything
-   is then rerun, about 30 minutes, and URA becomes 13 % slower). Alternatives:
-   $T = 0.04$ s, or stating the condition through the sampled one-step increase
-   $\varepsilon > 0$, which holds with a wide margin.
-2. **Form of Lemma 2.** Whichever option is taken in point 1, the closed-form
-   bound of the current proof cannot certify the period used. The second-order
-   form (`REPORT.md` Section 10.3) is the one behind the 46 to 50 ms.
-3. **Sampled constants.** $\eta$, $M_2$, $\varepsilon$, $\sup\ell$ and hence
-   $\omega$ are extrema over samples (9 298 to 76 896 states), not certified
-   bounds.
-4. **Corollary 1 is loose** for this terminal weight (Section 4.1).
-5. **Online time above $T$** on this machine (Section 2.3).
-6. **Manipulator example**: not audited, still with the old design.
-7. **Notebooks** `example_dubins_car_*.ipynb` and `make_paper_figs_dubins.ipynb`
+1. **$T = 0.05$ s against the bounds.** The second-order bound gives
+   $T^\star = 10.4$ ms at $s = 0.764$ and the closed form of the current proof
+   0.35 ms; the design uses the sampled threshold of the one-step increase
+   (75 ms) with a factor 0.8 on $s$, as decided. The paper has to say that
+   the period is validated by the sampled check and not by the bound, or
+   Lemma 2 has to be tightened before the experiments are described through
+   it.
+2. **Form of Lemma 2 and of (12).** The time-scaling proposition (Section 7
+   of the plan) with $\lambda$ fixed and the $K$ bound; the closed-form bound
+   cannot certify any period used.
+3. **Sampled quantities.** $s_U$ (sampled 3.02, analytic bound 1.74),
+   $s_\varepsilon$, $\varepsilon$, $\sup\ell$ and hence $\omega$, $\eta$, $M_2$
+   are extrema over samples (9 295 to 76 896 states), except the analytic
+   $s_U$ bound and the certified rate $\lambda\delta$.
+4. **Initial guesses.** Both MPCs try a steer-to-target rollout when the cold
+   start fails; RA-MPC also the vanilla solution and a continuation over the
+   terminal set's scale ($s/4$, $s/2$, $s$). Without it RA-MPC lost 35 far-side
+   states to solver failures (224 instead of 263). The paper should mention
+   the initialisation in one sentence.
+5. **URA scale.** $s = 5$ is a design choice (cruise speed about 3 m/s); it
+   exceeds $s_U \approx 3$, which is what makes the comparison. State it.
+6. **Corollary 1 is loose** for this terminal weight (4.1).
+7. **Online time above $T$** on this machine (2.3).
+8. **Manipulator example**: not audited; the scale rule needs the gravity
+   term (Section 7.3 of the plan).
+9. **Notebooks** `example_dubins_car_*.ipynb` and `make_paper_figs_dubins.ipynb`
    still run the committed controller; `controllers/*.py` is untouched.
 
 ## 9. Reproduction
 
 ```
 cd experiments/strict_xra/final
-python run_main.py      # Section 2 and 4   -> data/main.pkl      (3 min)
-python run_lemma2.py    # Section 3         -> data/lemma2.pkl    (5 min)
-python run_sweep.py     # Section 5         -> data/sweep.pkl     (15 min)
-python run_timing.py    # Section 2.3       -> data/timing.pkl    (1 min, run alone)
-python make_figs.py     # all figures       -> figs/
-python summarize.py     # prints the numbers and tables of this file
+python solve_scale.py            # Section 1.3: s_U, s_eps, s_T  -> data/scale.json
+python verify_inputs_grid.py     # Section 1.3: analytic input bound over X_RA^delta
+python run_main.py               # Sections 2 and 4   -> data/main.pkl      (3 min)
+python run_lemma2.py             # Section 3          -> data/lemma2.pkl    (5 min)
+python run_sweep.py              # Section 5          -> data/sweep.pkl     (15 min)
+python run_timing.py             # Section 2.3        -> data/timing.pkl    (1 min, run alone)
+python make_figs.py              # all figures        -> figs/
+python summarize.py              # prints the numbers and tables of this file
 ```
 
-`config.py` holds the setting (certificate, bounds, horizon, initial set,
-constraint handling). The MPC class is `design/ra_mpc_cert.py`; the options
-`nsub`, `safe_sub`, `safe_margin` added for Section 4.2 are off by default, so
-the earlier scripts of `design/` reproduce the earlier numbers.
+`config.py` holds the setting: the terminal scale is read from
+`data/scale.json`, the set and URA scales default to 5, the environment
+variables `SCALE`, `SET_SCALE`, `URA_SCALE`, `TAG` run a variant into
+`data<TAG>/` and `figs<TAG>/`. The MPC class is `design/ra_mpc_cert.py`
+(`nsub`, `safe_sub`, `safe_margin` and the fallback guesses are off by default
+in the earlier scripts of `design/`).
 
-## 9b. Time-scaling derivation
+## 10. Earlier settings (for the record)
 
-The derivation behind $s$ (scaled family, admissible range from the input
-bounds and from the sampling period, relation to (12) and (14), manipulator
-case) is Section 7 of `TAC_EXPERIMENT_UPDATE.md`.
+| setting | terminal scale | URA | initial velocities | URA / vanilla / RA-MPC | where |
+| --- | --- | --- | --- | --- | --- |
+| A, 2026-10-05 | 0.159 | the terminal controller | around the field at 0.159, $r_0 = 0.03$ | 229 / 165 / 236 | `final/data_s0159`, `final/figs_s0159` |
+| B, 2026-10-06 | 0.159 | $s = 5$ | around the field at 5, $r_0 = 0.94$ | 229 / 213 / 258 | `final/data_s5`, `final/figs_s5` |
+| C, this document | 0.764 | $s = 5$ | as B | 229 / 213 / 263 | `final/data`, `final/figs` |
 
-## 10. Variant under review: URA at time scale $s = 5$ (`final/data_s5`, `final/figs_s5`)
-
-Run with `TAG=_s5 SET_SCALE=5 URA_SCALE=5`. Only two things change with respect
-to Sections 1 to 6: the URA baseline is the same synthesis at time scale
-$s = 5$ ($k_1 \to 5 k_1$, $\lambda = 0.30$, $\mu = 0.51$, field speeds up to
-3.1 m/s), and the initial velocities are drawn around that field with the
-radius scaled accordingly ($r_0 = 0.943$, speeds 0.15 to 3.6 m/s). Terminal
-controller ($s = 0.159$), bounds, horizon, period, certificate and the
-Lemma 2 data are unchanged.
-
-| | URA ($s = 5$) | vanilla MPC | RA-MPC |
-| --- | --- | --- | --- |
-| reach $\mathcal{X}_T$ safely | 229 | 213 | 258 |
-| runs exceeding the bounds | 170 (158 among the successes) | 0 | 0 |
-| peak $\lvert\omega\rvert$, $\lvert a\rvert$ over all runs | 5.4, 6.7 | 3, 3 | 3, 3 |
-| time to the target, median (225 common successes of URA and RA-MPC) | 0.80 s | | 0.70 s |
-| vanilla-feasible but RA-MPC-infeasible | | 0 | |
-| infeasible solves after $k = 0$ | | | 0 |
-
-Theorem 2 checks on the 258 runs: no infeasible solve after $k = 0$, cost
-decrease at least 2.08 per step, horizon nonincreasing in all runs, smallest
-$h$ along the closed loops 0.164, Corollary 1 bound holds in 258 of 258.
-Sweep: $\rho$ = 86.0, 86.3, 86.0, 86.3, 85.7, 84.3, 81.7, 78.3 % for
-$T$ = 0.025 to 0.625 s, no infeasible solve after $k = 0$ at any $T$. Solve
-times (one process): RA-MPC 73.4 ms, vanilla 48.1 ms per step.
-
-Shared start: state 6, $x_0 = (1.330, 1.776, -2.820, 1.733)$, 3.5 from the
-target; vanilla 1.20 s, URA 1.47 s with peaks $\omega$ 3.5 and $a$ 5.7 (0.66 s
-above the bounds), RA-MPC 1.75 s within the bounds.
-
-| vanilla MPC, 213/300 | URA, 229/300 | RA-MPC, 258/300 |
-| --- | --- | --- |
-| ![vanilla](final/figs_s5/fig_dubins_vanilla.png) | ![ura](final/figs_s5/fig_dubins_uncon.png) | ![rampc](final/figs_s5/fig_dubins_rampc.png) |
-
-![compare s5](final/figs_s5/fig_dubins_compare.png)
-
-Verification figures of this variant: `final/figs_s5/verify_outcomes.png`,
-`verify_theorem2.png`, `verify_sweep.png`.
+B differs from C only in the terminal scale and the initial-guess strategy.
+The time-scaling derivation behind C is Section 7 of `TAC_EXPERIMENT_UPDATE.md`.

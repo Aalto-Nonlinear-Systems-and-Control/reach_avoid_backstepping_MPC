@@ -15,12 +15,18 @@ import ra_mpc_cert as R                    # noqa: E402
 
 # ── certificate (REPORT.md Section 11): psi = alpha*h/661.409, k1 of design/k1/W3_l0.06.txt, time scale s ──
 K1_FILE = os.path.join(DESIGN, "k1", "W3_l0.06.txt")
-MU_BASE, SCALE, DFRAC = 0.02, 0.159, 0.2
+MU_BASE, DFRAC = 0.02, 0.2
+# time scale of the terminal controller: SCALE env, else data/scale.json (solve_scale.py), else the earlier 0.159
+import json as _json
+_sj = os.path.join(HERE, "data", "scale.json")
+SCALE = float(os.environ.get("SCALE", _json.load(open(_sj))["s"] if os.path.exists(_sj) else 0.159))
 # URA baseline (the synthesis without regard to the bounds or the period) at time scale URA_SCALE; the initial velocities
-# are drawn around the field of scale SET_SCALE with the radius scaled accordingly. Defaults: the terminal controller's scale.
-# Environment overrides (SET_SCALE, URA_SCALE, TAG) allow a variant to be run into data<TAG>/ and figs<TAG>/.
-SET_SCALE = float(os.environ.get("SET_SCALE", SCALE))
-URA_SCALE = float(os.environ.get("URA_SCALE", SCALE))
+# are drawn around the field of scale SET_SCALE with the radius scaled accordingly. Defaults: the paper setting (s = 5).
+# Environment overrides (SET_SCALE, URA_SCALE, SCALE, TAG) allow a variant to be run into data<TAG>/ and figs<TAG>/;
+# the earlier results with the terminal controller at s = 0.159 are in data_s0159/ and figs_s0159/ (SET_SCALE = URA_SCALE = 0.159)
+# and in data_s5/ (terminal 0.159, set and URA at 5).
+SET_SCALE = float(os.environ.get("SET_SCALE", 5.0))
+URA_SCALE = float(os.environ.get("URA_SCALE", 5.0))
 TAG = os.environ.get("TAG", "")
 # ── MPC ──
 T, N, U_MAX = 0.05, 25, (3.0, 3.0)
@@ -32,8 +38,8 @@ MPC_OPTS = {"ipopt.print_level": 0, "print_time": 0, "ipopt.max_iter": 300, "ipo
             "ipopt.acceptable_tol": 1e-4, "ipopt.acceptable_constr_viol_tol": 1e-7, "ipopt.acceptable_iter": 5}
 T_MAX_MPC, T_MAX_URA = 20.0, 600.0
 # ── initial set: positions uniform in X_S minus X_T, velocity uniform in the disc of radius R0 around k1(y) ──
-R0_BASE, SEED_POS, SEED_VEL, N_INIT = 0.03, 42, 2026, 300
-R0 = R0_BASE * SET_SCALE / SCALE            # the largest velocity radius of X_RA at the set's scale
+R0_S1, SEED_POS, SEED_VEL, N_INIT = 0.03 / 0.159, 42, 2026, 300
+R0 = R0_S1 * SET_SCALE                      # the largest velocity radius of X_RA at the set's scale (0.189 at s = 1)
 DATA, FIGS = os.path.join(HERE, "data" + TAG), os.path.join(HERE, "figs" + TAG)
 os.makedirs(DATA, exist_ok=True); os.makedirs(FIGS, exist_ok=True)
 
@@ -105,7 +111,7 @@ def step_np(x, u, dt):
     return x
 
 
-def vanilla_solve(x0, dt=T, N=N, u_max=U_MAX, U_warm=None, Qf=80.0):
+def vanilla_solve(x0, dt=T, N=N, u_max=U_MAX, U_warm=None, Qf=80.0, _retry=False, _shift=True):
     F, Fmid, ns = model(dt); opti = ca.Opti(); X = opti.variable(4, N + 1); U = opti.variable(2, N)
     x0 = np.asarray(x0, float); opti.subject_to(X[:, 0] == x0); J = 0; tgt = ca.DM(rm.TARGET_POS)
     for k in range(N):
@@ -121,7 +127,7 @@ def vanilla_solve(x0, dt=T, N=N, u_max=U_MAX, U_warm=None, Qf=80.0):
     opti.subject_to(opti.bounded(-u_max[0], U[0, :], u_max[0])); opti.subject_to(opti.bounded(-u_max[1], U[1, :], u_max[1]))
     dyN = X[:2, N] - tgt; J += Qf * ca.dot(dyN, dyN); opti.minimize(J)
     if U_warm is not None:
-        Uw = np.hstack([U_warm[:, 1:], U_warm[:, -1:]]); Xw = np.zeros((4, N + 1)); Xw[:, 0] = x0
+        Uw = np.hstack([U_warm[:, 1:], U_warm[:, -1:]]) if _shift else np.asarray(U_warm); Xw = np.zeros((4, N + 1)); Xw[:, 0] = x0
         for k in range(N):
             Xw[:, k + 1] = step_np(Xw[:, k], Uw[:, k], dt)
         opti.set_initial(U, Uw); opti.set_initial(X, Xw)
@@ -132,6 +138,9 @@ def vanilla_solve(x0, dt=T, N=N, u_max=U_MAX, U_warm=None, Qf=80.0):
     try:
         sol = opti.solve(); return True, np.atleast_2d(sol.value(U)).reshape(2, N)
     except Exception:
+        if U_warm is None and not _retry:
+            # same fallback as RA-MPC at k = 0: a steer-to-target rollout as initial guess
+            return vanilla_solve(x0, dt, N, u_max, R.steer_guess(x0, N, dt, u_max, step=lambda x, u: step_np(x, u, dt)), Qf, _retry=True, _shift=False)
         return False, None
 
 

@@ -1016,13 +1016,17 @@ Reading:
 
 ### 11.12 Final setting and data for the paper
 
-The setting adopted for the paper ($r_0 = 0.03$, bounds $(3, 3)$, $N = 25$,
-$T = 0.05$ s), the verification of Lemma 2, Theorem 2 and Corollary 1, the
-sampling-period sweep and the paper figures are in `PAPER_DUBINS.md`, produced
-by `final/`. Two changes with respect to Section 11.11: the state constraint
-is imposed at the RK4 sub-step nodes with a small back-off, after
-inter-sample excursions of up to 1.2 mm were found, and vanilla MPC uses the
-same model and constraints as RA-MPC. Counts: URA 229, vanilla 165, RA-MPC 236.
+The setting adopted for the paper, the verification of Lemma 2, Theorem 2 and
+Corollary 1, the sampling-period sweep and the paper figures are in
+`PAPER_DUBINS.md`, produced by `final/`. Since Section 11.11 the design
+changed in three ways: the terminal controller's time scale is chosen from
+the input bounds and the sampled one-step increase at $T = 0.05$ s
+($s = 0.764$ instead of 0.159, derivation in Section 7 of
+`TAC_EXPERIMENT_UPDATE.md`); the URA baseline is the same synthesis at
+$s = 5$ and the initial velocities are drawn around its field; the state
+constraint is imposed at the RK4 sub-step nodes with a small back-off and
+both MPCs share model, constraints and initial-guess fallbacks. Counts:
+URA 229 (158 runs over the bounds), vanilla 213, RA-MPC 263.
 
 ## 12. Reproduction
 

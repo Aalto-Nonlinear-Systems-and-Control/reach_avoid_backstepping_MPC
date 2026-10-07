@@ -132,15 +132,34 @@ class CertMPC(rm.DubinsRAMPC):
             return True, Us, self.rollout(x0, Us)      # true nominal trajectory, not the solver iterate
         except Exception:
             if U_warm is None and not getattr(self, "_retry", False):
-                # second initial guess at k = 0: solution of the terminal-target (vanilla) problem
-                ok, Uv = vanilla_solve(self, x0, N)
-                if ok:
-                    self._retry = True
-                    try:
-                        return self.solve(x0, N, U_warm=Uv)
-                    finally:
-                        self._retry = False
+                self._retry = True
+                try:
+                    for Ug in self._guesses(x0, N):
+                        ok, Us, Xs = self.solve(x0, N, U_warm=Ug)
+                        if ok:
+                            return ok, Us, Xs
+                finally:
+                    self._retry = False
             return False, None, None
+
+    def _guesses(self, x0, N):
+        """Initial guesses tried at k = 0 after the cold start fails: the terminal-target (vanilla) solution, a
+        steer-to-target rollout, and a continuation on the time scale of the terminal set (slower sets first)."""
+        ok, Uv = vanilla_solve(self, x0, N)
+        if ok:
+            yield Uv
+        yield steer_guess(x0, N, self.dt, self.u_max, step=self._step)
+        if getattr(self, "_no_continuation", False):
+            return
+        Uw = None
+        for f in (0.25, 0.5):
+            m = CertMPC(self.c.scaled(f), dt=self.dt, N=N, dfrac=self.delta / self.M_psi, omega=self.omega, safe_margin=self.safe_margin,
+                        u_max=self.u_max, nsub=self.NSUB, safe_sub=self.safe_sub)
+            m._no_continuation = True
+            ok, Uw, _ = m.solve(x0, N, U_warm=Uw)
+            if not ok:
+                return
+        yield Uw
 
     def candidate(self, U_star, X_star):
         xN = X_star[:, -1].reshape(4, 1)
@@ -153,6 +172,18 @@ class CertMPC(rm.DubinsRAMPC):
             xs = rm.rk4_np(xs, uN, self.dt / 10)
             touch = touch or float(rm.tgt_np(*xs)) <= 0
         return Uc, Xc, bool(touch), bool(np.all(np.abs(uN) <= self.u_max))
+
+
+def steer_guess(x0, N, dt, u_max, v_cruise=1.0, step=None):
+    """Open-loop guess: turn the heading towards the target at the rate limit and track a cruise speed."""
+    x = np.asarray(x0, float).copy(); U = np.zeros((2, N)); step = step or (lambda x, u: rm.rk4_np(x, u, dt))
+    for k in range(N):
+        d = rm.TARGET_POS - x[:2]; th_d = np.arctan2(d[1], d[0]); e = (th_d - x[2] + np.pi) % (2 * np.pi) - np.pi
+        if x[3] < 0:
+            e = (e + np.pi + np.pi) % (2 * np.pi) - np.pi
+        U[:, k] = [np.clip(4.0 * e, -u_max[0], u_max[0]), np.clip(3.0 * (v_cruise - x[3]), -u_max[1], u_max[1])]
+        x = step(x, U[:, k])
+    return U
 
 
 def vanilla_solve(mpc, x0, N, Qf=80.0):
