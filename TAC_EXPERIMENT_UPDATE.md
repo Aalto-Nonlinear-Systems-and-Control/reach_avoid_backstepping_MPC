@@ -568,3 +568,36 @@ certified values would need SOS or interval bounds for the two suprema and
 for $\eta_1$, $M_{2,1}$. `final/run_direct.m` shows that solving (12) directly
 at the final $\lambda$ and $K$ reproduces the scaled $k_1$ within 6.5 %, with
 a slightly larger certified set.
+
+### 7.7 Solution flow under the scaling design (offline and online)
+
+Inputs: system $(f, g, h)$, sets $\psi$ and $\phi$, input constraint
+$P(x)u \le Q(x)$, sampling period $T$, horizon $N$, stage cost $\ell$.
+
+| step | what is solved or computed | output | status in the code |
+| --- | --- | --- | --- |
+| 0. shape of $\psi$ | check that $\psi$ has its only critical point inside $\mathcal{X}_T$ on the relevant part of $\mathcal{X}_S$; otherwise redesign the weight | $\psi$ | done for Dubins (`design/screen_w3.py`) |
+| 1. shape of $k_1$ | (12) with $\lambda = \lambda_0$ fixed and $\lvert k_{1,i}\rvert \le K_0$ on $\{\psi \ge 0\}$, solved in scaled outputs, degree $d$, objective $\min \delta_s$; a short scan picks the largest $\lambda_0$ at which the $K_0$ bound is still inactive | $k_1$, $\delta_s$, certified position share | `design/run_design.m` |
+| 2. certificate | choose $\mu_0$ and $\delta = \theta M_\Psi$; build $\Psi$; check that $\mathcal{X}_{RA}^{\delta}$ stays away from the singularities of $A$ (Dubins: smallest speed on the set positive) | $\Psi$, $\mathcal{X}_{RA}$, $\mathcal{X}_{RA}^{\delta}$ | `design/cert.py`, `design/scan.py` |
+| 3. input decomposition | from (7.5): the functions $u_k(x)$ of the base design | $u_k$ | implicit in `cert.py` (`uc` at any scale); symbolic form to add |
+| 4. $s_U$ | (a) sample $\mathcal{X}_{RA}^{\delta}$, evaluate $\rho(x)$, take the minimum with a safety factor; (b) certify the chosen value by one SOS feasibility test in $x$ at fixed $s$, bisection if it fails | $s_U$ | (a) done (sampled); (b) to write (MATLAB, multipliers only) |
+| 5. $s_T$ | $\eta_1 \ge \lambda_0\delta$ (certified by (12)); $M_{2,1}$ along ZOH arcs (sampled, or bounded); $T^\star_1 = 2\eta_1/M_{2,1}$; $s_T = T^\star_1/T$, or bisection on $T^\star(s) \ge T$ when the plant has a zero-order drift | $s_T$ | `final/run_lemma2.py` (sampled) |
+| 6. scale | $s = \min(s_U, s_T)$, optionally times a safety factor; final design $(s k_1, s\lambda_0, s\delta_s, s^2\mu_0)$ | terminal controller | `cert.scaled(s)`, `final/config.py` |
+| 7. verification at the final design | one-step increase $\varepsilon(T) > 0$ on $\mathcal{X}_{RA}^{\delta}$ (sampled, or $\eta T - \tfrac12 M_2 T^2 > 0$); inputs within the bounds on $\mathcal{X}_{RA}^{\delta}$; $\dot\Psi \ge \lambda\Psi$ spot check | pass or back to 6 with a smaller $s$ | `final/run_lemma2.py`, `ra_mpc_cert.terminal_stats` |
+| 8. terminal cost | $\sup \ell$ on $\mathcal{X}_{RA}^{\delta} \setminus \mathcal{X}_T$, $\omega = c\,\sup\ell/\varepsilon(T)$ with $c > 1$, $M_\Psi = \max\psi - \delta_s/\lambda$ | $V_f$ | `ra_mpc_cert.terminal_stats` |
+| 9. MPC | model with RK4 sub-steps, state constraint at the sub-step nodes with a back-off, terminal constraint $\Psi \ge \delta$, terminal cost $V_f$, horizon $N$ | problem (22) | `design/ra_mpc_cert.py` |
+| online | Algorithm 1: solve, apply $u_{0\mid k}$, shifted candidate with $u^c(\hat x(NT\mid k))$, keep the cheaper, shrink $N$ when the candidate touches $\mathcal{X}_T$ | closed loop | `python/ra_mpc_dubins.py`, `ra_mpc_cert.py` |
+| baseline | URA: the same $k_1$ at a performance scale $s_{\text{URA}}$ (no step 4 to 6) | URA | `final/config.py` (`URA_SCALE`) |
+
+Remarks on the flow:
+
+- Steps 1 to 3 are solved once; steps 4 to 6 involve only scalar searches and
+  verification problems without decision variables other than multipliers.
+- Only two sampled quantities would need certification for a fully rigorous
+  design, $s_U$ (step 4b) and $M_{2,1}$ (step 5); everything else is either an
+  SOS output or a closed form.
+- The order of steps 4 and 5 does not matter; for the Dubins car step 5 is the
+  binding one by a factor 20.
+- If step 7 fails, reduce $s$ (or $T$); if the zero-order term $u_0$ alone
+  violates the bounds in step 4, no $s$ works and the shape (14) or a smaller
+  set is needed.
