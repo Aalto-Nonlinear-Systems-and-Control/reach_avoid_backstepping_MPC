@@ -109,12 +109,19 @@ vanilla panel shows the trajectory from its own farthest reached state
 
 ### 2.3 Computation time
 
-Measured on this machine (Apple M5). Per step of the closed loop under the
-parallel evaluation: RA-MPC 602 ms on average (first solve 2.2 s with the
-fallbacks), vanilla 226 ms. Single-process values: see `arm/data/timing.pkl`
-(Section 9). With $T = 1.5$ ms the online time is two orders of magnitude
-above the period; this is the price of option A and has to be said in the
-paper (the NLP has 800 variables and is rebuilt for each horizon length once).
+Measured on this machine (Apple M5), one process, 5 runs per method
+(`arm/run_timing_arm.py`); to be measured again on the paper's machine.
+
+| method | offline | online per step, mean (median) |
+| --- | --- | --- |
+| vanilla MPC | none | 152 ms (159 ms) |
+| URA | 1.4 s (one SOS solve) | 0.31 ms |
+| RA-MPC | 1.4 s | 432 ms (429 ms); first solve 1.4 s with the fallbacks |
+
+Under the parallel evaluation the means were 226 ms and 602 ms. With
+$T = 1.5$ ms the online time is almost three orders of magnitude above the
+period: the NLP has 800 variables and 133 steps, and nothing was done for
+speed. This is the price of option A and has to be said in the paper.
 
 ## 3. Verification of Lemma 2
 
