@@ -54,7 +54,7 @@ reach; the weight removes the saddle by making $\psi$ increase along the
 ridge up to the target. Only one candidate satisfies everything:
 
 $$
-\psi(y) = \big[(1 + 0.6\,(y_2 + 2.5))\,b(y) - 0.02\,\lvert y\rvert^4\big] / 39.07 ,
+\psi(y) = \big[(1 + 0.6\,(y_2 + 2.5))\,b(y) - 0.02\,\lvert y\rvert^4\big] / 39.04 ,
 $$
 
 normalised to maximum 1. Properties: safe set with $\lvert y\rvert \in [1.21, 7.74]$
