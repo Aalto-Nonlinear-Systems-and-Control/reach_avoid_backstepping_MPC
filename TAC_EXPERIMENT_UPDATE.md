@@ -254,6 +254,12 @@ per system that returns the constants together with `delta(T)` and
   the certified $T^*(\delta)$ and the empirically successful periods.
 - D5, refactor. Shared `python/ra_mpc.py` versus editing the four notebooks in
   place.
+- D7, Lemma 2 in second-order form (decided 2026-10-07 to defer to the
+  paper revision): whether to replace the closed-form bound by
+  $T^\star = 2\eta/M_2$ and how to state that the experiments validate the
+  period by the sampled one-step increase (Dubins: bound 10.4 ms, paper's
+  bound 0.35 ms, period used 50 ms, sampled threshold 75 ms). Until then the
+  experiments report both bounds and the sampled check.
 - D6, magnitude of $\omega$. The theoretical minimum may dominate the tracking
   cost. Report the value; if the closed-loop behaviour degrades, discuss
   whether to present the tracking cost as illustrative in the paper.
