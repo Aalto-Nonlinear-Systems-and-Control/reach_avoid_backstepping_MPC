@@ -26,10 +26,12 @@ def sets(ax, cert_region=True):
 
 
 # shared start: farthest (in the output space) among the states where all three methods succeed
-all3 = ura & vr & rr; d2 = ((Y0 - TARGET_POS[:, None])**2).sum(0); pref = all3 & ura_viol if (all3 & ura_viol).any() else all3
+all3 = ura & vr & rr; d2 = ((Y0 - TARGET_POS[:, None])**2).sum(0)
+pref = all3 if all3.any() else (ura & rr)                      # without a state where all three succeed, URA and RA-MPC share the start
+if (pref & ura_viol).any(): pref = pref & ura_viol
 i0 = int(np.where(pref)[0][np.argmax(d2[pref])]); x0s = X0[:, i0]
-U = cf.ura_run(x0s, dense=True); V = van[i0]; Rr = logs[i0]
-print(f"shared x0 = state {i0}, y0 {np.round(Y0[:, i0], 3)}, q0 {np.round(x0s[:2], 3)}; all-three successes {all3.sum()} (URA exceeding the bounds among them {(all3 & ura_viol).sum()}); times: vanilla {V['t'][-1]:.2f} s, URA {U['t']:.2f} s (peaks {np.round(U['upeak'], 1)}), RA-MPC {Rr['t'][-1]:.2f} s")
+U = cf.ura_run(x0s, dense=True); Rr = logs[i0]; V = van[i0] if vr[i0] else van[int(np.where(vr)[0][np.argmax(d2[vr])])]
+print(f"shared x0 = state {i0}, y0 {np.round(Y0[:, i0], 3)}, q0 {np.round(x0s[:2], 3)}; all-three successes {all3.sum()}; vanilla panel start {'shared' if vr[i0] else 'its own farthest reached state'}; times: vanilla {V['t'][-1]:.2f} s, URA {U['t']:.2f} s (peaks {np.round(U['upeak'], 1)}), RA-MPC {Rr['t'][-1]:.2f} s")
 
 # ── V1 outcomes ──
 fig, ax = plt.subplots(1, 4, figsize=(20, 4.2), constrained_layout=True)
@@ -104,17 +106,17 @@ def draw_robot(ax, x):
 
 
 def paper_figs(V, U, Rr, x0s, suffix=""):
-    PAN = {"fig_manip_vanilla": (fv, fk(V["x"].T[:2]).T, False), "fig_manip_uncon": (ura, U["y"], True), "fig_manip_rampc": (rr, fk(Rr["x"].T[:2]).T, True)}
-    for name, (mask, yt, field) in PAN.items():
+    PAN = {"fig_manip_vanilla": (vr, fk(V["x"].T[:2]).T, False, V["x"][0]), "fig_manip_uncon": (ura, U["y"], True, x0s), "fig_manip_rampc": (rr, fk(Rr["x"].T[:2]).T, True, x0s)}
+    for name, (mask, yt, field, xr) in PAN.items():
         fig, ax = plt.subplots(figsize=(650 * px, 600 * px), layout="constrained"); fig.set_dpi(200)
         if field: ax.streamplot(yv, yw, KU, KV, color=C_GRAY, linewidth=0.9, density=0.9, arrowsize=0.9, zorder=1)
         ax.contourf(G1, G2, PS, levels=[0, np.inf], colors=["#e6f2ff"], alpha=0.3, zorder=2); ax.contour(G1, G2, PS, levels=[0], colors=["#2166ac"], linewidths=2, zorder=3)
         ax.contourf(G1, G2, PH, levels=[-np.inf, 0], colors=["#fee0d2"], alpha=1.0, zorder=4); ax.contour(G1, G2, PH, levels=[0], colors=["#d6604d"], linewidths=3, zorder=5)
-        draw_robot(ax, x0s)
+        draw_robot(ax, xr)
         ax.scatter(*Y0[:, ~mask], s=50, color="#d73027", alpha=0.85, marker="x", linewidths=3, zorder=8); ax.scatter(*Y0[:, mask], s=50, color="#2166ac", alpha=0.35, marker="o", zorder=9)
         ax.plot(yt[:, 0], yt[:, 1], color="black", lw=3, alpha=0.65, linestyle="--", zorder=10); ax.scatter([yt[0, 0]], [yt[0, 1]], s=70, c=[C_START], marker="o", linewidths=0.4, zorder=20); ax.scatter([yt[-1, 0]], [yt[-1, 1]], s=70, c=[C_END], marker="x", linewidths=3, zorder=20)
-        ax.text(0.2, 1.8, r"$\mathcal{X}_S$", zorder=100, fontsize=FS_P); ax.text(5.4, 2.4, r"$\mathcal{X}_T$", zorder=100, fontsize=FS_P)
-        ax.set_xlabel("$y_1$", fontsize=FS_P - 4); ax.set_ylabel("$y_2$", fontsize=FS_P - 4); ax.xaxis.set_tick_params(labelsize=22); ax.yaxis.set_tick_params(labelsize=22); ax.set_xlim(-3.5, 8.2); ax.set_ylim(-3.0, 3.2); ax.set_aspect("equal")
+        ax.text(-1.2, -0.9, r"$\mathcal{X}_S$", zorder=100, fontsize=FS_P); ax.text(5.0, 2.45, r"$\mathcal{X}_T$", zorder=100, fontsize=FS_P)
+        ax.set_xlabel("$y_1$", fontsize=FS_P - 4); ax.set_ylabel("$y_2$", fontsize=FS_P - 4); ax.xaxis.set_tick_params(labelsize=22); ax.yaxis.set_tick_params(labelsize=22); ax.set_xlim(-3.5, 8.2); ax.set_ylim(-4.4, 3.2); ax.set_aspect("equal")
         save(fig, name + suffix, pdf=True); plt.close(fig)
     FS_C = 24; fig, (axR, axW, axA) = plt.subplots(3, 1, figsize=(650 * px, 600 * px), layout="constrained", gridspec_kw={"height_ratios": [0.7, 1.0, 1.0]}); fig.set_dpi(200)
     if SW is not None:

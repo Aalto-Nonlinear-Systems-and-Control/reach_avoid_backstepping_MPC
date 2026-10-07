@@ -4,7 +4,7 @@ import pickle, time, numpy as np
 import config_arm as cf
 from config_arm import C, fk, phi_np, gravity
 
-TG = [0.0005, 0.001, 0.002, 0.003, 0.004, 0.005, 0.0075, 0.01, 0.02, 0.05, 0.1]; TG_CL = [0.001, 0.002, 0.003, 0.005, 0.01, 0.02, 0.05]
+TG = sorted({0.0005, 0.001, cf.T, 0.002, 0.003, 0.004, 0.005, 0.0075, 0.01, 0.02, 0.05, 0.1}); TG_CL = sorted({0.001, cf.T, 0.002, 0.003, 0.005, 0.01, 0.02, 0.05})
 
 
 def arc(x, u, T):
