@@ -1,0 +1,43 @@
+W3 plain tube (current): |y| [2.89,6.54] deg 8 others 0 cert 100% half 23% span 192 width 1.30/1.72/3.08 bends 0 length 15.0 target->ends 11.7/3.2 max (0.95,3.92) <-- ok
+W3 normalised tube: |y| [3.13,6.36] deg 12 others 0 cert 100% half 25% span 192 width 1.38/1.66/2.68 bends 0 length 15.0 target->ends 11.7/3.2 max (0.94,3.92) <-- ok
+W3 phase 20: |y| [3.14,6.37] deg 12 others 0 cert 100% half 28% span 192 width 1.23/1.62/2.69 bends 0 length 14.8 target->ends 11.4/3.4 max (1.17,3.74) <-- ok
+W3 phase 40: |y| [3.14,6.38] deg 12 others 0 cert 100% half 30% span 192 width 1.10/1.72/2.69 bends 0 length 14.8 target->ends 11.3/3.5 max (1.41,3.64) <-- ok
+W3 + W2 A2=0.12 phi2=0: |y| [3.07,7.08] deg 12 others 0 cert 100% half 26% span 193 width 1.28/1.54/3.13 bends 0 length 15.7 target->ends 12.5/3.3 max (1.11,3.66) 
+W3 + W2 A2=0.12 phi2=45: |y| [3.07,6.85] deg 12 others 0 cert 100% half 27% span 193 width 1.29/1.60/2.97 bends 0 length 15.4 target->ends 12.1/3.3 max (1.18,3.76) <-- ok
+W3 + W2 A2=0.12 phi2=90: |y| [3.06,6.41] deg 12 others 0 cert 100% half 27% span 192 width 1.35/1.71/2.70 bends 0 length 14.9 target->ends 11.6/3.2 max (1.11,3.95) <-- ok
+W3 + W2 A2=0.12 phi2=135: |y| [3.11,6.04] deg 12 others 0 cert 100% half 26% span 192 width 1.50/1.78/2.50 bends 0 length 14.6 target->ends 11.5/3.2 max (0.93,4.15) <-- ok
+W3 + W2 A2=0.2 phi2=0: |y| [3.02,8.02] deg 12 others 0 cert 100% half 25% span 193 width 1.17/1.45/4.05 bends 0 length 16.9 target->ends 13.6/3.3 max (1.23,3.52) 
+W3 + W2 A2=0.2 phi2=45: |y| [3.01,7.36] deg 12 others 0 cert 100% half 28% span 194 width 1.20/1.61/3.54 bends 0 length 16.0 target->ends 12.6/3.4 max (1.34,3.68) 
+W3 + W2 A2=0.2 phi2=90: |y| [2.99,6.48] deg 12 others 0 cert 100% half 28% span 193 width 1.33/1.73/2.73 bends 0 length 15.0 target->ends 11.7/3.3 max (1.23,3.99) <-- ok
+W3 + W2 A2=0.2 phi2=135: |y| [3.05,5.87] deg 12 others 0 cert 100% half 26% span 191 width 1.52/1.85/2.40 bends 0 length 14.5 target->ends 11.3/3.2 max (0.93,4.32) <-- ok
+W3 + W4 A4=0.06 phi4=0: |y| [3.11,8.52] deg 14 others 1 cert 72% half 23% span 192 width 1.44/1.73/4.20 bends 0 length 15.8 target->ends 12.8/3.0 max (0.73,4.12) 
+W3 + W4 A4=0.06 phi4=22: |y| [3.11,8.55] deg 14 others 1 cert 83% half 24% span 192 width 1.42/1.74/4.15 bends 0 length 15.8 target->ends 12.7/3.1 max (0.71,4.09) 
+W3 + W4 A4=0.06 phi4=45: |y| [3.10,7.35] deg 14 others 0 cert 100% half 27% span 191 width 1.41/1.75/3.59 bends 0 length 15.7 target->ends 12.5/3.2 max (0.73,4.03) 
+W3 + W4 A4=0.06 phi4=67: |y| [3.10,6.92] deg 14 others 0 cert 100% half 28% span 191 width 1.40/1.72/3.19 bends 0 length 15.5 target->ends 12.2/3.3 max (0.79,3.96) <-- ok
+W3 + W4 A4=0.1 phi4=0: |y| [3.10,8.66] deg 14 others 0 cert 100% half 23% span 179 width 1.39/1.63/3.59 bends 3 length 17.5 target->ends 14.6/2.9 max (0.56,4.31) 
+W3 + W4 A4=0.1 phi4=22: |y| [3.08,8.76] deg 14 others 0 cert 100% half 27% span 180 width 1.37/1.60/3.83 bends 3 length 17.5 target->ends 14.5/3.0 max (0.51,4.28) 
+W3 + W4 A4=0.1 phi4=45: |y| [3.08,8.87] deg 14 others 3 cert 20% half 30% span 184 width 1.35/1.59/4.04 bends 3 length 17.4 target->ends 14.2/3.2 max (0.55,4.17) 
+W3 + W4 A4=0.1 phi4=67: |y| [3.08,8.95] deg 14 others 3 cert 19% half 32% span 189 width 1.35/1.62/5.07 bends 2 length 16.6 target->ends 12.9/3.7 max (0.66,4.01) 
+W3 + W5 A5=0.04 phi5=0: |y| [3.18,6.84] deg 16 others 0 cert 100% half 23% span 192 width 1.16/1.70/3.19 bends 0 length 14.8 target->ends 11.7/3.1 max (1.03,4.01) <-- ok
+W3 + W5 A5=0.04 phi5=36: |y| [3.16,6.72] deg 16 others 0 cert 100% half 24% span 192 width 1.18/1.74/3.08 bends 0 length 14.8 target->ends 11.8/3.0 max (0.94,4.06) <-- ok
+W3 + W5 A5=0.06 phi5=0: |y| [3.18,8.60] deg 16 others 2 cert 32% half 20% span 192 width 1.10/1.72/4.50 bends 0 length 15.1 target->ends 12.0/3.1 max (1.05,4.05) 
+W3 + W5 A5=0.06 phi5=36: |y| [3.16,8.77] deg 16 others 2 cert 23% half 21% span 192 width 1.12/1.75/4.55 bends 0 length 15.0 target->ends 12.1/3.0 max (0.90,4.13) 
+W3 shifted A1=0.3 phi1=0: |y| [3.32,7.56] deg 12 others 0 cert 100% half 25% span 192 width 1.42/1.70/3.23 bends 0 length 17.2 target->ends 13.9/3.3 max (1.21,3.95) 
+W3 shifted A1=0.3 phi1=90: |y| [2.85,6.62] deg 12 others 0 cert 100% half 26% span 191 width 1.20/1.67/2.67 bends 0 length 15.7 target->ends 12.4/3.4 max (0.70,4.66) <-- ok
+W3 shifted A1=0.3 phi1=180: |y| [2.88,5.98] deg 12 others 0 cert 100% half 25% span 191 width 1.20/1.58/2.46 bends 0 length 13.7 target->ends 10.5/3.2 max (0.69,3.94) <-- ok
+W3 shifted A1=0.3 phi1=270: |y| [2.78,6.39] deg 12 others 0 cert 100% half 24% span 193 width 1.25/1.51/2.67 bends 0 length 14.6 target->ends 11.4/3.2 max (1.14,3.31) <-- ok
+W3 shifted A1=0.5 phi1=0: |y| [3.41,8.56] deg 12 others 2 cert 41% half 22% span 177 width 1.40/1.65/2.72 bends 0 length 19.5 target->ends 16.0/3.5 max (1.39,4.00) 
+W3 shifted A1=0.5 phi1=90: |y| [2.65,7.53] deg 12 others 0 cert 100% half 26% span 191 width 0.80/1.61/2.66 bends 0 length 16.6 target->ends 12.9/3.7 max (0.51,5.23) 
+W3 shifted A1=0.5 phi1=180: |y| [2.67,6.22] deg 12 others 0 cert 100% half 25% span 191 width 1.04/1.51/2.21 bends 0 length 13.2 target->ends 10.0/3.2 max (0.53,3.99) <-- ok
+W3 shifted A1=0.5 phi1=270: |y| [2.56,6.44] deg 12 others 0 cert 100% half 23% span 193 width 1.05/1.37/2.66 bends 0 length 14.4 target->ends 11.3/3.1 max (1.25,2.98) 
+W4 A4=0.12 phi4=0: |y| [3.26,5.90] deg 14 others 0 cert 100% half 22% span 193 width 1.12/1.90/2.45 bends 0 length 14.6 target->ends 11.6/3.0 max (0.90,4.53) <-- ok
+W4 A4=0.12 phi4=22: |y| [3.26,5.91] deg 14 others 0 cert 100% half 24% span 192 width 1.17/1.92/2.45 bends 0 length 14.6 target->ends 11.6/3.0 max (0.86,4.41) <-- ok
+W4 A4=0.12 phi4=45: |y| [3.26,5.91] deg 14 others 0 cert 100% half 25% span 192 width 1.28/1.90/2.45 bends 0 length 14.6 target->ends 11.5/3.1 max (0.91,4.24) <-- ok
+W4 A4=0.18 phi4=0: |y| [3.22,6.58] deg 14 others 0 cert 100% half 21% span 193 width 1.11/1.90/3.07 bends 0 length 15.2 target->ends 12.4/2.8 max (0.62,4.99) <-- ok
+W4 A4=0.18 phi4=22: |y| [3.22,8.59] deg 14 others 0 cert 100% half 24% span 192 width 1.22/1.94/3.08 bends 0 length 15.1 target->ends 12.3/2.8 max (0.53,4.76) 
+W4 A4=0.18 phi4=45: |y| [3.22,8.84] deg 14 others 0 cert 100% half 27% span 191 width 1.44/1.92/3.09 bends 0 length 15.1 target->ends 12.2/2.9 max (0.63,4.42) 
+W2 + W3 + W4 A2=0.1 A4=0.06: |y| [3.09,8.61] deg 14 others 1 cert 50% half 25% span 193 width 1.37/1.67/5.18 bends 0 length 16.1 target->ends 12.9/3.1 max (0.98,3.91) 
+W2 + W3 + W4 A2=0.1 A4=0.1: |y| [3.08,8.82] deg 14 others 0 cert 100% half 28% span 177 width 1.43/1.62/3.63 bends 3 length 17.8 target->ends 14.8/3.1 max (0.82,4.01) 
+W2 + W3 + W4 A2=0.15 A4=0.06: |y| [3.05,8.69] deg 14 others 0 cert 100% half 26% span 189 width 1.30/1.63/3.75 bends 3 length 17.6 target->ends 14.5/3.2 max (1.08,3.83) 
+W2 + W3 + W4 A2=0.15 A4=0.1: |y| [3.04,8.88] deg 14 others 2 cert 39% half 27% span 173 width 1.35/1.60/3.52 bends 3 length 17.9 target->ends 14.8/3.1 max (0.94,3.91) 
+saved figs/arm_paths.png with 20 admissible candidates
