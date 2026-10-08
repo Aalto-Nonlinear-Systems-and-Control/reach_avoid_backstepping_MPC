@@ -1,0 +1,6 @@
+kappa=0.03 m=3 eps=0.003
+  lane 1 rho=3.55: |y| [2.90,5.10] y2>=1.08 deg 12 others 0 cert 100% half 44% width 0.38/0.81/1.49 length 8.9 B (-2.35,2.26) psi(A) 44% beyond 17 deg box 0.25 cross 0.35 ok
+  lane 2 rho=4.28: |y| [3.63,5.70] y2>=1.78 deg 12 others 0 cert 100% half 38% width 0.38/0.88/1.36 length 9.3 B (-2.74,2.95) psi(A) 39% beyond 13 deg box 0.95 cross 0.34 ok
+  lane 3 rho=5.02: |y| [4.39,6.36] y2>=2.50 deg 12 others 0 cert 100% half 33% width 0.38/0.93/1.28 length 9.9 B (-3.12,3.66) psi(A) 34% beyond 10 deg box 1.67 cross 0.32 ok
+  lane 4 rho=5.75: |y| [5.15,7.01] y2>=3.20 deg 12 others 0 cert 100% half 30% width 0.41/0.96/1.22 length 10.5 B (-3.47,4.35) psi(A) 30% beyond 8 deg box 2.39 cross 0.36 ok
+saved figs/arm_lanes.png

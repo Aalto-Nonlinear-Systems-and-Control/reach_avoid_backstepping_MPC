@@ -1,0 +1,11 @@
+kappa=0.03 m=3 eps=0.002
+  lane 1 rho=3.55: |y| [2.89,5.10] y2>=0.90 deg 12 others 0 cert 100% half 43% width 0.38/0.80/1.50 length 9.2 B (-2.42,2.15) psi(A) 43% beyond 17 deg box 0.17 cross 0.35 FAIL
+  lane 2 rho=4.28: |y| [3.62,5.70] y2>=1.60 deg 12 others 0 cert 100% half 37% width 0.37/0.87/1.37 length 9.7 B (-2.81,2.84) psi(A) 38% beyond 13 deg box 0.87 cross 0.35 ok
+  lane 3 rho=5.02: |y| [4.37,6.36] y2>=2.30 deg 12 others 0 cert 100% half 33% width 0.38/0.92/1.28 length 10.3 B (-3.20,3.55) psi(A) 33% beyond 10 deg box 1.59 cross 0.33 ok
+  lane 4 rho=5.75: |y| [5.12,7.02] y2>=3.02 deg 12 others 0 cert 100% half 30% width 0.39/0.95/1.23 length 10.9 B (-3.56,4.24) psi(A) 29% beyond 8 deg box 2.30 cross 0.36 FAIL
+kappa=0.03 m=3 eps=0.003
+  lane 1 rho=3.55: |y| [2.90,5.10] y2>=1.08 deg 12 others 0 cert 100% half 44% width 0.38/0.81/1.49 length 8.9 B (-2.35,2.26) psi(A) 44% beyond 17 deg box 0.17 cross 0.35 FAIL
+  lane 2 rho=4.28: |y| [3.63,5.70] y2>=1.78 deg 12 others 0 cert 100% half 38% width 0.38/0.88/1.36 length 9.3 B (-2.74,2.95) psi(A) 39% beyond 13 deg box 0.87 cross 0.34 ok
+  lane 3 rho=5.02: |y| [4.39,6.36] y2>=2.50 deg 12 others 0 cert 100% half 33% width 0.38/0.93/1.28 length 9.9 B (-3.12,3.66) psi(A) 34% beyond 10 deg box 1.59 cross 0.32 ok
+  lane 4 rho=5.75: |y| [5.15,7.01] y2>=3.20 deg 12 others 0 cert 100% half 30% width 0.41/0.96/1.22 length 10.5 B (-3.47,4.35) psi(A) 30% beyond 8 deg box 2.30 cross 0.36 FAIL
+saved figs/arm_lanes.png
