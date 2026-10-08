@@ -9,10 +9,12 @@ from screen_paths import harmonic, path_metrics
 Y_EDGE = 0.8
 
 
-def build_front(rho0, harms, h, kappa, eps, m, norm=True):
+def build_front(rho0, harms, h, kappa, eps, m, norm=True, dcut=90.0):
+    """dcut: direction (deg) in which the closing term vanishes; the ring is cut opposite to it (90 = cut at the back)."""
     p = r2 - rho0**2 - sum(A * harmonic(n, np.radians(phi)) / rho0**(n - 2) for n, A, phi in harms)
     u = r2 / rho0**2; N = (3 - 3 * u + u**2) if norm else 1; w = 1 + kappa * (6 - y1)**2
-    return p, sp.expand(w * (h**2 - p**2 * N / (2 * rho0)**2) - eps * (y2 - rho0)**(2 * m))
+    ca, sa = np.cos(np.radians(dcut)), np.sin(np.radians(dcut))
+    return p, sp.expand(w * (h**2 - p**2 * N / (2 * rho0)**2) - eps * (ca * y1 + sa * y2 - rho0)**(2 * m))
 
 
 def build_lateral(y0, A, L, h, kappa, eps, m, yc, shape="S", b=0.6):
