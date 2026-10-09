@@ -1,0 +1,51 @@
+## setting {'T': 0.01, 'N': 60.0, 'U_MAX': (28.5, 8.5), 'DELTA': 0.5, 'M_PSI': 0.999999, 'shift': 1e-06, 'lam': 0.238842, 'mu': 0.569326, 'SCALE': 2.386055, 'URA_SCALE': 4.77211, 'omega': 263745.241932, 'eps': 0.000523, 'SAFE_MARGIN': 0.005, 'R0': 0.3, 'TASK': 'red_fwd_sq'} | scale.json: {  "T": 0.01,  "MU0": 0.1,  "DFRAC": 0.5,  "T_eps1_ms": 29.825690238229473,  "s": 2.386055219058358,  "T_eps_s_ms": 12.500397637353638,  "U_MAX": [   28.5,   8.5  ],  "s_U": 2.6692891349974177,  "URA_SCALE": 4.772110438116716,  "lam": 0.23884219585626698,  "mu": 0.5693259508395628,  "delta": 0.49999964555397436,  "eta": 0.12321787951247211,  "M2": 48.64696582607708,  "Tstar2_ms": 5.065799168359293,  "tau_terminal": [   22.77270407798105,   6.746983463279211  ],  "tau_xra": [   32.112369962403235,   8.874371233339428  ] }
+
+## counts: URA 149 (exceeding the bounds 145, among successes 144), terminal controller alone continuous 96 sampled 96 | vanilla feasible at k=0 127, reached 84 | RA-MPC 137 (infeasible at k=0 13, later 0) | in X_RA 6, terminal set 3
+pairwise: RA&~van 53, van&~RA 0, RA&~URA 0, URA&~RA 12, all three 84, none 1
+URA and RA-MPC: 137 states | time med URA 0.63 (max 2.11), RA 0.65 (max 1.30) | cost med URA 10.8, RA 9.8
+all three: 84 states | time med URA 0.39 (max 1.23), RA 0.43 (max 0.76), vanilla 0.43 | cost med URA 3.7, RA 3.7, vanilla 3.5
+peaks: URA successes [103.2  28.4], all [103.2  28.4]; RA-MPC [28.5  8.5]; vanilla [28.5  8.5]
+RA-MPC inputs within 2% of the bound: tau1 41%, tau2 84%; entry time median 0.650 max 1.300
+solve ms (parallel load): RA mean 277 (first 628), vanilla mean 196
+
+## Theorem 2 / Corollary 1
+runs feasible at k=0 137, reached 137, solves 8363, candidate kept 4896, u^c within bounds True
+decrease: 8226 steps, min 0.705, min ratio 1.000000, below ell(1-1e-4) 0, below ell_min 0; horizon nonincreasing 137/137, min N 1
+safety: min psi along closed loops RA 0.0054, vanilla 0.0050; entry median 0.650 max 1.300; bound min 0.350 median 383.9 max 2097; holds 137/137
+
+## lemma2.pkl
+eta 1.2083e-01 (lambda delta 1.1942e-01), M2 49.216, T* 4.91 ms; u^c on terminal set [23.   6.8], on X_RA [32.3  8.8]
+| T [ms] | arcs | smallest increase | increasing | end in terminal set | arc in X_RA | second-order bound |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | 6532 | +1.24e-04 | 100.00 % | 100.00 % | 100.00 % | +9.68e-05 |
+| 2 | 6529 | +2.46e-04 | 100.00 % | 100.00 % | 100.00 % | +1.45e-04 |
+| 5 | 6506 | +5.77e-04 | 100.00 % | 100.00 % | 100.00 % | -1.56e-06 |
+| 7.5 | 6494 | +7.52e-04 | 100.00 % | 100.00 % | 100.00 % | -4.67e-04 |
+| 10 | 6484 | +6.20e-04 | 100.00 % | 100.00 % | 100.00 % | -1.25e-03 |
+| 12.5 | 6475 | +1.89e-04 | 100.00 % | 100.00 % | 100.00 % | -2.38e-03 |
+| 15 | 6461 | -6.95e-04 | 99.85 % | 99.85 % | 100.00 % | -3.87e-03 |
+| 20 | 6439 | -3.41e-03 | 99.27 % | 99.41 % | 100.00 % | -7.99e-03 |
+| 30 | 6384 | -1.27e-02 | 98.37 % | 98.68 % | 100.00 % | -2.15e-02 |
+| 50 | 6281 | -4.80e-02 | 96.86 % | 97.72 % | 100.00 % | -7.75e-02 |
+| T [ms] | from terminal set: reach | increasing | from X_RA: reach | increasing | median time |
+| --- | --- | --- | --- | --- | --- |
+| 2 | 400/400 | 400/400 | 400/400 | 396/400 | 0.67 s |
+| 5 | 400/400 | 400/400 | 400/400 | 384/400 | 0.67 s |
+| 10 | 400/400 | 400/400 | 400/400 | 359/400 | 0.67 s |
+| 12.5 | 400/400 | 400/400 | 400/400 | 344/400 | 0.67 s |
+| 15 | 400/400 | 398/400 | 400/400 | 327/400 | 0.67 s |
+| 20 | 400/400 | 390/400 | 400/400 | 301/400 | 0.67 s |
+| 30 | 400/400 | 377/400 | 400/400 | 263/400 | 0.66 s |
+
+## sweep.pkl
+| T [ms] | N | vanilla feasible (reached) | u^c held | RA-MPC | feasible at k=0 | later infeasible | decrease viol | min dPsi on terminal set | median entry | ms/solve |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 5 | 120 | 37 (25) | 25 | 36 | 36 | 0 | 0/4118 | +5.8e-04 | 0.650 s | 262 |
+| 7.5 | 80 | 37 (25) | 25 | 36 | 36 | 0 | 0/2738 | +6.9e-04 | 0.652 s | 333 |
+| 10 | 60 | 37 (25) | 25 | 36 | 36 | 0 | 0/2050 | +5.2e-04 | 0.655 s | 317 |
+| 12.5 | 48 | 37 (25) | 24 | 36 | 36 | 0 | 0/1636 | -1.3e-05 | 0.656 s | 316 |
+| 15 | 40 | 37 (25) | 24 | 36 | 36 | 0 | 0/1361 | -8.5e-04 | 0.653 s | 351 |
+| 20 | 30 | 37 (25) | 24 | 36 | 36 | 0 | 0/1018 | -3.4e-03 | 0.660 s | 342 |
+
+## timing.pkl
+{'idx_r': array([  0,  31,  60,  89, 119]), 'idx_v': array([0, 2, 6, 7, 8]), 'ra': {'mean': 160.10413423904697, 'median': 173.374457999671, 'first': 425.28460820030887, 'later': 155.56337269861442, 'n': 297}, 'vanilla': {'mean': 127.1258680583287, 'median': 122.63722900024732, 'first': 225.63758319993212, 'later': 122.84275000869377, 'n': 120}, 'ura_ms': 0.24082773339996494}
