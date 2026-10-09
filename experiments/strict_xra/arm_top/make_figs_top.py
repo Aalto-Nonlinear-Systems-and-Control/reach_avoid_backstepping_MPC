@@ -13,7 +13,7 @@ ura = np.array([u["status"] == "reached" for u in M["ura"]]); fv = np.array([len
 ura_viol = np.array([(np.asarray(u["upeak"]) > np.asarray(cf.U_MAX)).any() for u in M["ura"]])
 t_ura = np.array([u["t"] for u in M["ura"]]); t_ra = np.array([L["check"]["t_entry"] if L["status"] == "reached" else np.nan for L in logs])
 COL = dict(van="#e08214", ura="#2166ac", ra="#8856a7"); save = lambda fig, name, pdf=False: [fig.savefig(os.path.join(cf.FIGS, f"{name}.{e}"), dpi=200) for e in (("png", "pdf") if pdf else ("png",))] and print("saved", name)
-XL, YL = (-5.3, 5.3), (0.6, 5.9); g1 = np.linspace(*XL, 640); g2 = np.linspace(*YL, 330); G1, G2 = np.meshgrid(g1, g2); PS = np.broadcast_to(C.psi(G1, G2), G1.shape); PH = phi_np(G1, G2)
+_V = SPEC.get("view", [[-5.3, 5.3], [-0.6, 5.9]]); XL = tuple(_V[0]); YL = (max(_V[1][0], 0.6), _V[1][1] - (0 if SPEC.get('layout') == 'square' else 0)); PVIEW = (tuple(_V[0]), (-0.6, 5.9)) if SPEC.get('layout') != 'square' else (tuple(_V[0]), tuple(_V[1])); g1 = np.linspace(*XL, 640); g2 = np.linspace(*YL, 330); G1, G2 = np.meshgrid(g1, g2); PS = np.broadcast_to(C.psi(G1, G2), G1.shape); PH = phi_np(G1, G2)
 yv = np.linspace(*cf.BOX[0], 26); yw = np.linspace(*cf.BOX[1], 12); VY1, VY2 = np.meshgrid(yv, yw); kk = C.k1(VY1, VY2)
 KU = np.broadcast_to(np.asarray(kk[0], float), VY1.shape).astype(float); KV = np.broadcast_to(np.asarray(kk[1], float), VY1.shape).astype(float)
 PV = np.broadcast_to(C.psi(VY1, VY2), VY1.shape); KU = np.where(PV > -0.05, KU, np.nan); KV = np.where(PV > -0.05, KV, np.nan)   # field shown on the corridor only
@@ -100,18 +100,18 @@ if SW is not None:
     save(fig, "verify_sweep"); plt.close(fig)
 
 # ── paper figures (style of make_paper_figs_manipulator.ipynb) ──
-px = 1 / plt.rcParams["figure.dpi"]; FS_P = 30; C_ARM = (146 / 255, 149 / 255, 145 / 255); C_START = (1.0, 0.549, 0.0); C_END = (0.102, 0.596, 0.314); C_GRAY = (178 / 255, 187 / 255, 205 / 255, 0.45)
+import sympy as _sp; _c = _sp.lambdify(_sp.Symbol('y1'), _sp.sympify(SPEC['path'])); XS_LABEL = (0.35 * SPEC['X0'], float(_c(0.35 * SPEC['X0'])) - 1.0); px = 1 / plt.rcParams["figure.dpi"]; FS_P = 30; C_ARM = (146 / 255, 149 / 255, 145 / 255); C_START = (1.0, 0.549, 0.0); C_END = (0.102, 0.596, 0.314); C_GRAY = (178 / 255, 187 / 255, 205 / 255, 0.45)
 
 
 def workcell(ax):
     """Bench, racks with compartments, fixture and the other objects, drawn faintly behind the task's sets."""
     X0w, YS, edge = SPEC["X0"], SPEC["YS"], 0.8; fx = SPEC["fixture"]
-    ax.add_patch(plt.Rectangle((XL[0], edge), XL[1] - XL[0], 7, color="#f5f1e8", zorder=0)); ax.plot(XL, [edge, edge], color="#b9ab8f", lw=2, zorder=0)
+    ax.add_patch(plt.Rectangle((XL[0], edge), XL[1] - XL[0], 9, color="#f5f1e8", zorder=0)); ax.plot(XL, [edge, edge], color="#b9ab8f", lw=2, zorder=0)
     for side in (-1, 1):
-        xo, xb = side * (X0w - 0.25), side * (X0w + 1.5); ylo, yhi = YS[0] - 0.5, YS[-1] + 0.5
+        xo, xb = side * (X0w - 0.25), side * (X0w + SPEC.get('rack_d', 1.5)); ylo, yhi = YS[0] - 0.5, YS[-1] + 0.5
         ax.add_patch(plt.Rectangle((min(xo, xb), ylo), abs(xb - xo), yhi - ylo, color="#e7e0d0", zorder=0)); ax.plot([xb, xb], [ylo, yhi], color="#8c7f66", lw=2, zorder=1)
         for yy in [ylo] + [(YS[i] + YS[i + 1]) / 2 for i in range(len(YS) - 1)] + [yhi]: ax.plot([xo, xb], [yy, yy], color="#8c7f66", lw=1.2, zorder=1)
-    top = 2.28; ax.add_patch(plt.Rectangle((-fx["w"] / 2, fx["y0"]), fx["w"], top - fx["y0"], color="0.62", ec="0.3", zorder=1))
+    top = fx.get('top', 2.28); ax.add_patch(plt.Rectangle((-fx["w"] / 2, fx["y0"]), fx["w"], top - fx["y0"], color="0.62", ec="0.3", zorder=1))
     cols = ("#d62728", "#1f77b4", "#2ca02c", "#ff7f0e")
     for k, yy in enumerate(YS):
         if [-X0w, yy] != SPEC["source"]: ax.add_patch(plt.Rectangle((-X0w - 0.2, yy - 0.2), 0.4, 0.4, color=cols[k], alpha=0.35, ec="k", lw=0.5, zorder=2))
@@ -132,8 +132,8 @@ def paper_figs(V, U, Rr, x0s, suffix=""):
         workcell(ax); draw_robot(ax, xr)
         ax.scatter(*Y0[:, ~mask], s=50, color="#d73027", alpha=0.85, marker="x", linewidths=3, zorder=8); ax.scatter(*Y0[:, mask], s=50, color="#2166ac", alpha=0.35, marker="o", zorder=9)
         ax.plot(yt[:, 0], yt[:, 1], color="black", lw=3, alpha=0.65, linestyle="--", zorder=10); ax.scatter([yt[0, 0]], [yt[0, 1]], s=70, c=[C_START], marker="o", linewidths=0.4, zorder=20); ax.scatter([yt[-1, 0]], [yt[-1, 1]], s=70, c=[C_END], marker="x", linewidths=3, zorder=20)
-        ax.text(-1.0, 2.75, r"$\mathcal{X}_S$", zorder=100, fontsize=FS_P - 4); ax.text(TARGET_POS[0] - 0.55, TARGET_POS[1] + 0.55, r"$\mathcal{X}_T$", zorder=100, fontsize=FS_P - 4)
-        ax.set_xlabel("$y_1$", fontsize=FS_P - 4); ax.set_ylabel("$y_2$", fontsize=FS_P - 4); ax.xaxis.set_tick_params(labelsize=22); ax.yaxis.set_tick_params(labelsize=22); ax.set_xlim(*XL); ax.set_ylim(-0.6, YL[1]); ax.set_aspect("equal")
+        ax.text(XS_LABEL[0], XS_LABEL[1], r"$\mathcal{X}_S$", zorder=100, fontsize=FS_P - 4); ax.text(TARGET_POS[0] - 0.55, TARGET_POS[1] + 0.55, r"$\mathcal{X}_T$", zorder=100, fontsize=FS_P - 4)
+        ax.set_xlabel("$y_1$", fontsize=FS_P - 4); ax.set_ylabel("$y_2$", fontsize=FS_P - 4); ax.xaxis.set_tick_params(labelsize=22); ax.yaxis.set_tick_params(labelsize=22); ax.set_xlim(*PVIEW[0]); ax.set_ylim(*PVIEW[1]); ax.set_aspect("equal")
         save(fig, name + suffix, pdf=True); plt.close(fig)
     FS_C = 24; fig, (axR, axW, axA) = plt.subplots(3, 1, figsize=(650 * px, 600 * px), layout="constrained", gridspec_kw={"height_ratios": [0.7, 1.0, 1.0]}); fig.set_dpi(200)
     if SW is not None:

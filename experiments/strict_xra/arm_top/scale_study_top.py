@@ -4,7 +4,7 @@ torque of the terminal controller on the terminal set and on X_RA. With g = 0: T
 import os, sys, json, numpy as np
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
 from cert_top import CertArm, fk, ik, phi_np, BOX, TASK
-K1 = os.path.join(HERE, "k1", sys.argv[1] if len(sys.argv) > 1 else f"{TASK}_d8_l0.05.txt"); DFRAC = 0.5
+K1 = os.path.join(HERE, "k1", sys.argv[1] if len(sys.argv) > 1 else f"{TASK}_d8_l{os.environ.get('LAM', '0.05')}.txt"); DFRAC = 0.5
 c0 = CertArm(K1, mu=1.0); g = c0.margin_on_grid(n=601)
 print(f"{os.path.basename(K1)}: lambda {c0.lam:.4f}, delta_s {c0.ds:.2e}, shift {c0.shift:.2e} | grid: min ECGBF margin {g['min_margin']:+.3e}, max |k1_i| {g['kmax']:.3f}, |y| in [{g['rmin']:.2f}, {g['rmax']:.2f}]")
 r = np.random.default_rng(5); Y = np.array([r.uniform(*BOX[0], 80000), r.uniform(*BOX[1], 80000)]); keep = (np.broadcast_to(c0.psi(*Y), (Y.shape[1],)) > 0) & (phi_np(*Y) > 0); Y = Y[:, keep][:, :3000]

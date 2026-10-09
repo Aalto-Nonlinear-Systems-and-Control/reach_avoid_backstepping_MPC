@@ -5,7 +5,7 @@ HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
 from cert_top import CertArm, fk, ik, phi_np, gravity, f_np, jac, TARGET_POS, BOX, TASK, SPEC, _solve2
 import ra_mpc_top as ra
 
-K1_FILE = os.path.join(HERE, "k1", f"{TASK}_d8_l0.05.txt")
+K1_FILE = os.path.join(HERE, "k1", f"{TASK}_d8_l{os.environ.get('LAM', '0.05')}.txt")
 SC = json.load(open(os.path.join(HERE, "data", f"scale_{TASK}.json")))
 MU_BASE, DFRAC, T = SC["MU0"], SC["DFRAC"], SC["T"]; U_MAX = tuple(SC["U_MAX"])
 SCALE = float(os.environ.get("SCALE", SC["s"])); URA_SCALE = float(os.environ.get("URA_SCALE", SC["URA_SCALE"]))

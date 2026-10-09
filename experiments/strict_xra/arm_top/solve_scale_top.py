@@ -5,7 +5,7 @@ second-order bound. Writes data/scale_<TASK>.json."""
 import os, sys, json, numpy as np
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
 from cert_top import CertArm, fk, phi_np, TASK
-K1 = os.path.join(HERE, "k1", f"{TASK}_d8_l0.05.txt"); MU0, DFRAC, T, URA_FAC = 0.1, 0.5, 0.01, 2.0
+K1 = os.path.join(HERE, "k1", f"{TASK}_d8_l{os.environ.get('LAM', '0.05')}.txt"); MU0, DFRAC, T, URA_FAC = 0.1, 0.5, 0.01, 2.0
 c1 = CertArm(K1, mu=MU0); delta = DFRAC * (1 - c1.shift); xd, _ = c1.sample(delta, n_y=200000, seed=11); xd = xd[:, phi_np(*fk(xd[:2])) > 0]
 x0, _ = c1.sample(0.0, n_y=200000, seed=12); x0 = x0[:, phi_np(*fk(x0[:2])) > 0]
 

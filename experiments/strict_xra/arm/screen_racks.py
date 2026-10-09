@@ -16,7 +16,11 @@ from cert_arm import ik
 X0 = 3.2; DX = 0.4; YS = (1.8, 2.8, 3.8, 4.8); SIGMA = (2, 0, 3, 1); WALL = 0.5; RACK_OPEN = X0 - 0.25
 NAMES = ("red", "blue", "green", "orange"); COLORS = ("#d62728", "#1f77b4", "#2ca02c", "#ff7f0e")
 H = 0.38; OBJ = 0.2; RT = 0.35; M = 5; KAPPA = 0.02; A_W = 4.5
-FIX_W = 1.2; FIX_Y0 = 1.1; RACK_D = 1.5
+FIX_W = 1.2; FIX_Y0 = 1.1; RACK_D = 1.5; VIEW = ((-5.3, 5.3), (-2.9, 6.0)); BRIDGE = 1.0
+LAYOUT = os.environ.get("LAYOUT", "wide")
+if LAYOUT == "square":      # compact cell for square figures: racks closer and higher; weight and closing scaled with X0 (a ~ X0, kappa ~ 1/X0^2)
+    X0 = 2.4; DX = 0.3; YS = (2.3, 3.3, 4.3, 5.3); RACK_OPEN = X0 - 0.25; A_W = 4.5 * X0 / 3.2; KAPPA = 0.02 * (3.2 / X0)**2
+    FIX_W = 1.0; FIX_Y0 = 1.2; RACK_D = 1.2; VIEW = ((-3.7, 3.7), (-0.7, 6.7)); BRIDGE = float(os.environ.get("BRIDGE", 0.8))
 screen_zigzag.RT = RT
 
 
@@ -105,11 +109,10 @@ def draw_cell(ax, tasks, top, phase, title, show_all=True, focus=None):
         else: src, dst = np.array([X0, YS[SIGMA[k]]]), np.array([-X0, YS[k]])
         ax.add_patch(plt.Rectangle(src - OBJ, 2 * OBJ, 2 * OBJ, color=COLORS[k], ec="k", lw=0.8, zorder=8))
         ax.add_patch(plt.Rectangle(dst - OBJ, 2 * OBJ, 2 * OBJ, color="none", ec=COLORS[k], lw=1.0, ls=":", zorder=8))
-    t0 = sel[0]; A = t0["src"]; q = ik(A.reshape(2, 1))[:, 0]; e = np.array([4 * np.cos(q[0]), 4 * np.sin(q[0])]); d = A / np.linalg.norm(A); e2 = 2 * d * (d @ e) - e
-    fc = np.array([0.0, (FIX_Y0 + top) / 2]); e = e2 if np.linalg.norm(e2 - fc) > np.linalg.norm(e - fc) else e
+    t0 = sel[0]; A = t0["src"]; q = ik(A.reshape(2, 1))[:, 0]; e = np.array([4 * np.cos(q[0]), 4 * np.sin(q[0])])      # branch q2 > 0, as in the dynamics
     ax.plot([0, e[0]], [0, e[1]], "-", lw=8, color="0.35", alpha=0.6, solid_capstyle="round", zorder=9); ax.plot([e[0], A[0]], [e[1], A[1]], "-", lw=6.5, color="0.35", alpha=0.6, solid_capstyle="round", zorder=9)
     ax.add_patch(plt.Circle(e, 0.22, color="0.25", zorder=10)); ax.add_patch(plt.Circle((0, 0), 0.5, color="0.2", zorder=10))
-    ax.set_aspect("equal"); ax.set_xlim(-5.3, 5.3); ax.set_ylim(-2.9, 6.0); ax.set_xticks([]); ax.set_yticks([]); ax.set_title(title, fontsize=10)
+    ax.set_aspect("equal"); ax.set_xlim(*VIEW[0]); ax.set_ylim(*VIEW[1]); ax.set_xticks([]); ax.set_yticks([]); ax.set_title(title, fontsize=10)
 
 
 def draw_one(ax, t):
@@ -118,7 +121,7 @@ def draw_one(ax, t):
     ax.contourf(Y1, Y2, P, levels=[0, 0.5, 2], colors=["#dfe9f5", "#b9d3ee"], zorder=1); ax.contour(Y1, Y2, P, levels=[0], colors="#2166ac", linewidths=1.6, zorder=2)
     ax.contour(Y1, Y2, P, levels=[0.2, 0.4, 0.6, 0.8], colors="0.5", linewidths=0.6, linestyles="-", zorder=2)
     ax.add_patch(plt.Circle(r["tc"], RT, color="#fee0d2", ec="#d6604d", lw=1.6, zorder=5)); ax.plot(*t["src"], "s", color=col, ms=9, mec="k", zorder=6)
-    ax.set_aspect("equal"); ax.set_xlim(-5.3, 5.3); ax.set_ylim(-2.9, 6.0); ax.set_xticks([]); ax.set_yticks([])
+    ax.set_aspect("equal"); ax.set_xlim(*VIEW[0]); ax.set_ylim(*VIEW[1]); ax.set_xticks([]); ax.set_yticks([])
     ax.set_title(f"{NAMES[t['k']]} object, forward task: X_S (blue), psi >= 0.5 max (dark), level sets, target disc at the slot", fontsize=9)
 
 
@@ -129,9 +132,10 @@ if __name__ == "__main__":
     for b, g in configs:
         print(f"bulge={b} gamma={g}", flush=True); tasks, top = run(b, g); nok = sum(t["ok"] for t in tasks); print(f"  -> {nok}/8 pass, fixture top {top:.2f}", flush=True); res.append((b, g, tasks, top, nok))
     b, g, tasks, top, nok = max(res, key=lambda x: (x[4], x[1], x[0]))
-    fig, axs = plt.subplots(1, 3, figsize=(20, 5.2), gridspec_kw=dict(wspace=0.04))
+    SUF = "_square" if LAYOUT == "square" else ""
+    fig, axs = plt.subplots(1, 3, figsize=(20, 5.2) if not SUF else (19, 6.6), gridspec_kw=dict(wspace=0.04))
     draw_cell(axs[0], tasks, top, "fwd", f"forward: objects from the left rack to the right rack (bridge {b}, gamma {g}, {nok}/8 certificates pass)")
     draw_cell(axs[1], tasks, top, "rev", "reverse: back to the left rack along the same tubes")
     draw_one(axs[2], [t for t in tasks if t["k"] == 0 and t["sgn"] > 0][0])
-    fig.savefig("figs/arm_racks.png", dpi=130, bbox_inches="tight"); print("saved figs/arm_racks.png", b, g)
-    with open("data/racks_best.pkl", "wb") as f: pickle.dump(dict(b=b, gam=g, top=top, X0=X0, YS=YS, SIGMA=SIGMA, H=H, M=M, KAPPA=KAPPA, A_W=A_W, psi={(t["k"], t["sgn"]): str(t["psi"]) for t in tasks}), f)
+    fig.savefig(f"figs/arm_racks{SUF}.png", dpi=130, bbox_inches="tight"); print(f"saved figs/arm_racks{SUF}.png", b, g)
+    with open(f"data/racks_best{SUF}.pkl", "wb") as f: pickle.dump(dict(b=b, gam=g, top=top, X0=X0, YS=YS, SIGMA=SIGMA, H=H, M=M, KAPPA=KAPPA, A_W=A_W, psi={(t["k"], t["sgn"]): str(t["psi"]) for t in tasks}), f)
