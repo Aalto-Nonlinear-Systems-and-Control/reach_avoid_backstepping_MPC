@@ -39,10 +39,13 @@ def set_state(m, d, ts):
 
 def _edges(task):
     S = SPECS[task]; f = sp.lambdify(sp.symbols("y1 y2"), sp.sympify(S["psi"]), "numpy")
-    G1, G2 = np.meshgrid(np.linspace(-3.6, 3.6, 600), np.linspace(1.0, 6.0, 420)); cs = plt.contour(ALPHA * G1, ALPHA * G2, np.broadcast_to(f(G1, G2), G1.shape), levels=[0]); segs = cs.allsegs[0]; plt.close()
+    (a1, b1), (a2, b2) = S["box"]; G1, G2 = np.meshgrid(np.linspace(a1 - 0.3, b1 + 0.3, 640), np.linspace(a2 - 0.3, b2 + 0.3, 400))   # the task's own extent (the green corridors reach y2 = 6.02)
+    cs = plt.contour(ALPHA * G1, ALPHA * G2, np.broadcast_to(f(G1, G2), G1.shape), levels=[0]); segs = cs.allsegs[0]; plt.close()
     out = []
     for seg in segs:
-        seg = seg[::3]; out += [((p[1], -p[0], Z0), (q[1], -q[0], Z0)) for p, q in zip(seg[:-1], seg[1:])]
+        sub = seg[::3]
+        if np.allclose(seg[0], seg[-1]) and not np.allclose(sub[-1], seg[0]): sub = np.vstack([sub, seg[:1]])   # keep closed curves closed after subsampling
+        out += [((p[1], -p[0], Z0), (q[1], -q[0], Z0)) for p, q in zip(sub[:-1], sub[1:])]
     c = to_world(S["target"]); r = ALPHA * S["RT"]; a = np.linspace(0, 2 * np.pi, 41)
     ring = [((c[0] + r * np.cos(u), c[1] + r * np.sin(u), Z0), (c[0] + r * np.cos(v), c[1] + r * np.sin(v), Z0)) for u, v in zip(a[:-1], a[1:])]
     return out, ring
