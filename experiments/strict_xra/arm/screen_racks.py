@@ -90,13 +90,8 @@ def run(b, gam, verbose=True):
 
 
 def draw_cell(ax, tasks, top, phase, title, show_all=True, focus=None):
-    ax.add_patch(plt.Rectangle((-7.2, Y_EDGE), 14.4, 6.9, color="#f3eee3", zorder=0)); ax.plot([-7.2, 7.2], [Y_EDGE, Y_EDGE], color="#b9ab8f", lw=2, zorder=1)
-    for side in (-1, 1):                                                     # racks: back wall, side walls, dividers
-        xo = side * RACK_OPEN; xb = side * (X0 + RACK_D); ylo, yhi = YS[0] - WALL, YS[-1] + WALL
-        ax.add_patch(plt.Rectangle((min(xo, xb), ylo), abs(xb - xo), yhi - ylo, color="#e4dccb", zorder=1))
-        ax.plot([xb, xb], [ylo, yhi], color="#7d705a", lw=2.5, zorder=2)
-        for yy in [ylo] + [(YS[i] + YS[i + 1]) / 2 for i in range(3)] + [yhi]: ax.plot([xo, xb], [yy, yy], color="#7d705a", lw=1.6, zorder=2)
-    ax.add_patch(plt.Rectangle((-FIX_W / 2, FIX_Y0), FIX_W, top - FIX_Y0, color="0.55", ec="k", zorder=6)); ax.text(0, (FIX_Y0 + top) / 2, "fixture", ha="center", va="center", fontsize=8, color="w", zorder=7)
+    import cellart as art                                                   # bench over the whole view, robot mounted on the bench
+    art.bench(ax, VIEW); art.racks(ax, X0, YS, RACK_D, wall=WALL, opening=X0 - RACK_OPEN, lw=1.6); art.fixture(ax, FIX_W, FIX_Y0, top, label=True)
     sel = [t for t in tasks if (t["sgn"] > 0) == (phase == "fwd")]
     if focus is not None: sel = [t for t in sel if t["k"] == focus]
     for t in sel:
@@ -109,20 +104,19 @@ def draw_cell(ax, tasks, top, phase, title, show_all=True, focus=None):
         else: src, dst = np.array([X0, YS[SIGMA[k]]]), np.array([-X0, YS[k]])
         ax.add_patch(plt.Rectangle(src - OBJ, 2 * OBJ, 2 * OBJ, color=COLORS[k], ec="k", lw=0.8, zorder=8))
         ax.add_patch(plt.Rectangle(dst - OBJ, 2 * OBJ, 2 * OBJ, color="none", ec=COLORS[k], lw=1.0, ls=":", zorder=8))
-    t0 = sel[0]; A = t0["src"]; q = ik(A.reshape(2, 1))[:, 0]; e = np.array([4 * np.cos(q[0]), 4 * np.sin(q[0])])      # branch q2 > 0, as in the dynamics
-    ax.plot([0, e[0]], [0, e[1]], "-", lw=8, color="0.35", alpha=0.6, solid_capstyle="round", zorder=9); ax.plot([e[0], A[0]], [e[1], A[1]], "-", lw=6.5, color="0.35", alpha=0.6, solid_capstyle="round", zorder=9)
-    ax.add_patch(plt.Circle(e, 0.22, color="0.25", zorder=10)); ax.add_patch(plt.Circle((0, 0), 0.5, color="0.2", zorder=10))
+    t0 = sel[0]; A = t0["src"] if phase == "fwd" else t0["dst"]      # reverse phase: arm placing the red object back (elbow inside the view)
+    q = ik(A.reshape(2, 1))[:, 0]; art.robot(ax, q, w=0.26, alpha=0.6, zorder=9)                                    # branch q2 > 0, as in the dynamics
     ax.set_aspect("equal"); ax.set_xlim(*VIEW[0]); ax.set_ylim(*VIEW[1]); ax.set_xticks([]); ax.set_yticks([]); ax.set_title(title, fontsize=10)
 
 
 def draw_one(ax, t):
     r = t["r"]; col = COLORS[t["k"]]; P = r["P"] / r["pmax"]
-    ax.add_patch(plt.Rectangle((-7.2, Y_EDGE), 14.4, 6.9, color="#f3eee3", zorder=0))
+    import cellart as art; art.bench(ax, VIEW); art.racks(ax, X0, YS, RACK_D, wall=WALL, opening=X0 - RACK_OPEN, lw=1.0); art.fixture(ax, FIX_W, FIX_Y0, 2.56 if LAYOUT == "square" else 2.28)
     ax.contourf(Y1, Y2, P, levels=[0, 0.5, 2], colors=["#dfe9f5", "#b9d3ee"], zorder=1); ax.contour(Y1, Y2, P, levels=[0], colors="#2166ac", linewidths=1.6, zorder=2)
     ax.contour(Y1, Y2, P, levels=[0.2, 0.4, 0.6, 0.8], colors="0.5", linewidths=0.6, linestyles="-", zorder=2)
     ax.add_patch(plt.Circle(r["tc"], RT, color="#fee0d2", ec="#d6604d", lw=1.6, zorder=5)); ax.plot(*t["src"], "s", color=col, ms=9, mec="k", zorder=6)
     ax.set_aspect("equal"); ax.set_xlim(*VIEW[0]); ax.set_ylim(*VIEW[1]); ax.set_xticks([]); ax.set_yticks([])
-    ax.set_title(f"{NAMES[t['k']]} object, forward task: X_S (blue), psi >= 0.5 max (dark), level sets, target disc at the slot", fontsize=9)
+    ax.set_title(f"{NAMES[t['k']]} forward: safe set, level sets of psi, target disc", fontsize=10)
 
 
 if __name__ == "__main__":
@@ -134,8 +128,8 @@ if __name__ == "__main__":
     b, g, tasks, top, nok = max(res, key=lambda x: (x[4], x[1], x[0]))
     SUF = "_square" if LAYOUT == "square" else ""
     fig, axs = plt.subplots(1, 3, figsize=(20, 5.2) if not SUF else (19, 6.6), gridspec_kw=dict(wspace=0.04))
-    draw_cell(axs[0], tasks, top, "fwd", f"forward: objects from the left rack to the right rack (bridge {b}, gamma {g}, {nok}/8 certificates pass)")
-    draw_cell(axs[1], tasks, top, "rev", "reverse: back to the left rack along the same tubes")
+    draw_cell(axs[0], tasks, top, "fwd", f"forward: left rack to right rack ({nok}/8 certificates pass)")
+    draw_cell(axs[1], tasks, top, "rev", "reverse: back along the same tubes")
     draw_one(axs[2], [t for t in tasks if t["k"] == 0 and t["sgn"] > 0][0])
     fig.savefig(f"figs/arm_racks{SUF}.png", dpi=130, bbox_inches="tight"); print(f"saved figs/arm_racks{SUF}.png", b, g)
     with open(f"data/racks_best{SUF}.pkl", "wb") as f: pickle.dump(dict(b=b, gam=g, top=top, X0=X0, YS=YS, SIGMA=SIGMA, H=H, M=M, KAPPA=KAPPA, A_W=A_W, psi={(t["k"], t["sgn"]): str(t["psi"]) for t in tasks}), f)

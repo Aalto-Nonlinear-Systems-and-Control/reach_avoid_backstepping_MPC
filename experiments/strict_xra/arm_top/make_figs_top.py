@@ -100,26 +100,23 @@ if SW is not None:
     save(fig, "verify_sweep"); plt.close(fig)
 
 # ── paper figures (style of make_paper_figs_manipulator.ipynb) ──
-import sympy as _sp; _c = _sp.lambdify(_sp.Symbol('y1'), _sp.sympify(SPEC['path'])); XS_LABEL = (0.35 * SPEC['X0'], float(_c(0.35 * SPEC['X0'])) - 1.0); px = 1 / plt.rcParams["figure.dpi"]; FS_P = 30; C_ARM = (146 / 255, 149 / 255, 145 / 255); C_START = (1.0, 0.549, 0.0); C_END = (0.102, 0.596, 0.314); C_GRAY = (178 / 255, 187 / 255, 205 / 255, 0.45)
+import sympy as _sp; _c = _sp.lambdify(_sp.Symbol('y1'), _sp.sympify(SPEC['path'])); XS_LABEL = (-0.62 * SPEC['X0'], float(_c(-0.55 * SPEC['X0'])) - 1.25); px = 1 / plt.rcParams["figure.dpi"]; FS_P = 30; C_ARM = (146 / 255, 149 / 255, 145 / 255); C_START = (1.0, 0.549, 0.0); C_END = (0.102, 0.596, 0.314); C_GRAY = (178 / 255, 187 / 255, 205 / 255, 0.45)
 
 
 def workcell(ax):
-    """Bench, racks with compartments, fixture and the other objects, drawn faintly behind the task's sets."""
-    X0w, YS, edge = SPEC["X0"], SPEC["YS"], 0.8; fx = SPEC["fixture"]
-    ax.add_patch(plt.Rectangle((XL[0], edge), XL[1] - XL[0], 9, color="#f5f1e8", zorder=0)); ax.plot(XL, [edge, edge], color="#b9ab8f", lw=2, zorder=0)
-    for side in (-1, 1):
-        xo, xb = side * (X0w - 0.25), side * (X0w + SPEC.get('rack_d', 1.5)); ylo, yhi = YS[0] - 0.5, YS[-1] + 0.5
-        ax.add_patch(plt.Rectangle((min(xo, xb), ylo), abs(xb - xo), yhi - ylo, color="#e7e0d0", zorder=0)); ax.plot([xb, xb], [ylo, yhi], color="#8c7f66", lw=2, zorder=1)
-        for yy in [ylo] + [(YS[i] + YS[i + 1]) / 2 for i in range(len(YS) - 1)] + [yhi]: ax.plot([xo, xb], [yy, yy], color="#8c7f66", lw=1.2, zorder=1)
-    top = fx.get('top', 2.28); ax.add_patch(plt.Rectangle((-fx["w"] / 2, fx["y0"]), fx["w"], top - fx["y0"], color="0.62", ec="0.3", zorder=1))
-    cols = ("#d62728", "#1f77b4", "#2ca02c", "#ff7f0e")
-    for k, yy in enumerate(YS):
-        if [-X0w, yy] != SPEC["source"]: ax.add_patch(plt.Rectangle((-X0w - 0.2, yy - 0.2), 0.4, 0.4, color=cols[k], alpha=0.35, ec="k", lw=0.5, zorder=2))
+    """Bench over the whole view, racks, fixture and the objects not being carried (faint); the robot is drawn separately."""
+    import sys as _s, os as _o; _s.path.append(_o.path.join(cf.HERE, "..", "arm")); import cellart as art
+    X0w, YS, sig = SPEC["X0"], SPEC["YS"], SPEC["SIGMA"]; fx = SPEC["fixture"]
+    art.bench(ax, PVIEW); art.racks(ax, X0w, YS, SPEC.get("rack_d", 1.5)); art.fixture(ax, fx["w"], fx["y0"], fx.get("top", 2.28))
+    fwd = SPEC["source"][0] < 0; j_src = int(np.argmin([abs(v - SPEC["source"][1]) for v in YS]))
+    if fwd: which = [(-1, k, k) for k in range(len(YS)) if k != j_src]
+    else: which = [(1, sig[k], k) for k in range(len(YS)) if sig[k] != j_src]
+    art.objects(ax, X0w, YS, which, alpha=0.5, zorder=2)
 
 
 def draw_robot(ax, x):
-    q1, q2 = float(x[0]), float(x[1]); jx, jy = 4 * np.cos(q1), 4 * np.sin(q1); ex, ey = jx + 4 * np.cos(q1 + q2), jy + 4 * np.sin(q1 + q2)
-    ax.plot([0, jx], [0, jy], "o-", alpha=0.45, lw=6, color=C_ARM, zorder=6); ax.plot([jx, ex], [jy, ey], "o-", alpha=0.45, lw=6, color=C_ARM, zorder=6); ax.plot(0, 0, "ko", markersize=6, zorder=51)
+    import cellart as art
+    art.robot(ax, x[:2], w=0.26, alpha=0.55, zorder=6)
 
 
 def paper_figs(V, U, Rr, x0s, suffix=""):
