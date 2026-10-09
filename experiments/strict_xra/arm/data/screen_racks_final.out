@@ -1,0 +1,11 @@
+bulge=1.0 gamma=0.0
+  red    fwd: deg 10 crit 1 others 0 1D-changes 1 cert 100% |y| [2.87,5.97] y2>=1.42 far False max-slot 0.000 psi(src) 45% cross 0.59 wall +0.060 fixture 0.67 ends y1 [-4.04,4.44] ok
+  red    rev: deg 10 crit 1 others 0 1D-changes 1 cert 100% |y| [2.87,5.60] y2>=1.40 far False max-slot 0.000 psi(src) 45% cross 0.59 wall +0.040 fixture 0.67 ends y1 [-4.44,4.04] ok
+  blue   fwd: deg 10 crit 1 others 0 1D-changes 1 cert 100% |y| [2.70,4.95] y2>=1.40 far False max-slot 0.000 psi(src) 45% cross 0.60 wall +0.060 fixture 0.39 ends y1 [-4.04,4.44] ok
+  blue   rev: deg 10 crit 1 others 0 1D-changes 1 cert 100% |y| [2.70,5.36] y2>=1.42 far False max-slot 0.000 psi(src) 45% cross 0.61 wall +0.060 fixture 0.39 ends y1 [-4.44,4.04] ok
+  green  fwd: deg 10 crit 1 others 0 1D-changes 1 cert 100% |y| [4.45,6.71] y2>=3.42 far False max-slot 0.000 psi(src) 45% cross 0.61 wall +0.060 fixture 2.17 ends y1 [-4.04,4.44] ok
+  green  rev: deg 10 crit 1 others 0 1D-changes 1 cert 100% |y| [4.45,6.35] y2>=3.40 far False max-slot 0.000 psi(src) 45% cross 0.60 wall +0.060 fixture 2.17 ends y1 [-4.44,4.04] ok
+  orange fwd: deg 10 crit 1 others 0 1D-changes 1 cert 100% |y| [3.68,6.35] y2>=2.40 far False max-slot 0.000 psi(src) 45% cross 0.59 wall +0.040 fixture 1.48 ends y1 [-4.04,4.44] ok
+  orange rev: deg 10 crit 1 others 0 1D-changes 1 cert 100% |y| [3.68,6.69] y2>=2.42 far False max-slot 0.000 psi(src) 45% cross 0.59 wall +0.060 fixture 1.48 ends y1 [-4.44,4.04] ok
+  -> 8/8 pass, fixture top 2.28
+saved figs/arm_racks.png 1.0 0.0
