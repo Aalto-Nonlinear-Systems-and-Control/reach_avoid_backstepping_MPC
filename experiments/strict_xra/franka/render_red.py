@@ -58,10 +58,11 @@ def camera(cam):
 
 
 def frame(ren, cam, ts):
-    """Two passes: the physical scene with shadows (marks hidden), then the marks and the trail without shadows, composited by depth."""
+    """Two passes: the physical scene with shadows (marks hidden), then the marks and the trail without shadows, composited by depth.
+    Default geom groups 0-2: the arm's visual meshes are group 2; its grey collision meshes (group 3) stay hidden."""
     set_state(min(ts, TEND)); out = []
     for marks in (False, True):
-        opt = mujoco.MjvOption(); opt.geomgroup[:] = 1; opt.geomgroup[1] = int(marks); ren.update_scene(d, camera=camera(cam), scene_option=opt)
+        opt = mujoco.MjvOption(); opt.geomgroup[1] = int(marks); ren.update_scene(d, camera=camera(cam), scene_option=opt)
         ren.scene.flags[mujoco.mjtRndFlag.mjRND_SHADOW] = int(not marks)
         if marks: add_trail(ren.scene, ts)
         rgb = ren.render().copy(); ren.enable_depth_rendering(); dep = ren.render().copy(); ren.disable_depth_rendering(); out.append((rgb, dep))
