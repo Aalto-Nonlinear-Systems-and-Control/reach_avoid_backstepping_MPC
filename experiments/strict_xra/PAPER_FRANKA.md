@@ -3,6 +3,8 @@
 Setting of 2026-10-09, replacing the two-link arm by a Panda-like arm simulated in MuJoCo (scripts in `franka/`,
 environment `rab_franka`, a clone of `rab_mpc` with MuJoCo 3.15; the earlier results are untouched).
 
+**Status (2026-10-09): paused.** Done and committed (last commits c4d6618, d864b9b): model, certificate, scale, red-task comparison, Theorem 2 and Lemma 2 checks, top-view figures, 3D scene, pick and place demo, video and replay window. Not started: the other seven certificates, the forward and reverse cycle, a horizon calibration for this arm. To resume, see Section 6.
+
 ## 1. Model and task
 
 | item | value |
@@ -59,6 +61,7 @@ Video `figs/red_fwd_sq/franka_red_task.mp4` (`render_red.py`): angled front view
 
 ## 6. Open points
 
-- The gap between RA-MPC and vanilla (123 against 111) is smaller than for the two-link arm (137 against 84): the 0.6 s horizon covers most of the motion. A shorter horizon (N = 40) should widen it; to be calibrated if wanted.
+- The gap between RA-MPC and vanilla (123 against 111) is smaller than for the two-link arm (137 against 84): the 0.6 s horizon covers most of the motion. A shorter horizon (N = 40) might widen it; not calibrated for this arm (the N = 40/60/100 table of `arm_top/data/red_fwd/calib_horizon.out` is the two-link arm's).
 - MuJoCo video of the forward and reverse cycle, and the other seven certificates (after the red-task video is approved).
+- Video reproduction: `python build_scene.py`, `python red_demo_traj.py` (about 5 min, RA-MPC from the lifted state), `python render_red.py [--stills]` (about 2 min), `./view_red.sh [speed]`.
 - Reproduction: `python build_model_simple.py`, `python franka_model.py` (model check), `python solve_scale_franka.py`, `python run_main_franka.py`, `python run_lemma2_franka.py`, `python summarize_franka.py`, `python make_figs_franka.py` (environment `rab_franka`).
