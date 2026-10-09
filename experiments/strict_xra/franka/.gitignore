@@ -6,3 +6,4 @@ tmp_casadi_compiler_shell*
 data_*.out
 prof_*.py
 test_single.py
+MUJOCO_LOG.TXT

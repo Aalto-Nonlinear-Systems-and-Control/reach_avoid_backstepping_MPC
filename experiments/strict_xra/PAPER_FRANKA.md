@@ -49,8 +49,16 @@ Solve time with the compiled NLP: median about 0.95 s per step under parallel lo
 `fig_franka_vanilla`, `fig_franka_uncon`, `fig_franka_rampc` (+ `_far`): top views in the Dubins style, the arm drawn as its top-view footprint (with q3 = q5 = 0 all links project on the ray from the base to the gripper);
 `fig_franka_compare` (+ `_far`): torques of URA and RA-MPC against the bounds; `verify_outcomes`.
 
-## 5. Open points
+## 5. MuJoCo video and replay window (`franka/`)
+
+Scene `model/scene_red.xml` (`build_scene.py`), visual only on top of `panda_simple.xml` (the arm's mass matrix is unchanged): Menagerie floor and sky, one table with the robot base on the tabletop, the four cubes and the obstacle standing on it, the slots and the cube homes as dashed marks on the tabletop, the edge of X_S and the ring of X_T drawn at the transport height 0.30 m. The obstacle is 0.30 m tall, so it blocks the carried cube (bottom at 0.28 m, plane clearance 56 mm) while the hand passes above it (16.5 mm); at 0.42 m the hand would cut it by 19 mm, as the certificate covers the tool point only. Menagerie's own arm light is switched off at load time, which halves the lighting.
+
+Demo (`red_demo_traj.py`, `data/red_fwd_sq/demo.npz`), all on the MuJoCo plant with the same torque bounds: pick 3.3 s (descend from 0.30 m to the cube at 0.02 m, grasp, lift; minimum-jerk references tracked by clipped computed torque, not certified), transport 1.00 s by RA-MPC from the lifted state at rest (certified; min psi 0.0061, height within 21.5 mm, pitch within 1.54 deg), place 3.6 s (centre over the slot, lower, release, retract; not certified). Lowest tool point 20.0 mm, i.e. no overshoot into the table; fingers at least 11 mm above the tabletop.
+
+Video `figs/red_fwd_sq/franka_red_task.mp4` (`render_red.py`): angled front view (pick and place at 0.5x, transport at 0.25x), then the fixed top camera (pick and place at 1x, transport at 0.25x); the marks and the transport trail are composited without shadows (second render pass, by depth). Replay window: `./view_red.sh [speed]` (default 0.5; shadows off there).
+
+## 6. Open points
 
 - The gap between RA-MPC and vanilla (123 against 111) is smaller than for the two-link arm (137 against 84): the 0.6 s horizon covers most of the motion. A shorter horizon (N = 40) should widen it; to be calibrated if wanted.
-- MuJoCo video of the forward and reverse cycle, and the other seven certificates.
+- MuJoCo video of the forward and reverse cycle, and the other seven certificates (after the red-task video is approved).
 - Reproduction: `python build_model_simple.py`, `python franka_model.py` (model check), `python solve_scale_franka.py`, `python run_main_franka.py`, `python run_lemma2_franka.py`, `python summarize_franka.py`, `python make_figs_franka.py` (environment `rab_franka`).
