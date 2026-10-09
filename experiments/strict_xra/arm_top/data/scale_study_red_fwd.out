@@ -1,0 +1,5 @@
+red_fwd_d8_l0.05.txt: lambda 0.0501, delta_s -2.68e-09, shift -5.34e-08 | grid: min ECGBF margin +1.028e-03, max |k1_i| 0.991, |y| in [2.87, 5.97]
+mu0 0.1 : rest states in X_RA   7.1% | T_eps(1)     35.8 ms | max|tau_1| terminal set [3.9  0.92], X_RA [6.13 1.14], rest states [2.58 0.54]
+mu0 0.3 : rest states in X_RA  22.5% | T_eps(1)     15.1 ms | max|tau_1| terminal set [6.71 1.31], X_RA [10.43  1.64], rest states [7.78 1.61]
+mu0 1   : rest states in X_RA  74.6% | T_eps(1)      4.5 ms | max|tau_1| terminal set [18.14  2.91], X_RA [27.91  5.38], rest states [25.97  5.37]
+mu0 3   : rest states in X_RA  91.3% | T_eps(1)      1.5 ms | max|tau_1| terminal set [54.12  9.23], X_RA [79.96 16.1 ], rest states [77.93 16.11]

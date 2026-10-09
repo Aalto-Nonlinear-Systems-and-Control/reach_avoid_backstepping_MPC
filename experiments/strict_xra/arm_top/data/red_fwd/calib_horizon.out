@@ -1,0 +1,4 @@
+N=40 (0.40 s): vanilla 11/30 {'reached': 11, 'infeasible': 19} | RA-MPC 21/30 {'reached': 21, 'infeasible': 9} | van&~RA 3 | solve ms RA 296 (65s)
+  warnings.warn(
+N=60 (0.60 s): vanilla 16/30 {'reached': 16, 'infeasible': 14} | RA-MPC 28/30 {'reached': 28, 'infeasible': 2} | van&~RA 0 | solve ms RA 319 (100s)
+N=100 (1.00 s): vanilla 29/30 {'reached': 29, 'infeasible': 1} | RA-MPC 29/30 {'reached': 29, 'infeasible': 1} | van&~RA 0 | solve ms RA 488 (197s)
