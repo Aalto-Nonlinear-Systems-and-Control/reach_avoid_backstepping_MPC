@@ -16,6 +16,7 @@ COL = dict(van="#e08214", ura="#2166ac", ra="#8856a7"); save = lambda fig, name,
 XL, YL = (-5.3, 5.3), (0.6, 5.9); g1 = np.linspace(*XL, 640); g2 = np.linspace(*YL, 330); G1, G2 = np.meshgrid(g1, g2); PS = np.broadcast_to(C.psi(G1, G2), G1.shape); PH = phi_np(G1, G2)
 yv = np.linspace(*cf.BOX[0], 26); yw = np.linspace(*cf.BOX[1], 12); VY1, VY2 = np.meshgrid(yv, yw); kk = C.k1(VY1, VY2)
 KU = np.broadcast_to(np.asarray(kk[0], float), VY1.shape).astype(float); KV = np.broadcast_to(np.asarray(kk[1], float), VY1.shape).astype(float)
+PV = np.broadcast_to(C.psi(VY1, VY2), VY1.shape); KU = np.where(PV > -0.05, KU, np.nan); KV = np.where(PV > -0.05, KV, np.nan)   # field shown on the corridor only
 
 
 def sets(ax, cert_region=True):
@@ -34,11 +35,14 @@ print(f"shared x0 = state {i0}, y0 {np.round(Y0[:, i0], 3)}, q0 {np.round(x0s[:2
 
 # ── V1 outcomes ──
 fig, ax = plt.subplots(1, 4, figsize=(20, 4.2), constrained_layout=True)
-for a, ok, ttl, col in zip(ax, (fv, ura, rr), ("vanilla MPC", rf"URA (scale $s = {cf.URA_SCALE:g}$)", "RA-MPC"), (COL["van"], COL["ura"], COL["ra"])):
-    sets(a); a.scatter(*Y0[:, ok], s=14, c=col); a.scatter(*Y0[:, ~ok], s=18, c="0.45", marker="x", linewidths=0.9); a.set_title(f"{ttl}: {ok.sum()}/{n}", fontsize=11)
+for a, ok, ttl, col in zip(ax, (vr, ura, rr), ("vanilla MPC", rf"URA (scale $s = {cf.URA_SCALE:.2f}$)", "RA-MPC"), (COL["van"], COL["ura"], COL["ra"])):
+    sets(a); a.scatter(*Y0[:, ok], s=14, c=col); a.scatter(*Y0[:, ~ok], s=18, c="0.45", marker="x", linewidths=0.9); a.set_title(f"{ttl}: {ok.sum()}/{n} reach the slot", fontsize=11)
+    if ttl == "vanilla MPC":
+        later = fv & ~vr; a.scatter(*Y0[:, later], s=34, facecolors="none", edgecolors=COL["van"], linewidths=1.2, zorder=5)
+        a.set_title(f"vanilla MPC: {ok.sum()}/{n} reach the slot\n(feasible at $k = 0$: {fv.sum()}; open circles: {later.sum()} lose feasibility later)", fontsize=10)
 both = ura & rr; a = ax[3]; a.scatter(t_ura[both], t_ra[both], s=12, c=COL["ra"]); a.set_xscale("log"); a.set_yscale("log"); lim = [0.05, 100]; a.plot(lim, lim, "k--", lw=0.8); a.set_xlim(lim); a.set_ylim(lim); a.grid(alpha=0.3, which="both")
 a.set_xlabel("time to target, URA (s)"); a.set_ylabel("time to target, RA-MPC (s)"); a.set_title(f"{both.sum()} common successes: median {np.median(t_ura[both]):.2f} s vs {np.median(t_ra[both]):.2f} s", fontsize=10)
-fig.suptitle(rf"Top-view arm, task {cf.TASK}: {n} initial states, positions uniform in the corridor, velocities around the URA field ($r_0 = {cf.R0}$); terminal controller $s = {cf.SCALE:g}$, $T = {1e3*cf.T:g}$ ms, $N = {cf.N}$, bounds {cf.U_MAX}", fontsize=10)
+fig.suptitle(rf"Top-view arm, task {cf.TASK}: {n} initial states, positions uniform in the corridor, velocities around the URA field ($r_0 = {cf.R0}$); terminal controller $s = {cf.SCALE:.2f}$, $T = {1e3*cf.T:g}$ ms, $N = {cf.N}$, bounds {cf.U_MAX}", fontsize=10)
 save(fig, "verify_outcomes"); plt.close(fig)
 
 # ── V2 Lemma 2 ──
@@ -129,7 +133,7 @@ def paper_figs(V, U, Rr, x0s, suffix=""):
         ax.scatter(*Y0[:, ~mask], s=50, color="#d73027", alpha=0.85, marker="x", linewidths=3, zorder=8); ax.scatter(*Y0[:, mask], s=50, color="#2166ac", alpha=0.35, marker="o", zorder=9)
         ax.plot(yt[:, 0], yt[:, 1], color="black", lw=3, alpha=0.65, linestyle="--", zorder=10); ax.scatter([yt[0, 0]], [yt[0, 1]], s=70, c=[C_START], marker="o", linewidths=0.4, zorder=20); ax.scatter([yt[-1, 0]], [yt[-1, 1]], s=70, c=[C_END], marker="x", linewidths=3, zorder=20)
         ax.text(-1.0, 2.75, r"$\mathcal{X}_S$", zorder=100, fontsize=FS_P - 4); ax.text(TARGET_POS[0] - 0.55, TARGET_POS[1] + 0.55, r"$\mathcal{X}_T$", zorder=100, fontsize=FS_P - 4)
-        ax.set_xlabel("$y_1$", fontsize=FS_P - 4); ax.set_ylabel("$y_2$", fontsize=FS_P - 4); ax.xaxis.set_tick_params(labelsize=22); ax.yaxis.set_tick_params(labelsize=22); ax.set_xlim(*XL); ax.set_ylim(-2.9, YL[1]); ax.set_aspect("equal")
+        ax.set_xlabel("$y_1$", fontsize=FS_P - 4); ax.set_ylabel("$y_2$", fontsize=FS_P - 4); ax.xaxis.set_tick_params(labelsize=22); ax.yaxis.set_tick_params(labelsize=22); ax.set_xlim(*XL); ax.set_ylim(-0.6, YL[1]); ax.set_aspect("equal")
         save(fig, name + suffix, pdf=True); plt.close(fig)
     FS_C = 24; fig, (axR, axW, axA) = plt.subplots(3, 1, figsize=(650 * px, 600 * px), layout="constrained", gridspec_kw={"height_ratios": [0.7, 1.0, 1.0]}); fig.set_dpi(200)
     if SW is not None:
