@@ -113,6 +113,11 @@ def workcell(ax):
     slots = [(X0w if fwd else -X0w, YS[j]) for j in range(len(YS)) if j != j_dst]
     for xx, yy, cc in objs: ax.add_patch(plt.Rectangle((xx - s / 2, yy - s / 2), s, s, facecolor=cc, edgecolor="k", lw=0.8, zorder=7))
     for xx, yy in slots: ax.add_patch(plt.Rectangle((xx - s / 2, yy - s / 2), s, s, facecolor="none", edgecolor="0.35", lw=1.4, ls=(0, (3, 2)), zorder=7))
+    # the task's own object at its pick position (inside X_S) and its slot (inside X_T)
+    k_task = j_src if fwd else int(np.where(np.array(sig) == j_src)[0][0]); ct = cols[k_task]; sx, sy = SPEC["source"]; tx, ty = SPEC["target"]
+    ax.add_patch(plt.Rectangle((sx - s / 2, sy - s / 2), s, s, facecolor=ct, edgecolor="k", lw=0.8, zorder=7.5))
+    ax.add_patch(plt.Rectangle((tx - s / 2, ty - s / 2), s, s, facecolor="none", edgecolor=ct, lw=1.8, ls=(0, (3, 2)), zorder=7.5))
+    ax.text(0, (fx["y0"] + fx.get("top", 2.28)) / 2, "obstacle", rotation=90, ha="center", va="center", fontsize=15, color="0.35", zorder=7)
 
 
 def draw_robot(ax, x):

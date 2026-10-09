@@ -92,6 +92,7 @@ def run(b, gam, verbose=True):
 def draw_cell(ax, tasks, top, phase, title, show_all=True, focus=None):
     # Dubins-style context: white background, no racks, light grey fixture, objects as plain squares, slots dashed
     ax.add_patch(plt.Rectangle((-FIX_W / 2, FIX_Y0), FIX_W, top - FIX_Y0, facecolor="#e6e6e6", edgecolor="#a6a6a6", lw=1.0, zorder=1.5))
+    ax.text(0, (FIX_Y0 + top) / 2, "obstacle", rotation=90, ha="center", va="center", fontsize=10, color="0.35", zorder=2)
     sel = [t for t in tasks if (t["sgn"] > 0) == (phase == "fwd")]
     if focus is not None: sel = [t for t in sel if t["k"] == focus]
     for t in sel:
@@ -114,6 +115,8 @@ def draw_cell(ax, tasks, top, phase, title, show_all=True, focus=None):
 def draw_one(ax, t):
     r = t["r"]; col = COLORS[t["k"]]; P = r["P"] / r["pmax"]
     ax.add_patch(plt.Rectangle((-FIX_W / 2, FIX_Y0), FIX_W, (2.56 if LAYOUT == "square" else 2.28) - FIX_Y0, facecolor="#e6e6e6", edgecolor="#a6a6a6", lw=1.0, zorder=1.5))
+    _top = 2.56 if LAYOUT == "square" else 2.28; ax.text(0, (FIX_Y0 + _top) / 2, "obstacle", rotation=90, ha="center", va="center", fontsize=10, color="0.35", zorder=2)
+    ax.add_patch(plt.Rectangle(t["dst"] - OBJ, 2 * OBJ, 2 * OBJ, facecolor="none", edgecolor=COLORS[t["k"]], lw=1.6, ls=(0, (3, 2)), zorder=6))
     ax.contourf(Y1, Y2, P, levels=[0, 0.5, 2], colors=["#dfe9f5", "#b9d3ee"], zorder=1); ax.contour(Y1, Y2, P, levels=[0], colors="#2166ac", linewidths=1.6, zorder=2)
     ax.contour(Y1, Y2, P, levels=[0.2, 0.4, 0.6, 0.8], colors="0.5", linewidths=0.6, linestyles="-", zorder=2)
     ax.add_patch(plt.Circle(r["tc"], RT, color="#fee0d2", ec="#d6604d", lw=1.6, zorder=5)); ax.plot(*t["src"], "s", color=col, ms=9, mec="k", zorder=6)
