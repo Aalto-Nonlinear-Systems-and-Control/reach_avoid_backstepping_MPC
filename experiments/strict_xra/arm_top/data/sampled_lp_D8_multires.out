@@ -1,0 +1,9 @@
+exchange on spacing 0.01: 3 LPs, 2120 Lie samples, gamma +2.418e-02, min margin on this grid +1.815e-02 (1s)
+   check on spacing 0.005 (227377 points): min margin -7.731e-02 at (4.145, 4.105), psi 0.0010
+   check on spacing 0.0025 (909475 points): min margin -7.999e-02 at (4.148, 4.105), psi 0.0004
+exchange on spacing 0.005: 3 LPs, 2143 Lie samples, gamma +2.418e-02, min margin on this grid +1.375e-02 (7s)
+   check on spacing 0.0025 (909475 points): min margin -1.371e-03 at (4.433, 3.910), psi 0.0004
+   check on spacing 0.00125 (3637721 points): min margin -1.371e-03 at (4.432, 3.910), psi 0.0004
+exchange on spacing 0.0025: 2 LPs, 2145 Lie samples, gamma +2.418e-02, min margin on this grid +1.290e-02 (17s)
+   check on spacing 0.00125 (3637721 points): min margin +6.170e-03 at (4.170, 4.104), psi 0.0002
+   check on spacing 0.000625 (14550751 points): min margin +5.294e-03 at (4.171, 4.104), psi 0.0001
