@@ -1,0 +1,2 @@
+common bounds [28.5  8.5]: s_eps 1.767, s_bnd 2.234 -> s 1.767 (period binding); own bounds would be [18.  5.]
+terminal set 22150 states | T_eps(1) 22.09 ms -> s_eps = 0.8 T_eps(1)/T = 1.767, s = 1.767 | T_eps(s) 12.50 ms (T_eps(1)/s = 12.50) | U_MAX [28.5  8.5] | s_U 2.497 | at s: lambda 0.1768, mu 0.3124, max|tau| terminal [14.28  3.61], X_RA [32.58  7.23] | eta 9.061e-02 (lambda delta 8.842e-02), M2 29.577, second-order T* 6.13 ms | URA scale 3.535

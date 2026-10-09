@@ -1,0 +1,41 @@
+## setting {'T': 0.01, 'N': 60.0, 'U_MAX': (28.5, 8.5), 'DELTA': 0.5, 'M_PSI': 0.999999, 'shift': 1e-06, 'lam': 0.176849, 'mu': 0.31237, 'SCALE': 1.767399, 'URA_SCALE': 3.534798, 'omega': 555962.45898, 'eps': 0.00022, 'SAFE_MARGIN': 0.005, 'R0': 0.3, 'TASK': 'blue_rev_sq'} | scale.json: {  "T": 0.01,  "MU0": 0.1,  "DFRAC": 0.5,  "T_eps1_ms": 22.092487945828786,  "s": 1.767399035666303,  "T_eps_s_ms": 12.500397637353638,  "U_MAX": [   28.5,   8.5  ],  "s_U": 2.4972747714907126,  "URA_SCALE": 3.534798071332606,  "lam": 0.17684858136874324,  "mu": 0.3123699351274178,  "delta": 0.49999959476545364,  "eta": 0.09061341233742606,  "M2": 29.576522104151405,  "Tstar2_ms": 6.127387934141685,  "tau_terminal": [   14.275174568798707,   3.6056677325761344  ],  "tau_xra": [   32.58348668815864,   7.2317278954072775  ],  "U_FIX": true,  "s_eps": 1.767399035666303,  "s_bnd": 2.2336304590193947,  "tau1_terminal": [   4.569957913195382,   1.1542941003926597  ] }
+
+## counts: URA 150 (exceeding the bounds 128, among successes 128), terminal controller alone continuous 116 sampled 116 | vanilla feasible at k=0 92, reached 92 | RA-MPC 142 (infeasible at k=0 8, later 0) | in X_RA 6, terminal set 0
+pairwise: RA&~van 50, van&~RA 0, RA&~URA 0, URA&~RA 8, all three 92, none 0
+URA and RA-MPC: 142 states | time med URA 0.66 (max 2.41), RA 0.68 (max 1.77) | cost med URA 7.5, RA 7.1
+all three: 92 states | time med URA 0.33 (max 1.24), RA 0.38 (max 0.93), vanilla 0.41 | cost med URA 1.8, RA 1.9, vanilla 1.9
+peaks: URA successes [94.  19.7], all [94.  19.7]; RA-MPC [28.5  8.5]; vanilla [28.5  8.5]
+RA-MPC inputs within 2% of the bound: tau1 67%, tau2 68%; entry time median 0.680 max 1.770
+solve ms (parallel load): RA mean 287 (first 599), vanilla mean 179
+
+## Theorem 2 / Corollary 1
+runs feasible at k=0 142, reached 142, solves 9677, candidate kept 5286, u^c within bounds True
+decrease: 9535 steps, min 0.727, min ratio 1.000000, below ell(1-1e-4) 0, below ell_min 0; horizon nonincreasing 142/142, min N 1
+safety: min psi along closed loops RA 0.0090, vanilla 0.0050; entry median 0.680 max 1.770; bound min 0.340 median 665.8 max 4555; holds 142/142
+
+## lemma2.pkl
+eta 9.1462e-02 (lambda delta 8.8424e-02), M2 29.375, T* 6.23 ms; u^c on terminal set [14.3  3.6], on X_RA [32.3  7.2]
+| T [ms] | arcs | smallest increase | increasing | end in terminal set | arc in X_RA | second-order bound |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | 8899 | +8.95e-05 | 100.00 % | 100.00 % | 100.00 % | +7.68e-05 |
+| 2 | 8897 | +1.66e-04 | 100.00 % | 100.00 % | 100.00 % | +1.24e-04 |
+| 5 | 8882 | +3.06e-04 | 100.00 % | 100.00 % | 100.00 % | +9.08e-05 |
+| 7.5 | 8869 | +3.26e-04 | 100.00 % | 100.00 % | 100.00 % | -1.39e-04 |
+| 10 | 8853 | +3.05e-04 | 100.00 % | 100.00 % | 100.00 % | -5.54e-04 |
+| 12.5 | 8836 | +1.55e-05 | 100.00 % | 100.00 % | 100.00 % | -1.16e-03 |
+| 15 | 8819 | -4.91e-04 | 99.92 % | 99.93 % | 100.00 % | -1.95e-03 |
+| 20 | 8798 | -2.01e-03 | 99.67 % | 99.75 % | 100.00 % | -4.11e-03 |
+| 30 | 8756 | -7.07e-03 | 98.92 % | 99.22 % | 100.00 % | -1.09e-02 |
+| 50 | 8652 | -2.62e-02 | 97.68 % | 98.38 % | 100.00 % | -3.66e-02 |
+| T [ms] | from terminal set: reach | increasing | from X_RA: reach | increasing | median time |
+| --- | --- | --- | --- | --- | --- |
+| 2 | 400/400 | 400/400 | 400/400 | 395/400 | 0.98 s |
+| 5 | 400/400 | 400/400 | 400/400 | 387/400 | 0.98 s |
+| 10 | 400/400 | 400/400 | 400/400 | 373/400 | 0.98 s |
+| 12.5 | 400/400 | 400/400 | 400/400 | 366/400 | 0.99 s |
+| 15 | 400/400 | 400/400 | 400/400 | 361/400 | 0.98 s |
+| 20 | 400/400 | 397/400 | 400/400 | 346/400 | 0.98 s |
+| 30 | 400/400 | 390/400 | 400/400 | 315/400 | 0.99 s |
+
+## timing.pkl
+{'idx_r': array([  0,  30,  61,  89, 120]), 'idx_v': array([ 2,  3,  4,  8, 10]), 'ra': {'mean': 187.426557733614, 'median': 216.5556670006481, 'first': 381.70269999973243, 'later': 185.3685477519814, 'n': 477}, 'vanilla': {'mean': 91.94147859590818, 'median': 87.53095899737673, 'first': 231.27600019943202, 'later': 85.24270351881569, 'n': 109}, 'ura_ms': 0.25950211669987766}

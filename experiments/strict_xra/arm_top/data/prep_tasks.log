@@ -1,0 +1,57 @@
+=== blue_fwd_sq 19:51:56
+__DESIGN__,blue_fwd_sq,8,0.05,0.0506693209,5.508779517e-10,1.087202161e-08,1.28488
+__DESIGN__,blue_fwd_sq,8,0.0667,0.06701481538,2.966054699e-08,4.425968619e-07,0.709814
+__DESIGN__,blue_fwd_sq,8,0.08,0.08021421418,1.943184422e-08,2.42249387e-07,0.63026
+__DESIGN__,blue_fwd_sq,8,0.1,0.100099323,6.346916722e-09,6.340619026e-08,0.610044
+mu0 0.1 : rest states in X_RA   1.7% | T_eps(1)     28.4 ms | max|tau_1| terminal set [7.23 2.21], X_RA [12.31  4.82], rest states [2.49 0.83]
+common bounds [28.5  8.5]: s_eps 2.299, s_bnd 1.747 -> s 1.747 (bounds binding); own bounds would be [49. 15.]
+terminal set 21920 states | T_eps(1) 28.73 ms -> s = 0.8 T_eps(1)/T = 1.747 | T_eps(s) 16.44 ms (T_eps(1)/s = 16.44) | U_MAX [28.5  8.5] | s_U 1.954 | at s: lambda 0.1749, mu 0.3054, max|tau| terminal [22.43  6.8 ], X_RA [37.44 14.46] | eta 9.011e-02 (lambda delta 8.746e-02), M2 34.519, second-order T* 5.22 ms | URA scale 3.495
+=== green_fwd_sq 19:52:13
+__DESIGN__,green_fwd_sq,8,0.05,0.05097229492,-1.866461006e-09,-3.661716642e-08,1.2113
+__DESIGN__,green_fwd_sq,8,0.0667,0.06744529202,-6.518089095e-09,-9.664261062e-08,0.700391
+__DESIGN__,green_fwd_sq,8,0.08,0.08040879648,-5.074605493e-09,-6.311007894e-08,0.629216
+__DESIGN__,green_fwd_sq,8,0.1,0.1000152732,0.0001565694025,0.00156545493,0.632674
+mu0 0.1 : rest states in X_RA   0.6% | T_eps(1)     26.5 ms | max|tau_1| terminal set [8.35 1.24], X_RA [15.68  4.16], rest states [2.61 0.41]
+common bounds [28.5  8.5]: s_eps 2.074, s_bnd 1.623 -> s 1.623 (bounds binding); own bounds would be [47.  7.]
+terminal set 22243 states | T_eps(1) 25.93 ms -> s = 0.8 T_eps(1)/T = 1.623 | T_eps(s) 15.97 ms (T_eps(1)/s = 15.97) | U_MAX [28.5  8.5] | s_U 1.815 | at s: lambda 0.1623, mu 0.2634, max|tau| terminal [22.8   3.24], X_RA [42.34 10.91] | eta 8.501e-02 (lambda delta 8.104e-02), M2 39.820, second-order T* 4.27 ms | URA scale 3.246
+=== orange_fwd_sq 19:52:26
+__DESIGN__,orange_fwd_sq,8,0.05,0.05062059429,1.353624122e-09,2.67405814e-08,1.1883
+__DESIGN__,orange_fwd_sq,8,0.0667,0.06699203667,1.156085567e-08,1.725705957e-07,0.684947
+__DESIGN__,orange_fwd_sq,8,0.08,0.08021310896,1.968978181e-08,2.454683787e-07,0.650039
+__DESIGN__,orange_fwd_sq,8,0.1,0.1001455388,5.38384689e-08,5.376022693e-07,0.609454
+mu0 0.1 : rest states in X_RA   1.9% | T_eps(1)     24.1 ms | max|tau_1| terminal set [7.79 2.06], X_RA [12.86  3.61], rest states [2.6  0.73]
+common bounds [28.5  8.5]: s_eps 1.901, s_bnd 1.690 -> s 1.690 (bounds binding); own bounds would be [36.5 10. ]
+terminal set 16537 states | T_eps(1) 23.76 ms -> s = 0.8 T_eps(1)/T = 1.690 | T_eps(s) 14.06 ms (T_eps(1)/s = 14.06) | U_MAX [28.5  8.5] | s_U 1.889 | at s: lambda 0.1692, mu 0.2856, max|tau| terminal [22.8   6.01], X_RA [37.26 10.39] | eta 8.776e-02 (lambda delta 8.462e-02), M2 37.548, second-order T* 4.67 ms | URA scale 3.380
+=== red_rev_sq 19:52:38
+__DESIGN__,red_rev_sq,8,0.05,0.05040635172,2.921924154e-08,5.796738017e-07,1.20043
+__DESIGN__,red_rev_sq,8,0.0667,0.0669510786,2.72969933e-08,4.077155121e-07,0.688302
+__DESIGN__,red_rev_sq,8,0.08,0.08020030535,1.728359816e-07,2.15505391e-06,0.654397
+__DESIGN__,red_rev_sq,8,0.1,0.1001547622,3.498892421e-09,3.493485827e-08,0.634032
+mu0 0.1 : rest states in X_RA   1.8% | T_eps(1)     15.2 ms | max|tau_1| terminal set [5.22 1.9 ], X_RA [18.57  3.05], rest states [2.66 0.84]
+common bounds [28.5  8.5]: s_eps 1.175, s_bnd 1.894 -> s 1.175 (period binding); own bounds would be [9.5 3.5]
+terminal set 16553 states | T_eps(1) 14.69 ms -> s_eps = 0.8 T_eps(1)/T = 1.175, s = 1.175 | T_eps(s) 12.50 ms (T_eps(1)/s = 12.50) | U_MAX [28.5  8.5] | s_U 2.118 | at s: lambda 0.1177, mu 0.1381, max|tau| terminal [7.28 2.62], X_RA [25.97  4.34] | eta 6.063e-02 (lambda delta 5.884e-02), M2 17.737, second-order T* 6.84 ms | URA scale 2.350
+=== blue_rev_sq 19:52:50
+__DESIGN__,blue_rev_sq,8,0.05,0.05096685018,-7.04786914e-09,-1.382833963e-07,1.25421
+__DESIGN__,blue_rev_sq,8,0.0667,0.06728767878,2.805012244e-08,4.168686296e-07,0.695518
+__DESIGN__,blue_rev_sq,8,0.08,0.08030240303,2.126051318e-08,2.647556285e-07,0.647584
+__DESIGN__,blue_rev_sq,8,0.1,0.1000614902,8.109674522e-08,8.104690928e-07,0.642214
+mu0 0.1 : rest states in X_RA   2.0% | T_eps(1)     22.1 ms | max|tau_1| terminal set [4.59 1.15], X_RA [10.31  2.29], rest states [1.99 0.57]
+common bounds [28.5  8.5]: s_eps 1.767, s_bnd 2.234 -> s 1.767 (period binding); own bounds would be [18.  5.]
+terminal set 22150 states | T_eps(1) 22.09 ms -> s_eps = 0.8 T_eps(1)/T = 1.767, s = 1.767 | T_eps(s) 12.50 ms (T_eps(1)/s = 12.50) | U_MAX [28.5  8.5] | s_U 2.497 | at s: lambda 0.1768, mu 0.3124, max|tau| terminal [14.28  3.61], X_RA [32.58  7.23] | eta 9.061e-02 (lambda delta 8.842e-02), M2 29.577, second-order T* 6.13 ms | URA scale 3.535
+=== green_rev_sq 19:53:03
+__DESIGN__,green_rev_sq,8,0.05,0.05113009662,-5.110506048e-09,-9.995103444e-08,1.20567
+__DESIGN__,green_rev_sq,8,0.0667,0.06723732961,-1.930501559e-09,-2.871175239e-08,0.686091
+__DESIGN__,green_rev_sq,8,0.08,0.08026560163,-1.386254809e-10,-1.727084555e-09,0.627732
+__DESIGN__,green_rev_sq,8,0.1,0.1000182142,1.112965236e-05,0.0001112762554,0.649223
+mu0 0.1 : rest states in X_RA   1.8% | T_eps(1)     19.3 ms | max|tau_1| terminal set [5.84 1.41], X_RA [39.85  3.37], rest states [2.21 0.58]
+common bounds [28.5  8.5]: s_eps 1.499, s_bnd 1.970 -> s 1.499 (period binding); own bounds would be [17.   4.5]
+terminal set 21821 states | T_eps(1) 18.73 ms -> s_eps = 0.8 T_eps(1)/T = 1.499, s = 1.499 | T_eps(s) 12.50 ms (T_eps(1)/s = 12.50) | U_MAX [28.5  8.5] | s_U 2.202 | at s: lambda 0.1499, mu 0.2246, max|tau| terminal [13.2   3.21], X_RA [91.49  7.6 ] | eta 8.425e-02 (lambda delta 7.494e-02), M2 23.770, second-order T* 7.09 ms | URA scale 2.998
+=== orange_rev_sq 19:53:16
+__DESIGN__,orange_rev_sq,8,0.05,0.05083285305,-1.724410486e-09,-3.392314974e-08,1.21303
+__DESIGN__,orange_rev_sq,8,0.0667,0.06735007194,-4.762764514e-09,-7.071654679e-08,0.676561
+__DESIGN__,orange_rev_sq,8,0.08,0.08041943695,-4.721720045e-10,-5.871366705e-09,0.624633
+__DESIGN__,orange_rev_sq,8,0.1,0.100019894,-1.681626178e-07,-1.681291701e-06,0.629984
+mu0 0.1 : rest states in X_RA   0.9% | T_eps(1)     23.3 ms | max|tau_1| terminal set [6.71 1.33], X_RA [13.3   2.23], rest states [1.82 0.51]
+common bounds [28.5  8.5]: s_eps 1.653, s_bnd 1.829 -> s 1.653 (period binding); own bounds would be [23.5  4.5]
+terminal set 16681 states | T_eps(1) 20.66 ms -> s_eps = 0.8 T_eps(1)/T = 1.653, s = 1.653 | T_eps(s) 12.50 ms (T_eps(1)/s = 12.50) | U_MAX [28.5  8.5] | s_U 2.045 | at s: lambda 0.1653, mu 0.2732, max|tau| terminal [18.63  3.56], X_RA [36.32  6.21] | eta 8.450e-02 (lambda delta 8.266e-02), M2 30.012, second-order T* 5.63 ms | URA scale 3.306
+=== done 19:53:28

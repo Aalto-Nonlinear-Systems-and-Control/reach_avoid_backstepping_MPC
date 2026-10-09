@@ -1,0 +1,15 @@
+shared x0 = state 39, y0 [1.14  3.142], q0 [0.083 2.279]; all-three successes 92; vanilla panel start shared; times: vanilla 0.84 s, URA 0.94 s (peaks [48.5  8.9]), RA-MPC 0.92 s
+saved verify_outcomes
+saved verify_lemma2
+saved verify_theorem2
+saved fig_manip_vanilla
+saved fig_manip_uncon
+saved fig_manip_rampc
+saved fig_manip_compare
+saved fig_manip_cost
+far variant: URA and RA-MPC from state 0 y0 [2.951 2.387] (distance 5.43; URA 1.57 s, peaks [75.3 16. ]; RA-MPC 1.77 s), vanilla from state 39 (distance 3.54, 0.84 s)
+saved fig_manip_vanilla_far
+saved fig_manip_uncon_far
+saved fig_manip_rampc_far
+saved fig_manip_compare_far
+saved fig_manip_cost_far
