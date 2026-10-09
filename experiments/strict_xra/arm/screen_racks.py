@@ -90,8 +90,8 @@ def run(b, gam, verbose=True):
 
 
 def draw_cell(ax, tasks, top, phase, title, show_all=True, focus=None):
-    import cellart as art                                                   # bench over the whole view, robot mounted on the bench
-    art.bench(ax, VIEW); art.racks(ax, X0, YS, RACK_D, wall=WALL, opening=X0 - RACK_OPEN, lw=1.6); art.fixture(ax, FIX_W, FIX_Y0, top, label=True)
+    # Dubins-style context: white background, no racks, light grey fixture, objects as plain squares, slots dashed
+    ax.add_patch(plt.Rectangle((-FIX_W / 2, FIX_Y0), FIX_W, top - FIX_Y0, facecolor="#e6e6e6", edgecolor="#a6a6a6", lw=1.0, zorder=1.5))
     sel = [t for t in tasks if (t["sgn"] > 0) == (phase == "fwd")]
     if focus is not None: sel = [t for t in sel if t["k"] == focus]
     for t in sel:
@@ -103,15 +103,17 @@ def draw_cell(ax, tasks, top, phase, title, show_all=True, focus=None):
         if phase == "fwd": src, dst = np.array([-X0, YS[k]]), np.array([X0, YS[SIGMA[k]]])
         else: src, dst = np.array([X0, YS[SIGMA[k]]]), np.array([-X0, YS[k]])
         ax.add_patch(plt.Rectangle(src - OBJ, 2 * OBJ, 2 * OBJ, color=COLORS[k], ec="k", lw=0.8, zorder=8))
-        ax.add_patch(plt.Rectangle(dst - OBJ, 2 * OBJ, 2 * OBJ, color="none", ec=COLORS[k], lw=1.0, ls=":", zorder=8))
+        ax.add_patch(plt.Rectangle(dst - OBJ, 2 * OBJ, 2 * OBJ, facecolor="none", edgecolor="0.35", lw=1.4, ls=(0, (3, 2)), zorder=8))
     t0 = sel[0]; A = t0["src"] if phase == "fwd" else t0["dst"]      # reverse phase: arm placing the red object back (elbow inside the view)
-    q = ik(A.reshape(2, 1))[:, 0]; art.robot(ax, q, w=0.26, alpha=0.6, zorder=9)                                    # branch q2 > 0, as in the dynamics
+    q = ik(A.reshape(2, 1))[:, 0]; e = np.array([4 * np.cos(q[0]), 4 * np.sin(q[0])])                               # branch q2 > 0, as in the dynamics
+    for p0, p1 in ((np.zeros(2), e), (e, A)): ax.plot(*np.array([p0, p1]).T, "o-", color=(146 / 255, 149 / 255, 145 / 255), alpha=0.4, lw=5, ms=7, zorder=6)
+    ax.plot(0, 0, "ks", ms=8, zorder=6.5)
     ax.set_aspect("equal"); ax.set_xlim(*VIEW[0]); ax.set_ylim(*VIEW[1]); ax.set_xticks([]); ax.set_yticks([]); ax.set_title(title, fontsize=10)
 
 
 def draw_one(ax, t):
     r = t["r"]; col = COLORS[t["k"]]; P = r["P"] / r["pmax"]
-    import cellart as art; art.bench(ax, VIEW); art.racks(ax, X0, YS, RACK_D, wall=WALL, opening=X0 - RACK_OPEN, lw=1.0); art.fixture(ax, FIX_W, FIX_Y0, 2.56 if LAYOUT == "square" else 2.28)
+    ax.add_patch(plt.Rectangle((-FIX_W / 2, FIX_Y0), FIX_W, (2.56 if LAYOUT == "square" else 2.28) - FIX_Y0, facecolor="#e6e6e6", edgecolor="#a6a6a6", lw=1.0, zorder=1.5))
     ax.contourf(Y1, Y2, P, levels=[0, 0.5, 2], colors=["#dfe9f5", "#b9d3ee"], zorder=1); ax.contour(Y1, Y2, P, levels=[0], colors="#2166ac", linewidths=1.6, zorder=2)
     ax.contour(Y1, Y2, P, levels=[0.2, 0.4, 0.6, 0.8], colors="0.5", linewidths=0.6, linestyles="-", zorder=2)
     ax.add_patch(plt.Circle(r["tc"], RT, color="#fee0d2", ec="#d6604d", lw=1.6, zorder=5)); ax.plot(*t["src"], "s", color=col, ms=9, mec="k", zorder=6)
