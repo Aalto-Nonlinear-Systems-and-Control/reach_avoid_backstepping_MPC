@@ -126,10 +126,25 @@ scene = f"""<mujoco model="kitting red task, SCARA">
 </mujoco>
 """
 open(os.path.join(HERE, "model", "scene_scara.xml"), "w").write(scene)
+
+# kitting cycle scene: all four cubes are mocap bodies at their homes, slots dashed in the colour of the cube assigned to
+# them, homes dashed in a lighter shade; the corridor of the current task is drawn by the renderer (user geoms)
+pastel = lambda c: " ".join(f"{0.45 * float(v) + 0.55:.3f}" for v in c.split())
+gc = g[:5] + [s for s in g if 'name="obstacle"' in s]
+for j in range(4): gc += dashed_square(f"slot{j}", X0, YS[j], H + 0.006, COL[SIG.index(j)] + " 1")
+for k in range(4): gc += dashed_square(f"home{k}", -X0, YS[k], H + 0.006, pastel(COL[k]) + " 1")
+cubes = "\n".join(f'''    <body name="cube{k}" mocap="true" pos="{ALPHA * SPEC["YS"][k]:.4f} {X0:.4f} {H}">
+      <geom name="cube{k}" type="box" size="{H} {H} {H}" rgba="{COL[k]} 1" {NOC}/>
+    </body>''' for k in range(4))
+i0, i1 = scene.index("    <body name=\"red_cube\""), scene.index("  </worldbody>")
+i_g0 = scene.index("    <camera name=\"top\"") + len(scene[scene.index("    <camera name=\"top\""):].split("\n")[0]) + 1; i_q = scene.index("    <body name=\"quill\"")
+cyc = scene[:i_g0] + "\n".join("    " + s for s in gc) + "\n" + scene[i_q:i0] + cubes + "\n" + scene[i1:]
+open(os.path.join(HERE, "model", "scene_scara_cycle.xml"), "w").write(cyc.replace('model="kitting red task, SCARA"', 'model="kitting cycle, SCARA"'))
 import mujoco
 ma = mujoco.MjModel.from_xml_path(os.path.join(HERE, "model", "scara_arm.xml")); ms = mujoco.MjModel.from_xml_path(os.path.join(HERE, "model", "scene_scara.xml"))
 da, ds = mujoco.MjData(ma), mujoco.MjData(ms); r = np.random.default_rng(0); em, et = 0.0, 0.0
 for _ in range(200):
     q = r.uniform(-np.pi, np.pi, 2); da.qpos[:] = q; mujoco.mj_forward(ma, da); Mm = np.zeros((2, 2)); mujoco.mj_fullM(ma, da, Mm)
     em = max(em, np.abs(Mm - C_TAU * mass(q.reshape(2, 1))[:, :, 0]).max()); et = max(et, np.abs(da.site_xpos[0][:2] - to_world(fk(q))).max())
+mc = mujoco.MjModel.from_xml_path(os.path.join(HERE, "model", "scene_scara_cycle.xml")); print(f"cycle scene: {mc.ngeom} geoms, nq {mc.nq}, nmocap {mc.nmocap}")
 print(f"wrote model/scara_arm.xml and model/scene_scara.xml ({ms.ngeom} geoms, nq {ms.nq}, nmocap {ms.nmocap}); max |M_mujoco - C_TAU M| {em:.1e}, max tip error {et:.1e} m; C_TAU {C_TAU:g}")
