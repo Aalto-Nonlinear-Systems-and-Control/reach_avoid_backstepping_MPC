@@ -34,8 +34,11 @@ def workcell(ax):
 
 
 def robot(ax, x):
-    P = np.array(JOINTS_f(np.asarray(x)[:NQ])); pts = np.c_[-P[1], P[0]]          # base, shoulder, elbow, wrist, tool centre point (top view)
-    ax.plot(pts[[0, 2, 3, 4], 0], pts[[0, 2, 3, 4], 1], "o-", alpha=0.4, lw=5, ms=7, color=C_ARM, zorder=6); ax.plot(0, 0, "ks", ms=8, zorder=6.5)
+    """Top-view footprint: with q3 = q5 = 0 the arm lies in one vertical plane, so all links project onto the ray from the
+    base to the gripper; drawn as a light bar from the base to the tool centre point with a wrist marker."""
+    P = np.array(JOINTS_f(np.asarray(x)[:NQ])); tcp = np.array([-P[1, 4], P[0, 4]]); wr = np.array([-P[1, 3], P[0, 3]])
+    ax.plot([0, tcp[0]], [0, tcp[1]], "-", alpha=0.4, lw=6, color=C_ARM, solid_capstyle="round", zorder=6); ax.plot(*wr, "o", ms=8, color=C_ARM, alpha=0.7, zorder=6.2)
+    ax.plot(0, 0, "ks", ms=8, zorder=6.5)
 
 
 def panel(name, mask, yt, field, xr):

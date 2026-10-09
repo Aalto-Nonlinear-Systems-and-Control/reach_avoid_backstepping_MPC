@@ -1,0 +1,30 @@
+## setting {'T': 0.01, 'N': 60.0, 'U_MAX': (2.6, 4.6, 2.2, 0.4), 'DELTA': 0.5, 'M_PSI': 0.999999, 'shift': 1e-06, 'lam': 0.330967, 'mu': 0.010932, 'SCALE': 3.306386, 'URA_SCALE': 6.612772, 'omega': 115512.968097, 'eps': 0.001197, 'SAFE_MARGIN': 0.005, 'R0': 0.3, 'TASK': 'red_fwd_sq'} | scale.json: {"T": 0.01, "MU0": 0.001, "DFRAC": 0.5, "T_eps1_ms": 41.329827053875114, "s": 3.3063861643100094, "T_eps_s_ms": 12.500456314719951, "U_MAX": [2.6, 4.6, 2.2, 0.4], "HW": [87.0, 87.0, 87.0, 12.0], "s_U": 3.713572073662968, "URA_SCALE": 6.612772328620019, "lam": 0.3309665784450012, "mu": 0.010932189467540656, "delta": 0.49999964555397436, "tau_terminal": [2.027285699040943, 3.646542396081285, 1.6843862588731353, 0.3053528438853069]}
+
+## counts: URA 149 (exceeding the bounds 145, among successes 144), terminal controller alone continuous 96 sampled 94 | vanilla feasible at k=0 111, reached 111 | RA-MPC 123 (infeasible at k=0 27, later 0) | in X_RA 6, terminal set 3
+pairwise: RA&~van 15, van&~RA 3, RA&~URA 0, URA&~RA 26, all three 108, none 1 | feasible at k=0: vanilla but not RA 3
+URA and RA-MPC: 123 states | time med URA 0.40 (max 1.53), RA 0.44 (max 1.08) | cost med URA 6.25, RA 5.47
+all three: 108 states | time med URA 0.34 (max 1.03), RA 0.43 (max 0.83), vanilla 0.39 | cost med URA 4.50, RA 4.48, vanilla 4.28
+peaks: URA successes [11.39 20.12  6.59  1.58]; RA-MPC [2.6 4.6 2.2 0.4]; vanilla [2.6 4.6 2.2 0.4] | URA time above the bounds, median share 0.74
+solve ms (parallel load): RA mean 2484 median 952, vanilla mean 1833
+
+## Theorem 2 / Corollary 1
+runs feasible at k=0 123, reached 123, solves 5530, candidate kept 3257, u^c within bounds True
+decrease: 5407 steps, min 0.720, min ratio 0.999927, below ell(1-1e-4) 0, below ell_min 0; horizon nonincreasing 123/123, min N 1
+safety: min psi along closed loops RA 0.0049, vanilla 0.0049; entry median 0.440 max 1.080; bound median 16.2; holds 123/123
+
+## Lemma 2: eta 1.8478e-01, M2 84.637, second-order T* 4.37 ms; u^c on the terminal set [1.96 3.54 1.61 0.29]
+| 2 ms | 7988 | +3.61e-04 | 100.00 % | 100.00 % | +2.04e-04 |
+| 5 ms | 7969 | +8.44e-04 | 100.00 % | 100.00 % | -1.17e-04 |
+| 7.5 ms | 7960 | +1.19e-03 | 100.00 % | 100.00 % | -9.72e-04 |
+| 10 ms | 7948 | +1.49e-03 | 100.00 % | 100.00 % | -2.38e-03 |
+| 12.5 ms | 7923 | +1.74e-03 | 100.00 % | 100.00 % | -4.38e-03 |
+| 15 ms | 7905 | +1.36e-03 | 100.00 % | 100.00 % | -6.99e-03 |
+| 20 ms | 7864 | -2.07e-03 | 99.97 % | 99.97 % | -1.42e-02 |
+| 30 ms | 7771 | -1.56e-02 | 99.87 % | 99.87 % | -3.91e-02 |
+| 50 ms | 7618 | -7.42e-02 | 99.50 % | 99.63 % | -1.63e-01 |
+| 5 ms | 150/150 | 150/150 | 150/150 | 150/150 | 0.48 s |
+| 10 ms | 150/150 | 150/150 | 150/150 | 147/150 | 0.48 s |
+| 12.5 ms | 150/150 | 150/150 | 150/150 | 143/150 | 0.48 s |
+| 15 ms | 150/150 | 150/150 | 150/150 | 138/150 | 0.48 s |
+| 20 ms | 150/150 | 150/150 | 150/150 | 135/150 | 0.48 s |
+| 30 ms | 150/150 | 145/150 | 150/150 | 118/150 | 0.48 s |
