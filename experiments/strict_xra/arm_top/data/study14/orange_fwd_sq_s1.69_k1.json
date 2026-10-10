@@ -1,0 +1,50 @@
+{
+ "task": "orange_fwd_sq",
+ "s": 1.69,
+ "kfac": 1.0,
+ "lam": 0.169,
+ "mu": 0.28561,
+ "U": [
+  28.5,
+  8.5
+ ],
+ "affine_map_check": 0.00028200295494151817,
+ "A": {
+  "max_ratio": 0.8042894006896474,
+  "share_over": 0.0,
+  "T_eps_ms": 14.060085928793077,
+  "kmax": 1.6818258629526268
+ },
+ "it": [
+  {
+   "n_cons": 250,
+   "delta": 1.068247114737299e-07,
+   "info": [
+    0.0,
+    0.0,
+    0.0,
+    0.999841,
+    0.117671,
+    22.0
+   ],
+   "max_ratio": 0.7204592482681677,
+   "share_over": 0.0,
+   "n_terminal": 16845,
+   "sec": 15.745681047439575
+  }
+ ],
+ "status": "converged",
+ "k1_file": "orange_fwd_sq_s14_s1.69_k1.txt",
+ "verify": {
+  "n": 16575,
+  "max_ratio": 0.7063518650085381,
+  "share_over": 0.0,
+  "grid_min_margin": 0.0007703296541086784,
+  "kmax": 1.6805992654415007,
+  "area_share": 1.0,
+  "T_eps_ms": 14.193331640546829,
+  "period_ok_at_T": true,
+  "period_ok_with_08": true
+ },
+ "total_s": 17.179862022399902
+}
