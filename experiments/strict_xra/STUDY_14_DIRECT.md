@@ -1,5 +1,7 @@
 # Study: program (14) solved directly against (12) plus time scaling (top-view arm, 2026-10-10)
 
+Three routes are compared: A = (12) by SOS plus time scaling (current), B = (14) with the ECGBF condition by SOS and the input bounds at sampled states, C = (14) entirely sampled, a linear program without SOS (Section C below).
+
 Question: is it better to obtain $k_1$ by solving (14) directly, with the input bounds enforced at sampled states, than to
 solve (12) once and choose the time scale $s$ afterwards (the method behind all reported data)?
 
@@ -90,3 +92,86 @@ The states that fail are the same for A and B: 13, 6, 12 and 13 states that are 
 - Designs: `arm_top/k1/<task>_s14_s<s>_k1.txt`.
 - Logs and results: `arm_top/data/study14/` (`<task>_s<s>_k1.json` per design, `mpc_<task>_s<s>_k1.pkl` with all closed loops, `sweep.log`, `sweep2.log`, `mpc.log`, `mpc2.log`).
 - No existing design or result file was changed.
+
+
+## C. Program (14) entirely by sampling, without SOS (linear program)
+
+Question (follow-up): since $u^c$ and the ECGBF condition are both affine in the coefficients $\Theta$ of $k_1$ (Theorem 1), can (14) be solved as a linear program with every constraint sampled, and is that better?
+
+### Setting
+
+`arm_top/study14_lp.py` uses the same $\lambda = s\lambda_0$, $\mu = s^2\mu_0$, basis (degree 8 in $y/4$), $\lvert k_{1,i}\rvert \le s$, bounds, period rule and acceptance checks as A and B.
+
+The constraints, all imposed at samples:
+- $\nabla\psi\cdot k_1 - \lambda\psi \ge \gamma$ on the closure of $\mathcal{X}_S \setminus \mathcal{X}_T$: grid points plus points on the corridor edge and on the target circle;
+- $\lvert k_{1,i}\rvert \le s$ on $\{\psi \ge 0\}$;
+- $\lvert u^c_i\rvert \le U_i$ at states of the design's own terminal set.
+
+How it is solved:
+- **Multiresolution exchange.** Grid spacings 0.04, 0.02, 0.01, 0.005, 0.0025. At each level the LP is solved (HiGHS), the level's grid and a fresh terminal sample are checked, and violators are added.
+- **Final checks without adding.** Spacings 0.00125 and 0.000625; the latter has about $1.4\times10^7$ points.
+- **Two stages.** First the largest margin $\gamma^\ast$; then, with $\gamma \ge 0.25\gamma^\ast$, a regulariser is minimised. A single-stage LP has no unique solution (as with $\delta$ in (12)), so the objective chooses the field.
+
+### The objective decides the sampled-data behaviour (blue_fwd, $s = 2.0$; A: 14.4 ms, B: 14.6 ms)
+
+| second stage | max ratio | $T_\varepsilon$ [ms] | period rule ($\ge 12.5$ ms) |
+| --- | --- | --- | --- |
+| none (largest margin only) | 0.98 | 7.9 | no |
+| min largest torque ratio | 0.88 | 7.5 | no |
+| min largest entry of $J_{k_1}$ | 0.91 | 5.3 | no |
+| min largest entry of the Hessian of $k_1$ | 1.00 | 8.3 | no |
+| min largest coefficient $\lvert\theta_k\rvert$ ("coef") | 1.00 | 13.6 | yes |
+| min $\lVert\Theta\rVert_2$ (Mosek, cone; orange 1.69 / blue 2.3 / blue 2.9) | 0.76 / 0.96 / 1.002 | 8.9 / 8.7 / 6.7 | no |
+
+### Speed sweep with the "coef" objective (all designs pass the ECGBF check on $1.4 \times 10^7$ points with a positive margin and the bounds on a fresh terminal sample)
+
+| task | A's $s^\ast$ | C: $T_\varepsilon$ [ms] at the tested $s$ | largest accepted $s$: A / B / C |
+| --- | --- | --- | --- |
+| blue_fwd | 1.747 | 1.747: 15.3, 2.0: 13.6, 2.3: 7.7, 2.6: 7.4, 2.9: 7.2, 3.2: 4.5 | 1.747 / 2.9 / 2.0 |
+| green_fwd | 1.623 | 1.623: 18.9, 2.074: 15.0, 2.3: 12.2 | 1.623 / 2.074 / 2.074 |
+| orange_fwd | 1.690 | 1.69: 10.4, 1.901: 8.2, 2.1: 7.6 | 1.690 / 1.901 / none |
+| red_fwd | 2.386 | 2.386: 13.1, 2.669: 10.7 | 2.386 / below 2.386 / 2.386 |
+
+Each design takes 8 to 21 LPs (4 to 27 s in HiGHS) and 23 to 49 s in all, including the dense checks.
+
+### Why the period is erratic
+
+Diagnosis at orange $s = 1.69$, hold 12.5 ms, 8000 terminal states (`arm_top/diag14_hold.py`, `arm_top/diag14_rate.py`, e.g. `TASK=orange_fwd_sq python diag14_hold.py 1.69 0.0125 study14lp/orange_fwd_sq_lp_s1.69_D8_coef study14/orange_fwd_sq_s1.69_k1`):
+
+| design | one-step failures | max $M_2$ (rate of change of $\dot\Psi$ during the hold) | $\eta = \min\dot\Psi$ |
+| --- | --- | --- | --- |
+| A | 0 | 39 | 0.088 |
+| B | 0 | 38 | 0.087 |
+| C coef | 16 | 64 | 0.087 |
+| C min-norm | 18 | 68 | 0.087 |
+
+The rate margin $\eta$ is the same; the LP fields vary faster during the hold.
+- **Where the failures are.** They sit near the target: median distance 0.9 to 1.0, against 2.07 for all states. The LP field still runs at almost full speed there ($\lvert k_1\rvert \approx 2.1$).
+- **Why the LP field does not slow down.** The SOS solutions slow down near the target. The LP solutions are vertex-like: $\lvert k_1\rvert$ sits at the bound almost everywhere (max $1.002K$) and the torques at 0.93 to 1.00 of the bounds. Nothing in the sampled program asks the field to slow down before the target.
+- **What is not controlled.** The sampled-data condition of Lemma 2 is not part of (14), and in the LP it is not controlled by any of the tested regularisers.
+
+### RA-MPC with the accepted LP designs (150 states each)
+
+| task, $s$ | reached A / C | C not A | A not C | median time A / C [s] | median cost A / C | Theorem 2 checks C |
+| --- | --- | --- | --- | --- | --- | --- |
+| blue_fwd, 2.0 | 137 / 136 | 0 | 1 | 0.95 / 0.93 | 18.6 / 18.7 | all pass |
+| green_fwd, 2.074 | 144 / 144 | 0 | 0 | 0.77 / 0.74 | 12.2 / 11.9 | all pass |
+| red_fwd, 2.386 | 137 / 136 | 0 | 1 | 0.66 / 0.65 | 10.0 / 10.0 | all pass |
+
+The one state lost in blue and in red is infeasible for C at $k = 0$.
+
+### Conclusions on C
+
+1. **What the LP route does well.**
+   - Solving (14) as an LP is fast and easy: seconds per LP and under a minute per design, with no multipliers, no degree choice for them, and any basis.
+   - With the multiresolution exchange, the sampled constraints hold on grids of $10^7$ points with a positive margin.
+2. **Problem 1: the guarantee holds only at the samples.** It is not a certificate on the continuum, which Lemma 1 and Theorem 2 need. A rigorous version would need a Lipschitz or interval bound between grid points. An earlier LP for (12) passed a 10 times finer grid and failed on a 20 times finer one before the multiresolution exchange.
+3. **Problem 2: the solution is not unique, and the objective decides the field.** Five of the six tested objectives violate the period rule even where the SOS designs pass. The one that passes ("coef") fails for orange even at A's own speed.
+4. **Speed.** The largest accepted speed is at most that of B (blue 2.0 against 2.9; green equal; orange none; red equal to A).
+5. **RA-MPC.** RA-MPC with the accepted LP designs reaches the same states as A, or one fewer.
+6. **Overall.** The fully sampled LP is not better than (12) by SOS plus time scaling, nor than B. The SOS route stays the method for the paper. The LP can be mentioned as an implementation option that the affine structure allows, with the caveats above.
+
+Files for C:
+- Code: `arm_top/study14_lp.py`, `arm_top/run_study14_lp.sh`, `arm_top/run_eval14_lp.sh` (`eval14_mpc.py` with `S14_DIR=study14lp`).
+- Designs: `arm_top/k1/<task>_lp_s<s>_D8[_<objective>].txt`.
+- Results: `arm_top/data/study14lp/` (`sweep.log`, `sweep_l2.log`, `pilot_objectives.log`, `mpc.log`, one json per design, `mpc_<tag>.pkl`).

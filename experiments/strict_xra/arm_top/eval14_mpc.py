@@ -1,13 +1,14 @@
 """RA-MPC with a terminal design from study14.py on the task's common 150-state initial set (data/<task>/main.pkl), all
 else as in run_main_top.py (T, N, bounds, cost, solver). Compares with the RA-MPC runs of the scaled design (12)
-stored in main.pkl. Usage: TASK=blue_fwd_sq LAM=0.1 python eval14_mpc.py <s> <kfac>
+stored in main.pkl. Usage: TASK=blue_fwd_sq LAM=0.1 python eval14_mpc.py <s> <kfac>  (LP designs: S14_DIR=study14lp S14_TAG=<tag>)
 Writes data/study14/mpc_<task>_s<s>_k<kfac>.pkl."""
 import os, sys, json, time, pickle, numpy as np
 from collections import Counter
 from joblib import Parallel, delayed
 import config_top as cf
 from config_top import ra
-s, kfac = float(sys.argv[1]), float(sys.argv[2]); TAG = f"{cf.TASK}_s{s:g}_k{kfac:g}"; D = json.load(open(f"{cf.HERE}/data/study14/{TAG}.json"))
+s, kfac = float(sys.argv[1]), float(sys.argv[2]); SDIR = os.environ.get("S14_DIR", "study14")    # S14_DIR=study14lp S14_TAG=<tag> for the LP designs
+TAG = os.environ.get("S14_TAG", f"{cf.TASK}_s{s:g}_k{kfac:g}"); D = json.load(open(f"{cf.HERE}/data/{SDIR}/{TAG}.json"))
 KF = os.path.join(cf.HERE, "k1", D["k1_file"]); MU = D["mu"]
 
 
@@ -29,4 +30,4 @@ if __name__ == "__main__":
                decrease_viol=int((dJ < ell * (1 - 1e-4)).sum()), horizon_nonincreasing=int(sum(int(np.all(np.diff(L["N"]) <= 0)) for L in RL)), uc_in_bounds=bool(all(np.all(L["uc_in_bounds"]) for L in RL)),
                min_psi=float(min(L["h_min"] for L in RL)) if RL else np.nan, t_med_B=float(np.nanmedian(tB[both])), t_med_A=float(np.nanmedian(tA[both])), cost_med_B=float(np.nanmedian(cB[both])),
                cost_med_A=float(np.nanmedian(cA[both])), solve_ms_B=float(np.mean(np.concatenate([L["solve_ms"] for L in RL]))), solve_ms_A=float(np.mean(np.concatenate([L["solve_ms"] for L in RA]))), sec=time.time() - t0)
-    print(json.dumps(out)); pickle.dump(dict(summary=out, logs=logs), open(f"{cf.HERE}/data/study14/mpc_{TAG}.pkl", "wb"))
+    print(json.dumps(out)); pickle.dump(dict(summary=out, logs=logs), open(f"{cf.HERE}/data/{SDIR}/mpc_{TAG}.pkl", "wb"))
