@@ -44,7 +44,9 @@ Common successes (123): time to the slot median 0.44 s (max 1.08) for RA-MPC aga
 
 Theorem 2 / Corollary 1: 5530 solves, no infeasible solve after k = 0, decrease >= stage cost in every step (smallest ratio 0.99993), horizon nonincreasing, smallest psi along the closed loops 0.0049, entry-time bound holds 123/123.
 Lemma 2 (8000 independent terminal-set samples): one-step increase at every sample up to 15 ms (first failure at 20 ms); from the terminal set all 150 sampled-data closed loops reach the slot with Psi increasing up to 20 ms; second-order bound 4.4 ms.
-Solve time with the compiled NLP: median about 0.95 s per step under parallel load (offline; the simulation waits for the solver).
+Solve time with the compiled NLP: median about 0.95 s per step under parallel load (offline; the simulation waits for the solver). Single process on the Apple M5 (`run_timing_franka.py`, 5 runs each, after a one-off JIT compilation of 352 s for both NLPs): RA-MPC 565 ms per step on average (first step 727 ms), vanilla 548 ms, u^c 0.015 ms. Offline: planar SOS design 0.61 s, sampled choice of s 353 s (`solve_scale_franka.py`, rerun in a copy, same result).
+
+Paper draft (2026-10-10): `TAC/appendix_franka.tex` (Appendix I, Example 3), figures `TAC/figs/fig_franka_{vanilla,uncon,rampc,compare,scene}.png`; `fig_franka_scene` is rendered by `paper_still.py`. Not available for this arm: the success rate against the sampling period (no MPC sweep was run), so the appendix reports the Lemma 2 checks instead.
 
 ## 4. Figures (`franka/figs/red_fwd_sq/`)
 
