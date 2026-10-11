@@ -175,3 +175,26 @@ Files for C:
 - Code: `arm_top/study14_lp.py`, `arm_top/run_study14_lp.sh`, `arm_top/run_eval14_lp.sh` (`eval14_mpc.py` with `S14_DIR=study14lp`).
 - Designs: `arm_top/k1/<task>_lp_s<s>_D8[_<objective>].txt`.
 - Results: `arm_top/data/study14lp/` (`sweep.log`, `sweep_l2.log`, `pilot_objectives.log`, `mpc.log`, one json per design, `mpc_<tag>.pkl`).
+
+## D. Program (12): the hard bound on $k_1$ against a coefficient-norm penalty in the objective (2026-10-11)
+
+Question: can the S-procedure bound $\lvert k_{1,i}\rvert \le K$ on $\{\psi \ge 0\}$ be replaced by a penalty $\gamma\lVert\Theta\rVert$ on the coefficients of $k_1$ in the objective of (12), with the same effect?
+
+Test on red_fwd_sq at $\lambda = 0.1$ (`arm_top/study12_reg.py`, `arm_top/solve_k1_reg12.m`, results in `arm_top/data/study12_reg/`). For each penalty design the realised $K_P = \max\lvert k_{1,i}\rvert$ on the safe set is read off, and the hard-bound program is solved again with $K = K_P$ at the same $\lambda$, so that the two designs have the same $(\lambda, K)$ and can be compared field to field. SOSTOOLS takes a linear objective, so the penalties are the $\infty$-norm ($\delta + \gamma \max_k\lvert\theta_k\rvert$) and the 1-norm, both through epigraph variables.
+
+| design | largest coefficient | $K$ on the set | $\delta$ | field against the matched hard-$K$ design, mean / max difference | $T_\varepsilon(1)$ at unit speed, penalty / matched [ms] |
+| --- | --- | --- | --- | --- | --- |
+| A, hard $K = 1$ | 15.6 | 1.00 | 7e-8 | reference | 30 |
+| no bound, no penalty | 7.6 | 14.3 | 4e-9 | 97 % / 110 % | 23 / 41 |
+| $\infty$-norm, $\gamma = 10^{-4}$ | 0.1 | 2.31 | 0 | 35 % / 40 % | 108 / 120 |
+| $\infty$-norm, $\gamma \in [10^{-3}, 10^{-1}]$ | 0.1 | 2.9 | 0 | 38 % / 45 % | 100 / 103 |
+| 1-norm, $\gamma = 10^{-5}$ | 0.3 | 2.07 | 0 | 33 % / 38 % | 108 / 116 |
+| 1-norm, $\gamma \in [10^{-4}, 10^{-2}]$ | 0.4 | 4.08 | 0 | 60 % / 68 % | 92 / 79 |
+
+Findings.
+1. **The slack is zero in every case.** $\delta^\ast = 0$ is attainable on this corridor for any $K \ge 1$, so the objective of (12) does not determine $k_1$: every field in the feasible set is optimal. The hard bound returns a saturated field, the penalty another, the unbounded program a third, and all three differ by 35 to 110 % of the field magnitude at the same $(\lambda, K)$. The programs are related through the same Pareto frontier only when the penalised quantity is the one that is bounded, which is not the case here.
+2. **The coefficient norm does not control the field.** Design A has the largest coefficients (15.6) and the smallest field (1.0); the unbounded design has coefficients of 7.6 and a field of 14.3; the penalised designs have coefficients of 0.1 to 0.4 and fields of 2.1 to 4.1. With degree 8 on $y/4$ the monomials cancel on the corridor, so the coefficient norm and the supremum of $k_1$ on the set are nearly unrelated. The penalty therefore does not do the job of the bound, which is to fix the speed of the field.
+3. **$\gamma$ has no useful range.** Above a small threshold ($10^{-3}$ for the $\infty$-norm, $10^{-4}$ for the 1-norm) the solution no longer changes with $\gamma$, since $\delta = 0$ costs nothing; below it the solver's arbitrary field returns. The penalty acts as a pure regulariser, with no parameter that sets $K$.
+4. **Period thresholds** of the penalised and the matched hard-$K$ designs differ by 3 to 15 %, and the 1-norm designs are at $K = 4.08$ against $K = 1$ for A, that is a different $K/\lambda$ and a different design altogether.
+
+Conclusion: a coefficient-norm penalty is not equivalent to the bound $\lvert k_{1,i}\rvert \le K$, and it cannot replace it, because it bounds the wrong quantity. The S-procedure bound is kept in (12). The non-uniqueness of (12) at $\delta^\ast = 0$ is a property of the program worth knowing: the field that the data use is the one Mosek returns for the saturated program, which was consistent across the eight tasks and the Dubins example.
