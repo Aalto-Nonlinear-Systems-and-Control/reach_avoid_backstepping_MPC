@@ -1,12 +1,13 @@
 """Period sweep for the top-view arm with N T fixed (horizon of the main run) and the terminal design fixed (delta, omega); subset of the initial set."""
-import pickle, time, sys, numpy as np
+import os, pickle, time, sys, numpy as np
 from collections import Counter
 from joblib import Parallel, delayed
 import config_top as cf
 from config_top import C, ra
 
-HOR = cf.N * cf.T; SW = [(int(round(HOR / T)), T) for T in (0.005, 0.0075, 0.01, 0.0125, 0.015, 0.02)]
-N_SUB = int(sys.argv[1]) if len(sys.argv) > 1 else 40
+HOR = cf.N * cf.T; PER = [1e-3 * float(p) for p in os.environ["PERIODS_MS"].split(",")] if "PERIODS_MS" in os.environ else (0.005, 0.0075, 0.01, 0.0125, 0.015, 0.02)
+SW = [(int(round(HOR / T)), T) for T in PER]  # PERIODS_MS="5,7.5,..." extends the sweep; SWEEP_OUT names the output file (default sweep.pkl)
+N_SUB = int(sys.argv[1]) if len(sys.argv) > 1 else 40; OUT = os.environ.get("SWEEP_OUT", "sweep.pkl")
 
 if __name__ == "__main__":
     X0 = cf.initial_set()[:, :N_SUB]; n = X0.shape[1]; par = Parallel(n_jobs=-1, prefer="processes")
@@ -24,5 +25,5 @@ if __name__ == "__main__":
         out["rows"].append(row)
         print(f"T={1e3*T:<4g} ms N={N:<3d} RA-MPC {ra_ok.sum():3d}/{n} (feasible at k=0 {n-row['inf0']}, later infeasible {later}) | vanilla {fv.sum():3d} (reached {row['van_reached'].sum()}) | u^c sampled {(zs==1).sum()} | "
               f"decrease viol {row['dec_viol']}/{row['steps']} | eps(T) {row['eps']:+.2e} | t_entry med {row['t_med']:.3f} s | {row['solve_ms']:.0f} ms/solve ({time.time()-t0:.0f}s)", flush=True)
-        pickle.dump(out, open(f"{cf.DATA}/sweep.pkl", "wb"))
-    print("saved data/sweep.pkl")
+        pickle.dump(out, open(f"{cf.DATA}/{OUT}", "wb"))
+    print(f"saved {OUT}")

@@ -282,16 +282,24 @@ model sub-steps and constraint nodes stay at 12.5 ms. Same 300 states.
 | 0.125 | 10 | 213 | 47 | 264 | 88.0 % | 0 | 0 of 1 829 | $-1.6 \times 10^{-3}$ |
 | 0.25 | 5 | 213 | 47 | 264 | 88.0 % | 0 | 0 of 835 | $-2.4 \times 10^{-2}$ |
 | 0.3125 | 4 | 213 | 47 | 261 | 87.0 % | 0 | 0 of 649 | $-4.4 \times 10^{-2}$ |
+| 0.4167 | 3 | 211 | 48 | 256 | 85.3 % | 0 | 0 of 487 | $-9.5 \times 10^{-2}$ |
 | 0.625 | 2 | 209 | 48 | 248 | 82.7 % | 0 | 0 of 364 | $-0.27$ |
+| 1.25 | 1 | 178 | 48 | 165 | 55.0 % | 0 | 0 of 209 | $-1.8$ |
 
 ![sweep](final/figs/verify_sweep.png)
 
 - For every $T$, every run feasible at $k = 0$ reaches the target, no run is
   unsafe or times out, and vanilla-feasible states are RA-MPC feasible
   without exception.
-- Up to $T = 0.25$ s the success rate is constant (263 to 265); it falls to
-  82.7 % at $T = 0.625$ s, through the set of states feasible at $k = 0$
-  (coarser input parametrisation), not through recursive feasibility.
+- Up to $T = 0.25$ s the success rate is constant (263 to 265); it falls
+  gradually for coarser periods, 87.0 % at 0.3125 s, 85.3 % at 0.4167 s, 82.7 % at
+  0.625 s, and to 55.0 % at $T = 1.25$ s ($N = 1$), through the set of states
+  feasible at $k = 0$ (coarser input parametrisation), not through recursive
+  feasibility. At $N = 1$ vanilla MPC (178) is ahead of RA-MPC (165), since the
+  single held input must then land in $\mathcal{X}_{RA}^{\delta}$. The rows
+  0.4167 and 1.25 s were added on 2026-10-13 by `run_sweep_ext.py` (the file
+  before the extension is `data/sweep_base.pkl`) to show the loss of the guarantee
+  in the success rate, as requested for the paper.
 - The one-step increase of $\Psi$ on the terminal set is lost from
   $T = 0.0625$ s on (last column), so hypothesis (22) fails on part of the
   terminal set there, yet the closed loop never needs it: the candidate is

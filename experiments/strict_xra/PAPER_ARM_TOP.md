@@ -111,18 +111,41 @@ Horizon nonincreasing in all runs. Corollary 1 bound holds in 137/137 runs (entr
 
 ## 5. Period sweep and timing
 
-40 states, $NT = 0.6$ s, terminal design ($\delta$, $\omega$) fixed:
+All 150 states, $NT = 0.6$ s, terminal design ($\delta$, $\omega$) fixed, periods 5 to 600 ms
+(rerun on 2026-10-13 with `PERIODS_MS=5,...,300 run_sweep_top.py 150` plus `PERIODS_MS=600
+SWEEP_OUT=sweep_600.pkl`, merged into `sweep.pkl`; the earlier 40-state run over 5 to 20 ms
+is kept as `sweep_n40.pkl` / `run_sweep_n40.out`):
 
-| $T$ [ms] | $N$ | vanilla feasible (reached) | $u^c$ held | RA-MPC | later infeasible | decrease violations | min $\Delta\Psi$ on terminal set |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 5 | 120 | 37 (25) | 25 | 36 | 0 | 0/4118 | $+5.8\times 10^{-4}$ |
-| 7.5 | 80 | 37 (25) | 25 | 36 | 0 | 0/2738 | $+6.9\times 10^{-4}$ |
-| 10 | 60 | 37 (25) | 25 | 36 | 0 | 0/2050 | $+5.2\times 10^{-4}$ |
-| 12.5 | 48 | 37 (25) | 24 | 36 | 0 | 0/1636 | $-1.3\times 10^{-5}$ |
-| 15 | 40 | 37 (25) | 24 | 36 | 0 | 0/1361 | $-8.5\times 10^{-4}$ |
-| 20 | 30 | 37 (25) | 24 | 36 | 0 | 0/1018 | $-3.4\times 10^{-3}$ |
+| $T$ [ms] | $N$ | vanilla feasible (reached) | $u^c$ held | RA-MPC | $\rho$ | later infeasible | decrease violations | min $\Delta\Psi$ on terminal set |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 5 | 120 | 127 (85) | 97 | 137 | 91.3 % | 0 | 0/16511 | $+5.8\times 10^{-4}$ |
+| 7.5 | 80 | 127 (85) | 96 | 137 | 91.3 % | 0 | 0/10987 | $+6.9\times 10^{-4}$ |
+| **10** | **60** | 127 (84) | 96 | **137** | **91.3 %** | 0 | 0/8226 | $+5.2\times 10^{-4}$ |
+| 12.5 | 48 | 127 (84) | 95 | 137 | 91.3 % | 0 | 0/6572 | $-1.3\times 10^{-5}$ |
+| 15 | 40 | 127 (84) | 94 | 137 | 91.3 % | 0 | 0/5466 | $-8.5\times 10^{-4}$ |
+| 20 | 30 | 127 (84) | 93 | 137 | 91.3 % | 0 | 0/4088 | $-3.4\times 10^{-3}$ |
+| 25 | 24 | 127 (85) | 93 | 137 | 91.3 % | 0 | 0/3251 | $-7.1\times 10^{-3}$ |
+| 30 | 20 | 127 (87) | 93 | 137 | 91.3 % | 0 | 0/2707 | $-1.2\times 10^{-2}$ |
+| 40 | 15 | 127 (88) | 92 | 137 | 91.3 % | 0 | 0/2013 | $-2.7\times 10^{-2}$ |
+| 50 | 12 | 127 (88) | 90 | 137 | 91.3 % | 0 | 0/1602 | $-4.7\times 10^{-2}$ |
+| 60 | 10 | 127 (90) | 92 | 137 | 91.3 % | 0 | 0/1321 | $-7.4\times 10^{-2}$ |
+| 75 | 8 | 127 (91) | 90 | 137 | 91.3 % | 0 | 0/1050 | $-0.13$ |
+| 100 | 6 | 127 (92) | 88 | 137 | 91.3 % | 0 | 0/775 | $-0.26$ |
+| 150 | 4 | 127 (91) | 84 | 137 | 91.3 % | 0 | 0/496 | $-0.77$ |
+| 200 | 3 | 127 (86) | 83 | 136 | 90.7 % | 0 | 0/368 | $-1.7$ |
+| 300 | 2 | 126 (73) | 77 | 131 | 87.3 % | 0 | 0/249 | $-4.0$ |
+| 600 | 1 | 119 (119) | 78 | 109 | 72.7 % | 0 | 0/130 | $-72$ |
 
-The success rate is flat; from 12.5 ms the one-step increase fails on part of the terminal set (12.5 ms is the threshold itself), so the guarantee lapses although the closed loop still succeeds.
+- The success rate is flat at 137/150 up to 150 ms, then falls gradually, 136 at
+  200 ms, 131 at 300 ms and 109 at 600 ms ($N = 1$), through the states feasible
+  at $k = 0$; no run loses feasibility later and no decrease violation occurs at
+  any period.
+- From 12.5 ms the one-step increase fails on part of the terminal set (12.5 ms
+  is the threshold itself), so the guarantee lapses although the closed loop
+  still succeeds; the held terminal controller alone degrades gradually, 97 of
+  150 at 5 ms to 77 at 300 ms.
+- At $N = 1$ vanilla MPC (119) is ahead of RA-MPC (109), since the single held
+  torque must then land in $\mathcal{X}_{RA}^{\delta}$.
 
 Timing (one run at a time, Apple M5): RA-MPC 156 ms per solve (first 425 ms), vanilla 123 ms, $u^c$ 0.24 ms. The MPC is about 16 times slower than the 10 ms period here (Section 8).
 
