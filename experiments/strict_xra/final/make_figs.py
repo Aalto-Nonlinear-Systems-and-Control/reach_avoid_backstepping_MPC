@@ -161,7 +161,12 @@ def paper_figs(V, U, Rr, suffix=""):
   axR.axvspan(Tsw.min() * 0.8, TS, color="g", alpha=0.12)
   axR.plot(Tsw, [100 * r["ra"].mean() for r in rows], color=COL["ra"], marker="s", lw=2.5, ms=9, alpha=0.9)
   rho = np.array([100 * r["ra"].mean() for r in rows]); axR.set_ylim(5 * np.floor((rho.min() - 3) / 5), 5 * np.ceil((rho.max() + 3) / 5))
-  axR.axvline(cf.T, color="gray", lw=1, ls="--", alpha=0.6); axR.set_xscale("log"); axR.set_xlim(Tsw.min() * 0.8, Tsw.max() * 1.25)
+  axR.axvline(cf.T, color="0.2", lw=1.6, ls="--", alpha=0.9, zorder=2); axR.set_xscale("log"); axR.set_xlim(Tsw.min() * 0.8, Tsw.max() * 1.25)
+  # mark the success rate at the sampling period of the main run (paper: Fig. 5 / Fig. 8)
+  iT = int(np.argmin(np.abs(Tsw - cf.T))); ylo, yhi = axR.get_ylim()
+  axR.plot(Tsw[iT], rho[iT], marker="s", ms=14, mfc="none", mec=COL["ra"], mew=2.5, zorder=5)
+  axR.annotate(rf"$\rho = {rho[iT]:.1f}\,\%$", xy=(Tsw[iT], rho[iT]), xytext=(cf.T * 1.7, ylo + 0.2 * (yhi - ylo)), fontsize=15, color=COL["ra"], ha="left", va="center",
+               arrowprops=dict(arrowstyle="-", color="0.3", lw=1.0, shrinkA=0, shrinkB=7), bbox=dict(boxstyle="round,pad=0.15", fc="white", ec="none", alpha=0.9), zorder=6)
   axR.set_xlabel("$T$ [s]", fontsize=FS_C - 6); axR.set_ylabel(r"$\rho$ [%]", fontsize=FS_C - 2)
   axR.xaxis.set_tick_params(labelsize=14); axR.yaxis.set_tick_params(labelsize=14); axR.grid(True, alpha=0.3, which="both")
   tu, uu = U["tt"], U["u"]; tr_, ur = Rr["t"], Rr["u"]
