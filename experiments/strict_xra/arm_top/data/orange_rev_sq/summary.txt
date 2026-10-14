@@ -1,0 +1,41 @@
+## setting {'T': 0.01, 'N': 60.0, 'U_MAX': (28.5, 8.5), 'DELTA': 0.500001, 'M_PSI': 1.000002, 'shift': -2e-06, 'lam': 0.165317, 'mu': 0.27319, 'SCALE': 1.652845, 'URA_SCALE': 3.305691, 'omega': 522816.511093, 'eps': 0.000263, 'SAFE_MARGIN': 0.005, 'R0': 0.3, 'TASK': 'orange_rev_sq'} | scale.json: {  "T": 0.01,  "MU0": 0.1,  "DFRAC": 0.5,  "T_eps1_ms": 20.66056745467661,  "s": 1.652845396374129,  "T_eps_s_ms": 12.500397637353638,  "U_MAX": [   28.5,   8.5  ],  "s_U": 2.0445351229055486,  "URA_SCALE": 3.305690792748258,  "lam": 0.1653174213312903,  "mu": 0.27318979043151514,  "delta": 0.5000008406458507,  "eta": 0.08449780012345412,  "M2": 30.011560451947748,  "Tstar2_ms": 5.631016771603439,  "tau_terminal": [   18.62602466262256,   3.556032058979192  ],  "tau_xra": [   36.31877472429365,   6.212339222205502  ],  "U_FIX": true,  "s_eps": 1.652845396374129,  "s_bnd": 1.8286878068810706,  "tau1_terminal": [   6.817979776331349,   1.30167092019152  ] }
+
+## counts: URA 150 (exceeding the bounds 127, among successes 127), terminal controller alone continuous 120 sampled 120 | vanilla feasible at k=0 75, reached 75 | RA-MPC 148 (infeasible at k=0 2, later 0) | in X_RA 6, terminal set 1
+pairwise: RA&~van 73, van&~RA 0, RA&~URA 0, URA&~RA 2, all three 75, none 0
+URA and RA-MPC: 148 states | time med URA 0.75 (max 2.46), RA 0.80 (max 1.61) | cost med URA 10.0, RA 9.2
+all three: 75 states | time med URA 0.31 (max 1.51), RA 0.31 (max 0.85), vanilla 0.28 | cost med URA 0.9, RA 1.0, vanilla 0.9
+peaks: URA successes [135.3  15.3], all [135.3  15.3]; RA-MPC [28.5  8.5]; vanilla [28.5  8.5]
+RA-MPC inputs within 2% of the bound: tau1 78%, tau2 50%; entry time median 0.795 max 1.610
+solve ms (parallel load): RA mean 309 (first 670), vanilla mean 167
+
+## Theorem 2 / Corollary 1
+runs feasible at k=0 148, reached 148, solves 10663, candidate kept 5207, u^c within bounds True
+decrease: 10515 steps, min 0.719, min ratio 1.000000, below ell(1-1e-4) 0, below ell_min 0; horizon nonincreasing 148/148, min N 1
+safety: min psi along closed loops RA 0.0050, vanilla 0.0133; entry median 0.795 max 1.610; bound min 0.370 median 1056.2 max 4160; holds 148/148
+
+## lemma2.pkl
+eta 8.4518e-02 (lambda delta 8.2659e-02), M2 30.262, T* 5.59 ms; u^c on terminal set [18.6  3.7], on X_RA [36.3  6.1]
+| T [ms] | arcs | smallest increase | increasing | end in terminal set | arc in X_RA | second-order bound |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | 6717 | +8.48e-05 | 100.00 % | 100.00 % | 100.00 % | +6.94e-05 |
+| 2 | 6713 | +1.69e-04 | 100.00 % | 100.00 % | 100.00 % | +1.09e-04 |
+| 5 | 6697 | +3.13e-04 | 100.00 % | 100.00 % | 100.00 % | +4.43e-05 |
+| 7.5 | 6686 | +2.99e-04 | 100.00 % | 100.00 % | 100.00 % | -2.17e-04 |
+| 10 | 6678 | +1.72e-04 | 100.00 % | 100.00 % | 100.00 % | -6.68e-04 |
+| 12.5 | 6669 | -6.50e-05 | 99.97 % | 99.97 % | 100.00 % | -1.31e-03 |
+| 15 | 6657 | -4.73e-04 | 99.91 % | 99.92 % | 100.00 % | -2.14e-03 |
+| 20 | 6635 | -1.71e-03 | 99.62 % | 99.65 % | 100.00 % | -4.36e-03 |
+| 30 | 6595 | -6.33e-03 | 99.29 % | 99.44 % | 100.00 % | -1.15e-02 |
+| 50 | 6510 | -2.44e-02 | 98.37 % | 98.91 % | 100.00 % | -3.89e-02 |
+| T [ms] | from terminal set: reach | increasing | from X_RA: reach | increasing | median time |
+| --- | --- | --- | --- | --- | --- |
+| 2 | 400/400 | 400/400 | 400/400 | 398/400 | 1.08 s |
+| 5 | 400/400 | 400/400 | 400/400 | 389/400 | 1.08 s |
+| 10 | 400/400 | 400/400 | 400/400 | 375/400 | 1.09 s |
+| 12.5 | 400/400 | 400/400 | 400/400 | 368/400 | 1.09 s |
+| 15 | 400/400 | 398/400 | 400/400 | 358/400 | 1.09 s |
+| 20 | 400/400 | 394/400 | 400/400 | 346/400 | 1.10 s |
+| 30 | 400/400 | 379/400 | 400/400 | 322/400 | 1.11 s |
+
+## timing.pkl
+{'idx_r': array([  0,  30,  59,  89, 118]), 'idx_v': array([0, 2, 3, 4, 5]), 'ra': {'mean': 181.11625944016984, 'median': 200.38224999734666, 'first': 382.94172499881824, 'later': 177.9823236395697, 'n': 327}, 'vanilla': {'mean': 91.08127975485665, 'median': 78.20789600009448, 'first': 221.73116680060048, 'later': 84.05709227927903, 'n': 98}, 'ura_ms': 0.2476320542016765}

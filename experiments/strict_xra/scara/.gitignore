@@ -1,0 +1,4 @@
+build/
+__pycache__/
+MUJOCO_LOG.TXT
+figs/still_*.png

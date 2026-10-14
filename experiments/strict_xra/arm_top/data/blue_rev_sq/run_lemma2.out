@@ -1,0 +1,19 @@
+T=1     ms arcs  8899 | min dPsi +8.948e-05 | increasing 100.00% | end in terminal set 100.00% | arc in X_RA 100.00% | M2 29.32 | 2nd-order bound +7.68e-05
+T=2     ms arcs  8897 | min dPsi +1.659e-04 | increasing 100.00% | end in terminal set 100.00% | arc in X_RA 100.00% | M2 29.32 | 2nd-order bound +1.24e-04
+T=5     ms arcs  8882 | min dPsi +3.062e-04 | increasing 100.00% | end in terminal set 100.00% | arc in X_RA 100.00% | M2 29.32 | 2nd-order bound +9.08e-05
+T=7.5   ms arcs  8869 | min dPsi +3.257e-04 | increasing 100.00% | end in terminal set 100.00% | arc in X_RA 100.00% | M2 29.34 | 2nd-order bound -1.39e-04
+T=10    ms arcs  8853 | min dPsi +3.048e-04 | increasing 100.00% | end in terminal set 100.00% | arc in X_RA 100.00% | M2 29.37 | 2nd-order bound -5.54e-04
+T=12.5  ms arcs  8836 | min dPsi +1.548e-05 | increasing 100.00% | end in terminal set 100.00% | arc in X_RA 100.00% | M2 29.43 | 2nd-order bound -1.16e-03
+T=15    ms arcs  8819 | min dPsi -4.906e-04 | increasing  99.92% | end in terminal set  99.93% | arc in X_RA 100.00% | M2 29.50 | 2nd-order bound -1.95e-03
+T=20    ms arcs  8798 | min dPsi -2.010e-03 | increasing  99.67% | end in terminal set  99.75% | arc in X_RA 100.00% | M2 29.69 | 2nd-order bound -4.11e-03
+T=30    ms arcs  8756 | min dPsi -7.069e-03 | increasing  98.92% | end in terminal set  99.22% | arc in X_RA 100.00% | M2 30.26 | 2nd-order bound -1.09e-02
+T=50    ms arcs  8652 | min dPsi -2.620e-02 | increasing  97.68% | end in terminal set  98.38% | arc in X_RA 100.00% | M2 32.95 | 2nd-order bound -3.66e-02
+eta 9.1462e-02 (lambda delta 8.8424e-02), M2 at T=0.01: 29.375 -> second-order T* = 6.23 ms
+T=2     ms from X_RA^delta: reached 400/400, Psi increasing at all samples 400/400 | from X_RA: reached 400/400, increasing 395/400 (25s)
+T=5     ms from X_RA^delta: reached 400/400, Psi increasing at all samples 400/400 | from X_RA: reached 400/400, increasing 387/400 (29s)
+T=10    ms from X_RA^delta: reached 400/400, Psi increasing at all samples 400/400 | from X_RA: reached 400/400, increasing 373/400 (32s)
+T=12.5  ms from X_RA^delta: reached 400/400, Psi increasing at all samples 400/400 | from X_RA: reached 400/400, increasing 366/400 (35s)
+T=15    ms from X_RA^delta: reached 400/400, Psi increasing at all samples 400/400 | from X_RA: reached 400/400, increasing 361/400 (38s)
+T=20    ms from X_RA^delta: reached 400/400, Psi increasing at all samples 397/400 | from X_RA: reached 400/400, increasing 346/400 (40s)
+T=30    ms from X_RA^delta: reached 400/400, Psi increasing at all samples 390/400 | from X_RA: reached 400/400, increasing 315/400 (43s)
+saved data/lemma2.pkl (44s)

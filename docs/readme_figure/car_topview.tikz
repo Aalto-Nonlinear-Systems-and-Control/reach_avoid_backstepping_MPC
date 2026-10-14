@@ -1,0 +1,113 @@
+% Top view of a car as a TikZ pic, for Fig. 1 (figs/fig_pipeline.tikz).
+% Traced from figs/car_topview.svg (Openclipart, public domain) and reduced
+% to what stays legible at about 1 cm: the body, the tyres, the mirrors and
+% the outlines of the four windows, which are left uncoloured. The car is
+% centred at the origin, points along +x and is 1 unit long, so `scale'
+% sets its length in cm. Colours refer to the palette defined in root.tex;
+% change the `car ...' styles below to recolour it, for instance
+% `car window/.style={car line, fill=white}' for filled windows.
+\tikzset{
+    car line/.style={draw=ours!65!black, line width=0.5pt, line join=round},
+    car body/.style={car line, fill=ours!35},
+    car window/.style={car line, line width=0.4pt, fill=white},
+    car tyre/.style={fill=black!70},
+    pics/car/.style={code={
+        % tyres
+        \path[car tyre]
+        (-0.289,0.196) -- (-0.289,0.182)
+            .. controls (-0.289,0.176) and (-0.294,0.171) .. (-0.300,0.171)
+            -- (-0.378,0.171)
+            .. controls (-0.384,0.171) and (-0.389,0.176) .. (-0.389,0.182)
+            -- (-0.389,0.196)
+            .. controls (-0.389,0.202) and (-0.384,0.207) .. (-0.378,0.207)
+            -- (-0.300,0.207)
+            .. controls (-0.294,0.207) and (-0.289,0.202) .. (-0.289,0.196)
+            -- cycle;
+        \path[car tyre]
+        (-0.277,-0.178) -- (-0.277,-0.191)
+            .. controls (-0.277,-0.197) and (-0.281,-0.202) .. (-0.288,-0.202)
+            -- (-0.365,-0.202)
+            .. controls (-0.371,-0.202) and (-0.376,-0.197) .. (-0.376,-0.191)
+            -- (-0.376,-0.178)
+            .. controls (-0.376,-0.172) and (-0.371,-0.167) .. (-0.365,-0.167)
+            -- (-0.288,-0.167)
+            .. controls (-0.281,-0.167) and (-0.277,-0.172) .. (-0.277,-0.178)
+            -- cycle;
+        \path[car tyre]
+        (0.376,-0.187) -- (0.376,-0.201)
+            .. controls (0.376,-0.207) and (0.371,-0.212) .. (0.365,-0.212)
+            -- (0.287,-0.212)
+            .. controls (0.281,-0.212) and (0.276,-0.207) .. (0.276,-0.201)
+            -- (0.276,-0.187)
+            .. controls (0.276,-0.181) and (0.281,-0.177) .. (0.287,-0.177)
+            -- (0.365,-0.177)
+            .. controls (0.371,-0.177) and (0.376,-0.181) .. (0.376,-0.187)
+            -- cycle;
+        \path[car tyre]
+        (0.372,0.205) -- (0.372,0.192)
+            .. controls (0.372,0.186) and (0.367,0.181) .. (0.361,0.181)
+            -- (0.283,0.181)
+            .. controls (0.277,0.181) and (0.272,0.186) .. (0.272,0.192)
+            -- (0.272,0.205)
+            .. controls (0.272,0.211) and (0.277,0.216) .. (0.283,0.216)
+            -- (0.361,0.216)
+            .. controls (0.367,0.216) and (0.372,0.211) .. (0.372,0.205)
+            -- cycle;
+        % body
+        \path[car body]
+        (-0.492,0.001)
+            .. controls (-0.495,0.144) and (-0.469,0.166) .. (-0.465,0.187)
+            .. controls (-0.416,0.208) and (-0.002,0.212) .. (0.032,0.200)
+            .. controls (0.109,0.190) and (0.122,0.206) .. (0.214,0.211)
+            .. controls (0.322,0.220) and (0.262,0.198) .. (0.372,0.216)
+            .. controls (0.486,0.189) and (0.488,0.241) .. (0.499,0.003)
+            .. controls (0.496,-0.215) and (0.486,-0.185) .. (0.372,-0.212)
+            .. controls (0.262,-0.194) and (0.322,-0.215) .. (0.214,-0.206)
+            .. controls (0.122,-0.202) and (0.109,-0.186) .. (0.032,-0.195)
+            .. controls (-0.002,-0.208) and (-0.416,-0.204) .. (-0.465,-0.183)
+            .. controls (-0.484,-0.150) and (-0.492,-0.062) .. (-0.492,0.001)
+            -- cycle;
+        % window frames
+        \path[car window]
+        (0.170,0.170)
+            .. controls (0.170,0.170) and (0.202,0.089) .. (0.203,-0.001)
+            .. controls (0.203,-0.082) and (0.191,-0.119) .. (0.173,-0.169)
+            .. controls (0.116,-0.163) and (0.063,-0.157) .. (0.045,-0.142)
+            .. controls (0.078,-0.004) and (0.078,0.005) .. (0.045,0.143)
+            .. controls (0.063,0.146) and (0.167,0.173) .. (0.170,0.170)
+            -- cycle;
+        \path[car window]
+        (-0.180,0.125)
+            .. controls (-0.252,0.140) and (-0.389,0.152) .. (-0.389,0.152)
+            .. controls (-0.410,0.128) and (-0.419,0.005) .. (-0.419,0.002)
+            .. controls (-0.419,-0.007) and (-0.410,-0.130) .. (-0.380,-0.151)
+            .. controls (-0.362,-0.151) and (-0.234,-0.139) .. (-0.177,-0.127)
+            .. controls (-0.192,-0.022) and (-0.186,0.119) .. (-0.180,0.125)
+            -- cycle;
+        \path[car window]
+        (0.125,0.173)
+            .. controls (0.125,0.173) and (0.030,0.152) .. (0.030,0.152)
+            .. controls (0.030,0.152) and (-0.150,0.152) .. (-0.153,0.155)
+            .. controls (-0.156,0.158) and (-0.207,0.182) .. (-0.207,0.182)
+            .. controls (-0.207,0.182) and (0.119,0.176) .. (0.125,0.173)
+            -- cycle;
+        \path[car window]
+        (0.131,-0.175)
+            .. controls (0.131,-0.175) and (0.036,-0.154) .. (0.036,-0.154)
+            .. controls (0.036,-0.154) and (-0.144,-0.154) .. (-0.147,-0.157)
+            .. controls (-0.150,-0.160) and (-0.201,-0.183) .. (-0.201,-0.183)
+            .. controls (-0.201,-0.183) and (0.125,-0.178) .. (0.131,-0.175)
+            -- cycle;
+        % mirrors
+        \path[car body]
+        (0.146,-0.180) -- (0.143,-0.216)
+            .. controls (0.143,-0.216) and (0.125,-0.234) .. (0.117,-0.222)
+            .. controls (0.108,-0.210) and (0.120,-0.180) .. (0.120,-0.180)
+            -- (0.146,-0.180) -- cycle;
+        \path[car body]
+        (0.140,0.180) -- (0.137,0.216)
+            .. controls (0.137,0.216) and (0.119,0.234) .. (0.111,0.222)
+            .. controls (0.102,0.210) and (0.114,0.180) .. (0.114,0.180)
+            -- (0.140,0.180) -- cycle;
+    }},
+}

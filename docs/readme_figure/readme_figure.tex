@@ -1,0 +1,53 @@
+% README figure: the method as a block diagram (left) and Fig. 1 of the paper (right).
+% Build from this folder:
+%   pdflatex readme_figure.tex && pdftoppm -r 200 -png -singlefile readme_figure.pdf ../../reach_avoid_mpc
+\documentclass[border=8pt]{standalone}
+\usepackage{newtxtext, newtxmath}
+\usepackage{bm, amsmath}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, decorations.markings}
+% palette of the paper (TAC/root.tex)
+\definecolor{setfill}{HTML}{E6F2FF}  \definecolor{setline}{HTML}{2166AC}
+\definecolor{termfill}{HTML}{C9DCF0} \definecolor{tgtfill}{HTML}{FEE0D2}
+\definecolor{tgtline}{HTML}{D6604D}  \definecolor{obsfill}{HTML}{E6E6E6}
+\definecolor{obsline}{HTML}{A6A6A6}  \definecolor{ours}{HTML}{8856A7}
+\definecolor{start}{HTML}{FF8C00}    \definecolor{endmark}{HTML}{1A984F}
+\tikzset{axis/.style={-{Latex[length=2.2mm, width=1.6mm]}, line width=0.6pt, black}}
+\begin{document}
+\begin{tikzpicture}[baseline=(current bounding box.center),
+    blk/.style={draw, rounded corners=5pt, line width=0.7pt, minimum height=0.95cm, align=center, font=\large},
+    arr/.style={-{Latex[length=2.4mm, width=1.7mm]}, line width=0.7pt},
+    noter/.style={font=\small, align=right, anchor=east},
+    notel/.style={font=\small, align=left, anchor=west}]
+    % normal form entering the SOS program
+    \draw[arr] (0,9.45) node[above] {$y_i^{(r_i)} = v_i, \ i = 1, \dots, m$} -- (0,8.55);
+    \node[blk, minimum width=5.2cm] (sos) at (0,8.05) {SOS Optimization};
+    \node[blk, minimum width=9.0cm] (bs) at (0,5.75) {Backstepping through Feedback Linearization};
+    % k1 down, additional constraints up
+    \draw[arr] (-1.2,7.57) -- (-1.2,6.23);
+    \node at (-0.45,6.9) {$\bm{k}_1(\bm{y})$};
+    \node[noter] at (-1.45,6.9) {Base controller in output\\space, rate $\lambda$ fixed};
+    \draw[arr] (1.7,6.23) -- (1.7,7.57);
+    \node[notel] at (1.9,6.9) {Additional SOS\\constraints};
+    % reach-avoid set down, input constraints up
+    \draw[arr] (-1.2,5.27) -- (-1.2,3.48);
+    \node[notel] at (-1.05,4.75) {$\Psi(\bm{y}(\bm{x})) \geq \delta$};
+    \node[notel] at (-1.05,3.95) {$\mathcal{X}_{RA}^{\delta}, \ \bm{u}^c(\bm{x})$};
+    \node[noter] at (-1.45,4.35) {Input-constrained\\reach-avoid set\\and controller};
+    \draw[arr] (1.7,3.9) -- (1.7,5.27);
+    \node[notel] at (1.9,4.85) {Control input constraints};
+    \node[notel] at (1.85,4.3) {$\mathcal{P}(\bm{x})\bm{u}(\bm{x}) \leq \mathcal{Q}(\bm{x})$};
+    % sampled-data MPC
+    \node[blk, minimum width=11.4cm, minimum height=3.1cm] (mpc) at (0.35,1.85) {};
+    \node[font=\large, anchor=west] at (-5.2,1.85) {Sampled-data MPC};
+    \node[anchor=west, font=\small] at (-1.75,1.85) {$\begin{aligned}
+        \min_{\mathbf{U}_k} \ & \textstyle\sum_{i=0}^{N-1} \ell(\hat{\bm{x}}(iT|k), \bm{u}_{i|k})
+            + \omega\big(M_\Psi - \Psi(\hat{\bm{x}}(NT|k))\big) \\
+        \text{s.t.} \ & \dot{\hat{\bm{x}}}(\tau|k) = \bm{f}(\hat{\bm{x}}(\tau|k))
+            + \textstyle\sum_{j} \bm{g}_j(\hat{\bm{x}}(\tau|k)) u_{j,i|k}, \ \tau \in [iT, (i+1)T); \\
+        & \hat{\bm{x}}(0|k) = \bm{x}_k; \ \bm{u}_{i|k} \in \mathcal{U}, \ i = 0, \dots, N-1; \\
+        & \hat{\bm{x}}(\tau|k) \in \mathcal{X}_S, \ \tau \in [0, NT]; \ \hat{\bm{x}}(NT|k) \in \mathcal{X}_{RA}^{\delta}
+    \end{aligned}$};
+\end{tikzpicture}\hspace{1.2cm}%
+\input{pipeline.tikz}
+\end{document}

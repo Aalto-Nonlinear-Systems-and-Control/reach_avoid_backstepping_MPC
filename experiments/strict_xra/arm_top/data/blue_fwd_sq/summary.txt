@@ -1,0 +1,41 @@
+## setting {'T': 0.01, 'N': 60.0, 'U_MAX': (28.5, 8.5), 'DELTA': 0.5, 'M_PSI': 1.0, 'shift': 0.0, 'lam': 0.17492, 'mu': 0.305363, 'SCALE': 1.747464, 'URA_SCALE': 3.494929, 'omega': 255495.107985, 'eps': 0.00049, 'SAFE_MARGIN': 0.005, 'R0': 0.3, 'TASK': 'blue_fwd_sq'} | scale.json: {  "T": 0.01,  "MU0": 0.1,  "DFRAC": 0.5,  "T_eps1_ms": 28.73424177712458,  "s": 1.747464309236618,  "T_eps_s_ms": 16.441535813933207,  "U_MAX": [   28.5,   8.5  ],  "s_U": 1.9537244918539307,  "URA_SCALE": 3.494928618473236,  "lam": 0.17491999438672445,  "mu": 0.3053631512055811,  "delta": 0.49999996829690485,  "eta": 0.09010963725058552,  "M2": 34.51879734017371,  "Tstar2_ms": 5.220902475980181,  "tau_terminal": [   22.42587169968275,   6.7999999999997565  ],  "tau_xra": [   37.435866552741004,   14.464673393594184  ],  "U_FIX": true,  "s_eps": 2.2987393421699664,  "s_bnd": 1.747464309236618,  "tau1_terminal": [   7.344000614070667,   2.2268567681311375  ] }
+
+## counts: URA 150 (exceeding the bounds 139, among successes 139), terminal controller alone continuous 88 sampled 88 | vanilla feasible at k=0 61, reached 61 | RA-MPC 137 (infeasible at k=0 13, later 0) | in X_RA 7, terminal set 1
+pairwise: RA&~van 77, van&~RA 1, RA&~URA 0, URA&~RA 13, all three 60, none 0
+URA and RA-MPC: 137 states | time med URA 0.94 (max 2.37), RA 0.94 (max 1.62) | cost med URA 19.6, RA 17.8
+all three: 60 states | time med URA 0.45 (max 0.88), RA 0.55 (max 0.87), vanilla 0.46 | cost med URA 4.3, RA 4.6, vanilla 3.9
+peaks: URA successes [127.8  34. ], all [127.8  34. ]; RA-MPC [28.5  8.5]; vanilla [28.5  8.5]
+RA-MPC inputs within 2% of the bound: tau1 74%, tau2 65%; entry time median 0.940 max 1.620
+solve ms (parallel load): RA mean 307 (first 706), vanilla mean 210
+
+## Theorem 2 / Corollary 1
+runs feasible at k=0 137, reached 137, solves 11909, candidate kept 5949, u^c within bounds True
+decrease: 11772 steps, min 0.710, min ratio 1.000000, below ell(1-1e-4) 0, below ell_min 0; horizon nonincreasing 137/137, min N 1
+safety: min psi along closed loops RA 0.0045, vanilla 0.0044; entry median 0.940 max 1.620; bound min 0.240 median 855.9 max 2092; holds 137/137
+
+## lemma2.pkl
+eta 9.0880e-02 (lambda delta 8.7460e-02), M2 35.686, T* 5.09 ms; u^c on terminal set [22.1  6.7], on X_RA [37.4 14.5]
+| T [ms] | arcs | smallest increase | increasing | end in terminal set | arc in X_RA | second-order bound |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | 8721 | +9.01e-05 | 100.00 % | 100.00 % | 100.00 % | +7.30e-05 |
+| 2 | 8719 | +1.76e-04 | 100.00 % | 100.00 % | 100.00 % | +1.10e-04 |
+| 5 | 8712 | +3.71e-04 | 100.00 % | 100.00 % | 100.00 % | +8.32e-06 |
+| 7.5 | 8696 | +4.66e-04 | 100.00 % | 100.00 % | 100.00 % | -3.22e-04 |
+| 10 | 8688 | +4.99e-04 | 100.00 % | 100.00 % | 100.00 % | -8.76e-04 |
+| 12.5 | 8673 | +4.66e-04 | 100.00 % | 100.00 % | 100.00 % | -1.65e-03 |
+| 15 | 8660 | +6.20e-05 | 100.00 % | 100.00 % | 100.00 % | -2.65e-03 |
+| 20 | 8629 | -1.25e-03 | 99.66 % | 99.75 % | 100.00 % | -5.32e-03 |
+| 30 | 8591 | -5.90e-03 | 98.44 % | 98.82 % | 100.00 % | -1.33e-02 |
+| 50 | 8506 | -2.36e-02 | 95.93 % | 97.07 % | 100.00 % | -4.07e-02 |
+| T [ms] | from terminal set: reach | increasing | from X_RA: reach | increasing | median time |
+| --- | --- | --- | --- | --- | --- |
+| 2 | 400/400 | 400/400 | 400/400 | 394/400 | 0.95 s |
+| 5 | 400/400 | 400/400 | 400/400 | 386/400 | 0.95 s |
+| 10 | 400/400 | 400/400 | 400/400 | 372/400 | 0.95 s |
+| 12.5 | 400/400 | 400/400 | 400/400 | 364/400 | 0.95 s |
+| 15 | 400/400 | 400/400 | 400/400 | 353/400 | 0.96 s |
+| 20 | 400/400 | 392/400 | 400/400 | 328/400 | 0.96 s |
+| 30 | 400/400 | 378/400 | 400/400 | 289/400 | 0.96 s |
+
+## timing.pkl
+{'idx_r': array([  1,  29,  60,  88, 118]), 'idx_v': array([ 1,  5,  6,  8, 10]), 'ra': {'mean': 175.97851370187092, 'median': 197.95149999845307, 'first': 365.7511584009626, 'later': 172.67237006599822, 'n': 292}, 'vanilla': {'mean': 126.05892306495544, 'median': 137.33208300254773, 'first': 228.19466680084588, 'later': 121.76750526092643, 'n': 124}, 'ura_ms': 0.2571751082992705}

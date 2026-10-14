@@ -1,0 +1,5 @@
+red_rev_sq_d8_l0.1.txt: lambda 0.1002, delta_s 3.50e-09, shift 3.49e-08 | grid: min ECGBF margin +9.540e-04, max |k1_i| 0.995, |y| in [2.89, 5.37]
+mu0 0.1 : rest states in X_RA   1.8% | T_eps(1)     15.2 ms | max|tau_1| terminal set [5.22 1.9 ], X_RA [18.57  3.05], rest states [2.66 0.84]
+mu0 0.3 : rest states in X_RA   4.0% | T_eps(1)     15.5 ms | max|tau_1| terminal set [7.09 2.01], X_RA [17.62  3.43], rest states [8.24 2.55]
+mu0 1   : rest states in X_RA  62.3% | T_eps(1)      7.4 ms | max|tau_1| terminal set [15.89  5.78], X_RA [30.07  8.69], rest states [27.77  8.54]
+mu0 3   : rest states in X_RA  89.9% | T_eps(1)      2.4 ms | max|tau_1| terminal set [45.81 17.1 ], X_RA [87.82 25.79], rest states [83.59 25.66]

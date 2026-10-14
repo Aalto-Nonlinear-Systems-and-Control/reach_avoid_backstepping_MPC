@@ -1,0 +1,90 @@
+% Right panel of the README figure: copy of Fig. 1 of the paper (TAC/figs/fig_pipeline.tikz)
+% with descriptive labels and a larger scale; built by readme_figure.tex.
+\input{car_topview.tikz}
+\begin{tikzpicture}[x=1cm, y=1cm, scale=1.3, baseline=(current bounding box.center),
+    safe/.style={setline, thick, fill=setfill},
+    term/.style={setline, thick, dashed, fill=termfill},
+    tgt/.style={tgtline, thick, fill=tgtfill},
+    obs/.style={draw=obsline, thick, fill=obsfill, line join=round},
+    mpc/.style={ours, thick},
+    uc/.style={ours, thick, dashed, -{Latex[length=2.2mm, width=1.6mm]}},
+    sample/.style={fill=black!75},
+    lbl/.style={font=\small},
+    car at/.store in=\carpos, car at=0.68,
+    car size/.store in=\carsize, car size=1.0]
+
+    % axes
+    \draw[axis] (-0.25,0) -- (6.45,0);
+    \draw[axis] (0,-0.25) -- (0,6.45);
+
+    % unsafe regions
+    \draw[obs] (3.24,6.01) -- (2.84,5.39) -- (3.22,4.88) -- (4.82,5.51)
+        -- (6.02,5.31) -- (5.79,6.20) -- cycle;
+    \draw[obs] (0.34,4.03) -- (1.07,2.65) -- (0.18,1.49) -- cycle;
+
+    % safe set X_S
+    \draw[safe] (0.69,5.98) .. controls (0.30,5.77) and (0.28,4.88) .. (0.63,4.43)
+        .. controls (1.10,3.81) and (1.41,2.71) .. (1.36,2.38)
+        .. controls (1.31,2.05) and (0.32,1.79) .. (0.80,1.31)
+        .. controls (1.58,0.52) and (2.78,0.66) .. (3.15,0.71)
+        .. controls (4.51,0.87) and (5.31,1.78) .. (5.60,2.11)
+        .. controls (5.86,2.41) and (5.92,2.72) .. (6.03,3.27)
+        .. controls (6.07,3.50) and (6.10,3.77) .. (5.76,4.83)
+        .. controls (5.56,5.45) and (3.00,4.49) .. (2.67,4.64)
+        .. controls (2.09,4.91) and (3.13,5.85) .. (2.69,6.22)
+        .. controls (2.50,6.38) and (1.53,6.45) .. cycle;
+
+    % terminal set X_RA^delta
+    \draw[term] (3.20,4.20) .. controls (2.88,4.02) and (1.61,3.49) .. (1.78,2.95)
+        .. controls (1.96,2.38) and (1.91,2.26) .. (1.90,1.98)
+        .. controls (1.89,1.66) and (1.35,1.43) .. (1.80,1.27)
+        .. controls (2.68,0.95) and (2.85,0.87) .. (3.16,0.90)
+        .. controls (4.29,1.04) and (4.56,1.31) .. (4.86,1.53)
+        .. controls (5.14,1.73) and (5.78,2.51) .. (5.87,2.97)
+        .. controls (5.90,3.16) and (5.52,3.21) .. (5.75,3.86)
+        .. controls (5.93,4.37) and (5.45,4.93) .. (5.15,4.88)
+        .. controls (4.53,4.78) and (4.84,3.95) .. (4.27,3.82)
+        .. controls (3.85,3.72) and (3.90,4.59) .. cycle;
+
+    % target set X_T, partly outside X_S
+    \draw[tgt] (5.79,1.46) .. controls (5.69,1.52) and (5.49,2.34) .. (5.17,2.34)
+        .. controls (4.78,2.34) and (4.51,2.14) .. (4.29,1.98)
+        .. controls (4.08,1.82) and (3.86,1.66) .. (3.75,1.35)
+        .. controls (3.71,1.27) and (3.60,0.95) .. (3.75,0.59)
+        .. controls (3.91,0.19) and (4.83,-0.03) .. (4.52,0.27)
+        .. controls (3.98,0.77) and (5.03,0.67) .. (5.35,0.38)
+        .. controls (5.64,0.12) and (6.12,0.24) .. (6.26,0.69)
+        .. controls (6.31,0.85) and (6.34,1.51) .. (6.20,1.78)
+        .. controls (6.11,1.97) and (5.92,1.38) .. cycle;
+
+    % terminal controller inside X_RA^delta, into X_T
+    \draw[uc] (2.84,4.03) .. controls (2.85,3.97) and (2.34,3.37) .. (2.58,3.29)
+        .. controls (2.80,3.20) and (3.31,3.27) .. (3.62,3.42)
+        .. controls (3.85,3.52) and (4.13,3.34) .. (4.31,3.16)
+        .. controls (4.47,3.00) and (4.52,1.94) .. (4.51,1.59);
+
+    % sampled-data MPC from x_0 to X_RA^delta, with sampling instants and car
+    \coordinate (x0) at (2.37,5.98);
+    \coordinate (xN) at (2.84,4.03);
+    \draw[mpc,
+        postaction={decorate, decoration={markings,
+            % sampling instants, positions in increasing order, kept clear of the car
+            mark=at position 0.18 with {\fill[sample] (0,0) circle (1.3pt);},
+            mark=at position 0.36 with {\fill[sample] (0,0) circle (1.3pt);},
+            mark=at position 0.50 with {\fill[sample] (0,0) circle (1.3pt);},
+            mark=at position 0.88 with {\fill[sample] (0,0) circle (1.3pt);}}},
+        postaction={decorate, decoration={markings,
+            mark=at position \carpos with {\pic[scale=\carsize] {car};}}}]
+        (x0) .. controls (2.08,5.95) and (1.58,5.82) .. (1.62,5.54)
+        .. controls (1.69,5.06) and (1.24,4.78) .. (1.25,4.33)
+        .. controls (1.27,3.82) and (2.94,4.36) .. (xN);
+    \fill[sample] (xN) circle (1.3pt);
+    \fill[start] (x0) circle (2.3pt);
+
+    % labels
+    \node[lbl, below=1pt, align=center] at (x0) {$\bm{x}_0$};
+    \node[lbl, align=center] at (0.92,5.25) {Safe set\\$\mathcal{X}_S$};
+    \node[lbl, align=center] at (2.75,1.9) {Terminal set\\$\mathcal{X}_{RA}^{\delta}$};
+    \node[lbl, align=center] at (5.35,1.05) {Target set\\$\mathcal{X}_T$};
+    \node[lbl, anchor=west] at (0.15,0.32) {State space $\mathcal{X}$};
+\end{tikzpicture}

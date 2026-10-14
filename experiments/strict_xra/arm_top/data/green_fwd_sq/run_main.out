@@ -1,0 +1,5 @@
+set: 150 states (positions uniform in the corridor, velocities around the URA field, r0 = 0.3) | terminal scale 1.62304, URA scale 3.24608 | URA 150 {'reached': 150}, exceeding the bounds 126 (among successes 126) | terminal controller alone: continuous 126, sampled 126 | in X_RA 3, in terminal set 0 (13s)
+vanilla: feasible at k=0 94, closed loop {'infeasible': 67, 'reached': 83} (168s)
+  warnings.warn(
+RA-MPC: 144 {'reached': 144, 'infeasible': 6}, later infeasible 0, min psi along closed loops: RA 0.0055, vanilla 0.0050 (565s)
+saved data/main.pkl (565s)
