@@ -11,24 +11,15 @@
 
 ## Simulations
 
-The SCARA arm of Example 2 in MuJoCo runs a full kitting cycle. Each of the
-eight transports is steered by RA-MPC under the common torque bounds; picks,
-places and transits between tasks are scripted. The top-view inset shows the
-current safe corridor (blue) and target (red ring).
+RA-MPC on the SCARA arm of Example 2 in MuJoCo. The blue curve is the edge of
+the safe corridor and the red ring is the target set.
 
-<p align="center">
-  <img src="docs/media/scara_cycle.gif" width="800" alt="SCARA arm in MuJoCo, kitting cycle with eight certified transports"/>
-</p>
+|        Kitting cycle with eight certified transports (3x)        |               Red task, angled and top views (2x)                |
+| :--------------------------------------------------------------: | :--------------------------------------------------------------: |
+| <img src="docs/media/scara_cycle.gif" width="420" alt="Kitting cycle"/> | <img src="docs/media/scara_red_task.gif" width="420" alt="Red task"/> |
 
-The red task of Example 2 alone, seen from the side and from the top:
-
-<p align="center">
-  <img src="docs/media/scara_red_task.gif" width="600" alt="SCARA arm in MuJoCo, red task"/>
-</p>
-
-The GIFs play three times (cycle) and two times (red task) faster than the
-videos, whose own playback speed is shown in their overlay. Full resolution
-videos: [kitting cycle](experiments/strict_xra/scara/figs/scara_cycle.mp4),
+Speed-ups are relative to the full-resolution videos:
+[kitting cycle](experiments/strict_xra/scara/figs/scara_cycle.mp4),
 [red task](experiments/strict_xra/scara/figs/scara_red_task.mp4).
 
 ## Requirements
