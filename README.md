@@ -11,6 +11,8 @@
 
 ## Simulations
 
+<div align="center">
+
 RA-MPC on the SCARA arm of Example 2 in MuJoCo. The blue curve is the edge of
 the safe corridor and the red ring is the target set.
 
@@ -21,6 +23,8 @@ the safe corridor and the red ring is the target set.
 Speed-ups are relative to the full-resolution videos:
 [kitting cycle](experiments/strict_xra/scara/figs/scara_cycle.mp4),
 [red task](experiments/strict_xra/scara/figs/scara_red_task.mp4).
+
+</div>
 
 ## Requirements
 
