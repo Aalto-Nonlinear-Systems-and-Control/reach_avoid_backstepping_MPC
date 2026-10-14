@@ -7,7 +7,6 @@
 <p align="center">
   Code and data behind <em>Reach-Avoid Model Predictive Control with Guaranteed
   Recursive Feasibility via Input Constrained Backstepping</em><br/>
-  (J. Ding, N. J. Bhave, S. A. Deka)
 </p>
 
 ## Simulations
@@ -126,15 +125,3 @@ environment).
                                 notes with every number, table and check behind the paper;
                                 REPORT.md and STUDY_14_DIRECT.md record the design decisions
 ```
-
-## Paper items and where they come from
-
-| Paper item                  | Script                                                                      | Output                                                          |
-| --------------------------- | --------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| Example 1, Fig. 4           | `final/make_figs.py`                                                        | `final/figs/fig_dubins_{vanilla,uncon,rampc}.png`               |
-| Example 1, Fig. 5           | `final/make_figs.py`                                                        | `final/figs/fig_dubins_compare.png`                             |
-| Example 2, Fig. 6           | `scara/paper_still.py`                                                      | `scara/figs/fig_scara_scene.png`                                |
-| Example 2, Fig. 7           | `arm_top/make_figs_top.py`                                                  | `arm_top/figs/red_fwd_sq/fig_manip_{vanilla,uncon,rampc}.png`   |
-| Example 2, Fig. 8           | `arm_top/make_figs_top.py`                                                  | `arm_top/figs/red_fwd_sq/fig_manip_compare.png`                 |
-| Table I                     | `final/run_timing.py`, `arm_top/run_timing_top.py`, the two `summarize*.py` | `final/data/summary.txt`, `arm_top/data/red_fwd_sq/summary.txt` |
-| Time scaling, both examples | `final/solve_scale.py`, `arm_top/solve_scale_top.py`                        | `final/data/scale.json`, `arm_top/data/scale_red_fwd_sq.json`   |
