@@ -1,0 +1,1 @@
+terminal set 16618 states | T_eps(1) 29.83 ms -> s = 0.8 T_eps(1)/T = 2.386 | T_eps(s) 12.50 ms (T_eps(1)/s = 12.50) | U_MAX [28.5  8.5] | s_U 2.669 | at s: lambda 0.2388, mu 0.5693, max|tau| terminal [22.77  6.75], X_RA [32.11  8.87] | eta 1.232e-01 (lambda delta 1.194e-01), M2 48.647, second-order T* 5.07 ms | URA scale 4.772

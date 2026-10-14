@@ -1,0 +1,36 @@
+=== blue_fwd_sq (LAM 0.1) 19:53:58
+RA-MPC: 137 {'infeasible': 13, 'reached': 137}, later infeasible 0, min psi along closed loops: RA 0.0045, vanilla 0.0044 (589s)
+saved data/main.pkl (589s)
+saved data/lemma2.pkl (42s)
+13
+=== green_fwd_sq (LAM 0.1) 20:05:51
+RA-MPC: 144 {'reached': 144, 'infeasible': 6}, later infeasible 0, min psi along closed loops: RA 0.0055, vanilla 0.0050 (565s)
+saved data/main.pkl (565s)
+saved data/lemma2.pkl (44s)
+13
+=== orange_fwd_sq (LAM 0.1) 20:18:09
+RA-MPC: 138 {'reached': 138, 'infeasible': 12}, later infeasible 0, min psi along closed loops: RA 0.0050, vanilla 0.0164 (649s)
+saved data/main.pkl (649s)
+saved data/lemma2.pkl (36s)
+13
+=== red_rev_sq (LAM 0.1) 20:31:55
+RA-MPC: 150 {'reached': 150}, later infeasible 0, min psi along closed loops: RA 0.0050, vanilla 0.0065 (496s)
+saved data/main.pkl (496s)
+saved data/lemma2.pkl (47s)
+13
+=== blue_rev_sq (LAM 0.1) 20:42:03
+RA-MPC: 142 {'reached': 142, 'infeasible': 8}, later infeasible 0, min psi along closed loops: RA 0.0090, vanilla 0.0050 (475s)
+saved data/main.pkl (475s)
+saved data/lemma2.pkl (44s)
+13
+=== green_rev_sq (LAM 0.1) 20:52:40
+RA-MPC: 149 {'reached': 149, 'infeasible': 1}, later infeasible 0, min psi along closed loops: RA 0.0047, vanilla 0.0047 (461s)
+saved data/main.pkl (461s)
+saved data/lemma2.pkl (44s)
+13
+=== orange_rev_sq (LAM 0.1) 21:02:58
+RA-MPC: 148 {'reached': 148, 'infeasible': 2}, later infeasible 0, min psi along closed loops: RA 0.0050, vanilla 0.0133 (508s)
+saved data/main.pkl (508s)
+saved data/lemma2.pkl (39s)
+13
+=== done 21:13:28

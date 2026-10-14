@@ -1,0 +1,5 @@
+orange_fwd_sq_d8_l0.1.txt: lambda 0.1001, delta_s 5.38e-08, shift 5.38e-07 | grid: min ECGBF margin +1.302e-03, max |k1_i| 0.995, |y| in [3.71, 6.23]
+mu0 0.1 : rest states in X_RA   1.9% | T_eps(1)     24.1 ms | max|tau_1| terminal set [7.79 2.06], X_RA [12.86  3.61], rest states [2.6  0.73]
+mu0 0.3 : rest states in X_RA   4.2% | T_eps(1)     23.4 ms | max|tau_1| terminal set [10.06  2.38], X_RA [18.44  3.45], rest states [7.8  2.19]
+mu0 1   : rest states in X_RA  60.1% | T_eps(1)      7.6 ms | max|tau_1| terminal set [20.98  5.36], X_RA [36.25  7.67], rest states [26.    7.28]
+mu0 3   : rest states in X_RA  88.9% | T_eps(1)      2.6 ms | max|tau_1| terminal set [54.01 15.4 ], X_RA [86.7  22.22], rest states [78.   21.84]

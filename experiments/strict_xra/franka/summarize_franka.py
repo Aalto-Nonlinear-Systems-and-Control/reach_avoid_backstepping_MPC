@@ -1,0 +1,25 @@
+"""Numbers for the Panda kitting task (counts, pairwise, times, costs, peaks, Theorem 2 / Corollary 1, Lemma 2)."""
+import os, json, pickle, numpy as np
+import config_franka as cf, mpc_franka as mp
+M = pickle.load(open(f"{cf.DATA}/main.pkl", "rb")); logs, van, cfg = M["logs"], M["van"], M["cfg"]; n = M["X0"].shape[1]; P0 = M["Psi0"]
+ura = np.array([u["status"] == "reached" for u in M["ura"]]); uc = np.array([u["status"] == "reached" for u in M["uc"]]); fv = np.array([len(v["J"]) > 0 for v in van]); vr = np.array([v["status"] == "reached" for v in van]); rr = np.array([L["status"] == "reached" for L in logs])
+up = np.array([u["upeak"] for u in M["ura"]]); viol = (up > np.asarray(cf.U_MAX)).any(1); zs = M["zoh"]["status"]
+print("## setting", {k: (round(float(v), 6) if np.isscalar(v) and not isinstance(v, str) else v) for k, v in cfg.items()}, "| scale.json:", json.dumps(cf.SC))
+print(f"\n## counts: URA {ura.sum()} (exceeding the bounds {viol.sum()}, among successes {(viol&ura).sum()}), terminal controller alone continuous {uc.sum()} sampled {(zs==1).sum()} | vanilla feasible at k=0 {fv.sum()}, reached {vr.sum()} | RA-MPC {rr.sum()} (infeasible at k=0 {sum(len(L['J'])==0 for L in logs)}, later {sum(L['status']=='infeasible' and len(L['J'])>0 for L in logs)}) | in X_RA {(P0>=0).sum()}, terminal set {(P0>=cf.DELTA).sum()}")
+f0 = np.array([len(L["J"]) > 0 for L in logs]); print(f"pairwise: RA&~van {(rr&~vr).sum()}, van&~RA {(vr&~rr).sum()}, RA&~URA {(rr&~ura).sum()}, URA&~RA {(ura&~rr).sum()}, all three {(ura&vr&rr).sum()}, none {(~ura&~vr&~rr).sum()} | feasible at k=0: vanilla but not RA {(fv&~f0).sum()}")
+tu = np.array([u["t"] for u in M["ura"]]); cu = np.array([u["cost"] for u in M["ura"]]); tr = np.array([L["check"]["t_entry"] if L["status"] == "reached" else np.nan for L in logs]); cr = np.array([cf.T * np.sum(L["ell"]) if L["status"] == "reached" else np.nan for L in logs])
+tv = np.array([v["t"][-1] if v["status"] == "reached" else np.nan for v in van]); cv = np.array([cf.T * np.sum(v["ell"]) if v["status"] == "reached" else np.nan for v in van])
+for nm, m in (("URA and RA-MPC", ura & rr), ("all three", ura & rr & vr)):
+    if m.any(): print(f"{nm}: {m.sum()} states | time med URA {np.median(tu[m]):.2f} (max {tu[m].max():.2f}), RA {np.nanmedian(tr[m]):.2f} (max {np.nanmax(tr[m]):.2f})" + (f", vanilla {np.nanmedian(tv[m]):.2f}" if nm == "all three" else "") + f" | cost med URA {np.median(cu[m]):.2f}, RA {np.nanmedian(cr[m]):.2f}" + (f", vanilla {np.nanmedian(cv[m]):.2f}" if nm == "all three" else ""))
+RL = [L for L in logs if L["status"] == "reached"]; VL = [v for v in van if v["status"] == "reached"]
+print(f"peaks: URA successes {np.round(up[ura].max(0), 2)}; RA-MPC {np.round(np.max([np.abs(L['u']).max(0) for L in RL], axis=0), 2)}; vanilla {np.round(np.max([np.abs(v['u']).max(0) for v in VL], axis=0), 2) if VL else '-'} | URA time above the bounds, median share {np.median([u['t_viol'] / max(u['t'], 1e-9) for u, o in zip(M['ura'], ura) if o]):.2f}")
+ms = np.concatenate([L["solve_ms"] for L in RL]); mv = np.concatenate([v["solve_ms"] for v in VL]) if VL else np.zeros(1); print(f"solve ms (parallel load): RA mean {ms.mean():.0f} median {np.median(ms):.0f}, vanilla mean {mv.mean():.0f}")
+print("\n## Theorem 2 / Corollary 1")
+ell = np.concatenate([L["ell"][:-1] for L in RL if len(L["J"]) > 1]); dJ = np.concatenate([-np.diff(L["J"]) for L in RL if len(L["J"]) > 1]); te = np.array([L["check"]["t_entry"] for L in RL]); tb = np.array([L["check"]["t_bound"] for L in RL])
+print(f"runs feasible at k=0 {sum(len(L['J'])>0 for L in logs)}, reached {len(RL)}, solves {sum(len(L['J']) for L in RL)}, candidate kept {sum(int(np.sum(L['used_candidate'])) for L in RL)}, u^c within bounds {all(np.all(L['uc_in_bounds']) for L in RL)}")
+print(f"decrease: {dJ.size} steps, min {dJ.min():.3f}, min ratio {np.min(dJ/ell):.6f}, below ell(1-1e-4) {(dJ < ell*(1-1e-4)).sum()}, below ell_min {(dJ < mp.ELL_LOWER).sum()}; horizon nonincreasing {sum(int(np.all(np.diff(L['N'])<=0)) for L in RL)}/{len(RL)}, min N {min(L['N'].min() for L in RL)}")
+print(f"safety: min psi along closed loops RA {min(L['h_min'] for L in RL):.4f}, vanilla {min([v['h_min'] for v in VL] or [np.nan]):.4f}; entry median {np.median(te):.3f} max {te.max():.3f}; bound median {np.median(tb):.1f}; holds {(te <= tb+1e-9).sum()}/{len(RL)}")
+if os.path.exists(f"{cf.DATA}/lemma2.pkl"):
+    D = pickle.load(open(f"{cf.DATA}/lemma2.pkl", "rb")); print(f"\n## Lemma 2: eta {D['eta']:.4e}, M2 {D['M2_ref']:.3f}, second-order T* {1e3*D['Tstar2']:.2f} ms; u^c on the terminal set {np.round(D['umax_delta'], 2)}")
+    for r in D["onestep"]: print(f"| {1e3*r['T']:g} ms | {r['n']} | {r['dmin']:+.2e} | {100*r['frac_inc']:.2f} % | {100*r['frac_inv']:.2f} % | {r['lb2']:+.2e} |")
+    for r in D["closed_loop"]: print(f"| {1e3*r['T']:g} ms | {r['delta']['reached']}/{r['delta']['n']} | {r['delta']['monotone']}/{r['delta']['n']} | {r['zero']['reached']}/{r['zero']['n']} | {r['zero']['monotone']}/{r['zero']['n']} | {r['delta']['t_med']:.2f} s |")

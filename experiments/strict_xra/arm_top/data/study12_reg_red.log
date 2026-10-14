@@ -1,0 +1,14 @@
+red_fwd_sq, lambda 0.1: design A (hard bound K = 1): max|theta| 15.623, sum|theta| 202.20, delta/lambda 7.09e-07
+  A: K 0.997, grid margin +2.03e-03, area 1.000, T_eps(1) at unit speed 29.7 ms
+red_fwd_sq_delta_g0: K_P 14.328, delta 3.57e-09 (hard K=14.328: 1.52e-09) | field vs matched: max diff 110.2 %, min cos 0.085 | area 1.000 vs 1.000 | T_eps(1) at unit speed 23.2 vs 41.1 ms | vs A (unit speed): max diff 94.5 %, min cos -0.798 | 13+12s
+red_fwd_sq_inf_g0.0001: K_P 2.313, delta 0.00e+00 (hard K=2.313: 0.00e+00) | field vs matched: max diff 39.8 %, min cos 0.143 | area 1.000 vs 1.000 | T_eps(1) at unit speed 108.4 vs 120.0 ms | vs A (unit speed): max diff 92.6 %, min cos -0.198 | 14+12s
+red_fwd_sq_inf_g0.001: K_P 2.882, delta 7.95e-09 (hard K=2.882: 0.00e+00) | field vs matched: max diff 44.5 %, min cos 0.140 | area 1.000 vs 1.000 | T_eps(1) at unit speed 101.4 vs 104.4 ms | vs A (unit speed): max diff 96.6 %, min cos -0.295 | 13+12s
+red_fwd_sq_inf_g0.003: K_P 2.929, delta 5.27e-09 (hard K=2.929: 0.00e+00) | field vs matched: max diff 44.9 %, min cos 0.098 | area 1.000 vs 1.000 | T_eps(1) at unit speed 100.1 vs 103.1 ms | vs A (unit speed): max diff 96.6 %, min cos -0.301 | 13+13s
+red_fwd_sq_inf_g0.01: K_P 2.942, delta 6.76e-09 (hard K=2.942: 0.00e+00) | field vs matched: max diff 45.1 %, min cos 0.094 | area 1.000 vs 1.000 | T_eps(1) at unit speed 98.9 vs 102.7 ms | vs A (unit speed): max diff 96.8 %, min cos -0.308 | 14+12s
+red_fwd_sq_inf_g0.03: K_P 2.947, delta 7.77e-09 (hard K=2.947: 0.00e+00) | field vs matched: max diff 45.1 %, min cos 0.096 | area 1.000 vs 1.000 | T_eps(1) at unit speed 98.1 vs 102.6 ms | vs A (unit speed): max diff 96.9 %, min cos -0.311 | 15+14s
+red_fwd_sq_inf_g0.1: K_P 2.950, delta 3.64e-09 (hard K=2.950: 0.00e+00) | field vs matched: max diff 45.1 %, min cos 0.101 | area 1.000 vs 1.000 | T_eps(1) at unit speed 97.6 vs 102.5 ms | vs A (unit speed): max diff 97.1 %, min cos -0.314 | 14+12s
+red_fwd_sq_one_g1e-05: K_P 2.068, delta 8.93e-09 (hard K=2.068: 0.00e+00) | field vs matched: max diff 37.9 %, min cos 0.200 | area 1.000 vs 1.000 | T_eps(1) at unit speed 107.9 vs 116.2 ms | vs A (unit speed): max diff 91.3 %, min cos -0.223 | 12+10s
+red_fwd_sq_one_g0.0001: K_P 4.050, delta 4.52e-09 (hard K=4.050: 0.00e+00) | field vs matched: max diff 67.3 %, min cos -0.871 | area 1.000 vs 1.000 | T_eps(1) at unit speed 91.7 vs 79.0 ms | vs A (unit speed): max diff 82.5 %, min cos -0.494 | 11+10s
+red_fwd_sq_one_g0.001: K_P 4.079, delta 5.41e-09 (hard K=4.079: 0.00e+00) | field vs matched: max diff 67.6 %, min cos -0.876 | area 1.000 vs 1.000 | T_eps(1) at unit speed 91.6 vs 78.6 ms | vs A (unit speed): max diff 82.4 %, min cos -0.511 | 12+10s
+red_fwd_sq_one_g0.01: K_P 4.080, delta 2.74e-09 (hard K=4.080: 0.00e+00) | field vs matched: max diff 67.6 %, min cos -0.876 | area 1.000 vs 1.000 | T_eps(1) at unit speed 91.6 vs 78.6 ms | vs A (unit speed): max diff 82.4 %, min cos -0.512 | 11+10s
+total 443s
