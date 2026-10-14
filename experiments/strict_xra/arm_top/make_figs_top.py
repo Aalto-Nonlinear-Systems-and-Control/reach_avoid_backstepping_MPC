@@ -117,7 +117,8 @@ def workcell(ax):
     k_task = j_src if fwd else int(np.where(np.array(sig) == j_src)[0][0]); ct = cols[k_task]; sx, sy = SPEC["source"]; tx, ty = SPEC["target"]
     ax.add_patch(plt.Rectangle((sx - s / 2, sy - s / 2), s, s, facecolor=ct, edgecolor="k", lw=0.8, zorder=7.5))
     ax.add_patch(plt.Rectangle((tx - s / 2, ty - s / 2), s, s, facecolor="none", edgecolor=ct, lw=1.8, ls=(0, (3, 2)), zorder=7.5))
-    ax.text(0, (fx["y0"] + fx.get("top", 2.28)) / 2, "obstacle", rotation=90, ha="center", va="center", fontsize=15, color="0.35", zorder=7)
+    if os.environ.get("FIXTURE_LABEL"):  # off by default since 2026-10-14: the paper names the obstacle in the caption
+        ax.text(0, (fx["y0"] + fx.get("top", 2.28)) / 2, "obstacle", rotation=90, ha="center", va="center", fontsize=15, color="0.35", zorder=7)
 
 
 def draw_robot(ax, x):
