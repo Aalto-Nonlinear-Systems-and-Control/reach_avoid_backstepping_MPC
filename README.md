@@ -1,6 +1,6 @@
 # Reach-Avoid Backstepping MPC
 
-<img src="reach_avoid_mpc.png" width="560" alt="Reach-avoid MPC"/>
+<img src="reach_avoid_mpc.png" width="900" alt="Reach-avoid MPC: method (left) and closed loop (right)"/>
 
 Code and data behind the journal version of *Reach-Avoid Model Predictive
 Control with Guaranteed Recursive Feasibility via Input Constrained
@@ -30,6 +30,7 @@ For a control-affine system with output `y = h(x)`, a safe set
 ```
 .
 ├── README.md, reach_avoid_mpc.png
+├── docs/readme_figure/         LaTeX source of reach_avoid_mpc.png (block diagram and Fig. 1)
 ├── matlab/                     SOS helpers: poly2sym.m, sym2pvar.m
 ├── python/ra_mpc_dubins.py     Dubins model, vanilla MPC and shared MPC pieces
 ├── controllers/                L-CSS export imported by ra_mpc_dubins.py (see Notes)
