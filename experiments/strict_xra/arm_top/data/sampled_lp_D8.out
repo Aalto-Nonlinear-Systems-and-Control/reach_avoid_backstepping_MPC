@@ -1,5 +1,0 @@
-D=8 iter 0: 565 Lie samples | gamma +2.431e-02 | fine grid min margin -1.883e+00 at y = (4.21, 4.10), psi 0.003 | points below gamma/2: 1306 | max|k1| 1.227
-D=8 iter 1: 1871 Lie samples | gamma +2.419e-02 | fine grid min margin -9.820e-01 at y = (4.43, 3.91), psi 0.008 | points below gamma/2: 249 | max|k1| 1.039
-D=8 iter 2: 2120 Lie samples | gamma +2.418e-02 | fine grid min margin +1.815e-02 at y = (-3.55, 1.91), psi 0.255 | points below gamma/2: 0 | max|k1| 1.001
-final check on spacing 0.005 (227377 points): min margin -7.731e-02, max|k1| 1.004 | total 2s
-SOS k1 (degree 8) on the same grid: min margin +6.458e-04

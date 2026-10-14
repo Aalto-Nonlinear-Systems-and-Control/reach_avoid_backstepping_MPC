@@ -1,3 +1,0 @@
-=== blue_fwd_sq s=2.9 k=1 13:22:36
-{"tag": "blue_fwd_sq_s2.9_k1", "s": 2.9, "kfac": 1.0, "reached": 137, "statuses": {"infeasible": 13, "reached": 137}, "infeasible0": 13, "later_infeasible": 0, "A_reached": 137, "B_not_A": 0, "A_not_B": 0, "decrease_viol": 0, "horizon_nonincreasing": 137, "uc_in_bounds": true, "min_psi": 0.004502132980576334, "t_med_B": 0.8700000000000006, "t_med_A": 0.9400000000000006, "cost_med_B": 18.280439668191054, "cost_med_A": 17.839333010669392, "solve_ms_B": 290.47853805913815, "solve_ms_A": 307.49673056762805, "sec": 405.48969411849976}
-=== done 13:29:22

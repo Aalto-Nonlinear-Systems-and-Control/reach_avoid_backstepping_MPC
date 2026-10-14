@@ -2,7 +2,7 @@
 # Main experiments of the other kitting tasks (after run_prep_tasks.sh), as for red_fwd_sq but without the horizon
 # calibration and the period sweep: comparison on 150 states with Theorem 2 checks, Lemma 2, timing, summary, figures.
 # Usage: ./run_all_tasks.sh blue_fwd green_fwd ...  (environment rab_mpc; outputs in data/<task>_sq/ and figs/<task>_sq/)
-cd "$(dirname "$0")"; PY=/Users/jianqiang/miniforge3/envs/rab_mpc/bin/python; F="Warning|Ipopt|EPL|coin-or|\*\*\*\*|^$|For more"
+cd "$(dirname "$0")"; PY=${PY:-python}; F="Warning|Ipopt|EPL|coin-or|\*\*\*\*|^$|For more"
 for T in "$@"; do
   task=${T}_sq; [ -f data/lam_$task.txt ] || { echo "no prep for $task"; continue; }; export TASK=$task LAM=$(cat data/lam_$task.txt); mkdir -p data/$task
   echo "=== $task (LAM $LAM) $(date +%H:%M:%S)"

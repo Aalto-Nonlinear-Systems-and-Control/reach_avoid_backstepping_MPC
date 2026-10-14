@@ -23,7 +23,7 @@ SCALE = float(os.environ.get("SCALE", _json.load(open(_sj))["s"] if os.path.exis
 # URA baseline (the synthesis without regard to the bounds or the period) at time scale URA_SCALE; the initial velocities
 # are drawn around the field of scale SET_SCALE with the radius scaled accordingly. Defaults: the paper setting (s = 5).
 # Environment overrides (SET_SCALE, URA_SCALE, SCALE, TAG) allow a variant to be run into data<TAG>/ and figs<TAG>/;
-# the earlier results with the terminal controller at s = 0.159 are in data_s0159/ and figs_s0159/ (SET_SCALE = URA_SCALE = 0.159)
+# the earlier variants (terminal controller at s = 0.159, data_s0159/; s = 5, data_s5/) are on branch tac-revision-archive
 # and in data_s5/ (terminal 0.159, set and URA at 5).
 SET_SCALE = float(os.environ.get("SET_SCALE", 5.0))
 URA_SCALE = float(os.environ.get("URA_SCALE", 5.0))

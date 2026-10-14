@@ -2,7 +2,7 @@
 # Preparation of the other kitting tasks (square layout): task spec, k1 by SOS (MATLAB), mu0 study, scale with the common
 # torque bounds of the red task. Usage: ./run_prep_tasks.sh blue_fwd green_fwd ...  (environment rab_mpc; logs in data/)
 # lambda: 0.1 as for red_fwd_sq, else the largest design lambda that succeeded (written to data/lam_<task>.txt).
-cd "$(dirname "$0")"; PY=/Users/jianqiang/miniforge3/envs/rab_mpc/bin/python; U_FIX=${U_FIX:-28.5,8.5}
+cd "$(dirname "$0")"; PY=${PY:-python}; U_FIX=${U_FIX:-28.5,8.5}
 for T in "$@"; do
   name=${T%_*}; dir=${T#*_}; task=${T}_sq; echo "=== $task $(date +%H:%M:%S)"
   LAYOUT=square BRIDGE=0.8 $PY make_task.py $name $dir > data/make_task_$task.out 2>&1 || { echo "make_task failed"; cat data/make_task_$task.out; continue; }

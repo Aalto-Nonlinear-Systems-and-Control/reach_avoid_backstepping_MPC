@@ -8,7 +8,7 @@ from config import C, rm
 
 M = pickle.load(open(f"{cf.DATA}/main.pkl", "rb")); L2 = pickle.load(open(f"{cf.DATA}/lemma2.pkl", "rb")); SW = pickle.load(open(f"{cf.DATA}/sweep.pkl", "rb"))
 X0, P0, logs = M["X0"], M["Psi0"], M["logs"]; n = X0.shape[1]
-# URA baseline: the scaled controller (M["ura"]) or, with cf.URA_SCALE != cf.SCALE, the evaluation stored by run_ura_scale.py
+# URA baseline: the same k1 at cf.URA_SCALE, stored by run_main.py (the scale study run_ura_scale.py is on branch tac-revision-archive)
 URA_LIST = M["ura"]
 ura = np.array([u["status"] == "reached" for u in URA_LIST]); fv = M["fv"].astype(bool); ra = np.array([L["status"] == "reached" for L in logs])
 ura_viol = np.array([(np.asarray(u["upeak"]) > np.asarray(cf.U_MAX)).any() for u in URA_LIST])
