@@ -11,20 +11,24 @@
 
 ## Simulations
 
-<div align="center">
+<p align="center">
+  RA-MPC on the SCARA arm of Example 2 in MuJoCo. The blue curve is the edge
+  of the safe corridor and the red ring is the target set.
+</p>
 
-RA-MPC on the SCARA arm of Example 2 in MuJoCo. The blue curve is the edge of
-the safe corridor and the red ring is the target set.
+<p align="center">
+  <img src="docs/media/scara_cycle.gif" width="400" alt="Kitting cycle with eight certified transports"/>
+  &nbsp;&nbsp;
+  <img src="docs/media/scara_red_task.gif" width="400" alt="Red task, angled and top views"/>
+</p>
 
-|        Kitting cycle with eight certified transports (3x)        |               Red task, angled and top views (2x)                |
-| :--------------------------------------------------------------: | :--------------------------------------------------------------: |
-| <img src="docs/media/scara_cycle.gif" width="420" alt="Kitting cycle"/> | <img src="docs/media/scara_red_task.gif" width="420" alt="Red task"/> |
-
-Speed-ups are relative to the full-resolution videos:
-[kitting cycle](experiments/strict_xra/scara/figs/scara_cycle.mp4),
-[red task](experiments/strict_xra/scara/figs/scara_red_task.mp4).
-
-</div>
+<p align="center">
+  <em>Left:</em> kitting cycle with eight certified transports, 3x.
+  <em>Right:</em> red task, angled and top views, 2x.<br/>
+  Speed-ups are relative to the full-resolution videos of the
+  <a href="experiments/strict_xra/scara/figs/scara_cycle.mp4">kitting cycle</a> and the
+  <a href="experiments/strict_xra/scara/figs/scara_red_task.mp4">red task</a>.
+</p>
 
 ## Requirements
 
