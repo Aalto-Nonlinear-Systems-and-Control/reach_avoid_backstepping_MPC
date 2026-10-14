@@ -2,11 +2,33 @@
 
 <img src="reach_avoid_mpc.png" width="900" alt="Reach-avoid MPC: method (left) and closed loop (right)"/>
 
-Code and data behind the journal version of *Reach-Avoid Model Predictive
+Code and data behind the journal version of _Reach-Avoid Model Predictive
 Control with Guaranteed Recursive Feasibility via Input Constrained
-Backstepping* (J. Ding, N. J. Bhave, S. A. Deka). This branch,
+Backstepping_ (J. Ding, N. J. Bhave, S. A. Deka). This branch,
 `tac-revision`, contains only what the paper uses. Earlier code is kept on
 other branches, see [Branches](#branches).
+
+## Simulations
+
+The SCARA arm of Example 2 in MuJoCo runs a full kitting cycle. Each of the
+eight transports is steered by RA-MPC under the common torque bounds; picks,
+places and transits between tasks are scripted. The top-view inset shows the
+current safe corridor (blue) and target (red ring).
+
+<img src="docs/media/scara_cycle.gif" width="800" alt="SCARA arm in MuJoCo, kitting cycle with eight certified transports"/>
+
+| SCARA arm, red task | Panda-like arm, red task (supplementary example) |
+| :---: | :---: |
+| <img src="docs/media/scara_red_task.gif" width="400" alt="SCARA arm, red task"/> | <img src="docs/media/franka_red_task.gif" width="400" alt="Panda-like arm, red task"/> |
+
+The GIFs play three times (cycle) and two times (single tasks) faster than
+the videos, whose own playback speed is shown in their overlay. Full
+resolution videos:
+[kitting cycle](experiments/strict_xra/scara/figs/scara_cycle.mp4),
+[SCARA red task](experiments/strict_xra/scara/figs/scara_red_task.mp4),
+[Panda-like red task](experiments/strict_xra/franka/figs/red_fwd_sq/franka_red_task.mp4).
+They are rendered by `render_cycle.py`, `render_scara.py` and
+`render_red.py`, see [Reproduction](#reproduction).
 
 ## Method in brief
 
@@ -31,6 +53,7 @@ For a control-affine system with output `y = h(x)`, a safe set
 .
 ├── README.md, reach_avoid_mpc.png
 ├── docs/readme_figure/         LaTeX source of reach_avoid_mpc.png (block diagram and Fig. 1)
+├── docs/media/                 GIFs of the MuJoCo videos shown in this README
 ├── matlab/                     SOS helpers: poly2sym.m, sym2pvar.m
 ├── python/ra_mpc_dubins.py     Dubins model, vanilla MPC and shared MPC pieces
 ├── controllers/                L-CSS export imported by ra_mpc_dubins.py (see Notes)
@@ -53,16 +76,16 @@ For a control-affine system with output `y = h(x)`, a safe set
 
 ## Paper items and where they come from
 
-| Paper item | Script | Output |
-| --- | --- | --- |
-| Example 1, Fig. 4 | `final/make_figs.py` | `final/figs/fig_dubins_{vanilla,uncon,rampc}.png` |
-| Example 1, Fig. 5 | `final/make_figs.py` | `final/figs/fig_dubins_compare.png` |
-| Example 2, Fig. 6 | `scara/paper_still.py` | `scara/figs/fig_scara_scene.png` |
-| Example 2, Fig. 7 | `arm_top/make_figs_top.py` | `arm_top/figs/red_fwd_sq/fig_manip_{vanilla,uncon,rampc}.png` |
-| Example 2, Fig. 8 | `arm_top/make_figs_top.py` | `arm_top/figs/red_fwd_sq/fig_manip_compare.png` |
-| Table I | `final/run_timing.py`, `arm_top/run_timing_top.py`, the two `summarize*.py` | `final/data/summary.txt`, `arm_top/data/red_fwd_sq/summary.txt` |
-| Time scaling, both examples | `final/solve_scale.py`, `arm_top/solve_scale_top.py` | `final/data/scale.json`, `arm_top/data/scale_red_fwd_sq.json` |
-| Panda-like arm | `franka/*.py` | `franka/data/red_fwd_sq/`, `franka/figs/red_fwd_sq/` |
+| Paper item                  | Script                                                                      | Output                                                          |
+| --------------------------- | --------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| Example 1, Fig. 4           | `final/make_figs.py`                                                        | `final/figs/fig_dubins_{vanilla,uncon,rampc}.png`               |
+| Example 1, Fig. 5           | `final/make_figs.py`                                                        | `final/figs/fig_dubins_compare.png`                             |
+| Example 2, Fig. 6           | `scara/paper_still.py`                                                      | `scara/figs/fig_scara_scene.png`                                |
+| Example 2, Fig. 7           | `arm_top/make_figs_top.py`                                                  | `arm_top/figs/red_fwd_sq/fig_manip_{vanilla,uncon,rampc}.png`   |
+| Example 2, Fig. 8           | `arm_top/make_figs_top.py`                                                  | `arm_top/figs/red_fwd_sq/fig_manip_compare.png`                 |
+| Table I                     | `final/run_timing.py`, `arm_top/run_timing_top.py`, the two `summarize*.py` | `final/data/summary.txt`, `arm_top/data/red_fwd_sq/summary.txt` |
+| Time scaling, both examples | `final/solve_scale.py`, `arm_top/solve_scale_top.py`                        | `final/data/scale.json`, `arm_top/data/scale_red_fwd_sq.json`   |
+| Panda-like arm              | `franka/*.py`                                                               | `franka/data/red_fwd_sq/`, `franka/figs/red_fwd_sq/`            |
 
 All data behind these items are committed, so every figure and summary can be
 redrawn without rerunning the experiments: run `make_figs*.py` and
@@ -70,12 +93,12 @@ redrawn without rerunning the experiments: run `make_figs*.py` and
 
 ## Requirements
 
-| Part | Software (versions used) |
-| --- | --- |
-| Certificate synthesis | MATLAB R2025a with the Symbolic Math Toolbox, [SOSTOOLS](https://github.com/oxfordcontrol/SOSTOOLS) 4.03 and MOSEK 11.0 on the MATLAB path |
-| Experiments | Python 3.11 with numpy 2.4, scipy 1.17, sympy 1.14, casadi 3.7.2 (IPOPT), joblib 1.5 and matplotlib 3.10; conda environment `rab_mpc` |
-| MuJoCo scenes and videos | the packages above plus mujoco 3.15 and imageio; conda environment `rab_franka` |
-| Panda meshes | [MuJoCo Menagerie](https://github.com/google-deepmind/mujoco_menagerie) cloned into `experiments/strict_xra/franka/third_party/mujoco_menagerie` |
+| Part                     | Software (versions used)                                                                                                                         |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Certificate synthesis    | MATLAB R2025a with the Symbolic Math Toolbox, [SOSTOOLS](https://github.com/oxfordcontrol/SOSTOOLS) 4.03 and MOSEK 11.0 on the MATLAB path       |
+| Experiments              | Python 3.11 with numpy 2.4, scipy 1.17, sympy 1.14, casadi 3.7.2 (IPOPT), joblib 1.5 and matplotlib 3.10; conda environment `rab_mpc`            |
+| MuJoCo scenes and videos | the packages above plus mujoco 3.15 and imageio; conda environment `rab_franka`                                                                  |
+| Panda meshes             | [MuJoCo Menagerie](https://github.com/google-deepmind/mujoco_menagerie) cloned into `experiments/strict_xra/franka/third_party/mujoco_menagerie` |
 
 ```bash
 conda create -n rab_mpc python=3.11 numpy scipy sympy matplotlib joblib -c conda-forge
@@ -140,12 +163,12 @@ steps are listed in `PAPER_FRANKA.md`.
 
 ## Branches
 
-| Branch | Content |
-| --- | --- |
-| `tac-revision` | this branch, the code and data of the journal version |
-| `tac-revision-archive` | snapshot of `tac-revision` before this cleanup: the studies of solving the input-constrained program directly (SOS with sampled bounds, sampled LP, regularisation), the alternative time scales of the Dubins example, the first SCARA layout, the early strict reach-avoid-set studies, the original plan `TAC_EXPERIMENT_UPDATE.md`, and the run logs |
-| `lcss-revision`, `main` | the letter version: MATLAB synthesis of bounded controllers, exported controllers and notebooks |
-| `mujoco-franka-reachavoid` | first MuJoCo experiments with the Franka arm |
+| Branch                     | Content                                                                                                                                                                                                                                                                                                                                                  |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tac-revision`             | this branch, the code and data of the journal version                                                                                                                                                                                                                                                                                                    |
+| `tac-revision-archive`     | snapshot of `tac-revision` before this cleanup: the studies of solving the input-constrained program directly (SOS with sampled bounds, sampled LP, regularisation), the alternative time scales of the Dubins example, the first SCARA layout, the early strict reach-avoid-set studies, the original plan `TAC_EXPERIMENT_UPDATE.md`, and the run logs |
+| `lcss-revision`, `main`    | the letter version: MATLAB synthesis of bounded controllers, exported controllers and notebooks                                                                                                                                                                                                                                                          |
+| `mujoco-franka-reachavoid` | first MuJoCo experiments with the Franka arm                                                                                                                                                                                                                                                                                                             |
 
 ## Notes
 
