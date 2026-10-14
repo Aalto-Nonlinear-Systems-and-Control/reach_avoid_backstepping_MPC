@@ -37,17 +37,19 @@
     \draw[arr] (1.7,3.9) -- (1.7,5.27);
     \node[notel] at (1.9,4.85) {Control input constraints};
     \node[notel] at (1.85,4.3) {$\mathcal{P}(\bm{x})\bm{u}(\bm{x}) \leq \mathcal{Q}(\bm{x})$};
-    % sampled-data MPC
-    \node[blk, minimum width=11.4cm, minimum height=3.1cm] (mpc) at (0.35,1.85) {};
-    \node[font=\large, anchor=west] at (-5.2,1.85) {Sampled-data MPC};
-    \node[anchor=west, font=\small] at (-1.75,1.85) {$\begin{aligned}
-        \min_{\mathbf{U}_k} \ & \textstyle\sum_{i=0}^{N-1} \ell(\hat{\bm{x}}(iT|k), \bm{u}_{i|k})
-            + \omega\big(M_\Psi - \Psi(\hat{\bm{x}}(NT|k))\big) \\
-        \text{s.t.} \ & \dot{\hat{\bm{x}}}(\tau|k) = \bm{f}(\hat{\bm{x}}(\tau|k))
-            + \textstyle\sum_{j} \bm{g}_j(\hat{\bm{x}}(\tau|k)) u_{j,i|k}, \ \tau \in [iT, (i+1)T); \\
-        & \hat{\bm{x}}(0|k) = \bm{x}_k; \ \bm{u}_{i|k} \in \mathcal{U}, \ i = 0, \dots, N-1; \\
-        & \hat{\bm{x}}(\tau|k) \in \mathcal{X}_S, \ \tau \in [0, NT]; \ \hat{\bm{x}}(NT|k) \in \mathcal{X}_{RA}^{\delta}
-    \end{aligned}$};
+    % sampled-data MPC: the box takes the width of its content
+    \node[blk, anchor=north, inner xsep=12pt, inner ysep=9pt] (mpc) at (0,3.48) {%
+        \begin{tabular}{@{}l@{\hspace{7mm}}l@{}}
+        Sampled-data MPC & \small $\begin{aligned}
+            \min_{\mathbf{U}_k} \ & \textstyle\sum_{i=0}^{N-1} \ell(\hat{\bm{x}}(iT|k), \bm{u}_{i|k})
+                + \omega\big(M_\Psi - \Psi(\hat{\bm{x}}(NT|k))\big) \\
+            \text{s.t.} \ & \dot{\hat{\bm{x}}}(\tau|k) = \bm{f}(\hat{\bm{x}}(\tau|k))
+                + \textstyle\sum_{j} \bm{g}_j(\hat{\bm{x}}(\tau|k)) u_{j,i|k}, \\
+            & \qquad \tau \in [iT, (i+1)T), \ i = 0, \dots, N-1; \\
+            & \hat{\bm{x}}(0|k) = \bm{x}_k; \ \bm{u}_{i|k} \in \mathcal{U}; \\
+            & \hat{\bm{x}}(\tau|k) \in \mathcal{X}_S, \ \tau \in [0, NT]; \ \hat{\bm{x}}(NT|k) \in \mathcal{X}_{RA}^{\delta}
+        \end{aligned}$
+        \end{tabular}};
 \end{tikzpicture}\hspace{1.2cm}%
 \input{pipeline.tikz}
 \end{document}
