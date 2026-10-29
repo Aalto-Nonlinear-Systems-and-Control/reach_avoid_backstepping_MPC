@@ -100,7 +100,7 @@ if SW is not None:
     save(fig, "verify_sweep"); plt.close(fig)
 
 # ── paper figures (style of make_paper_figs_manipulator.ipynb) ──
-import sympy as _sp; _c = _sp.lambdify(_sp.Symbol('y1'), _sp.sympify(SPEC['path'])); XS_LABEL = (-0.62 * SPEC['X0'], float(_c(-0.55 * SPEC['X0'])) - 1.25); px = 1 / plt.rcParams["figure.dpi"]; FS_P = 30; C_ARM = (146 / 255, 149 / 255, 145 / 255); C_START = (1.0, 0.549, 0.0); C_END = (0.102, 0.596, 0.314); C_GRAY = (178 / 255, 187 / 255, 205 / 255, 0.45)
+import sympy as _sp; _c = _sp.lambdify(_sp.Symbol('y1'), _sp.sympify(SPEC['path'])); XS_LABEL = (-0.62 * SPEC['X0'], float(_c(-0.55 * SPEC['X0'])) - 1.25); px = 1 / plt.rcParams["figure.dpi"]; FS_P = 30; C_ARM = (146 / 255, 149 / 255, 145 / 255); C_START = (1.0, 0.549, 0.0); C_END = (0.102, 0.596, 0.314); C_GRAY = (178 / 255, 187 / 255, 205 / 255, 0.45); C_FIELD, FIELD_LW = "0.55", 1.2
 
 
 def workcell(ax):
@@ -134,7 +134,8 @@ def paper_figs(V, U, Rr, x0s, suffix=""):
     PAN = {"fig_manip_vanilla": (vr, fk(V["x"].T[:2]).T, False, V["x"][0]), "fig_manip_uncon": (ura, U["y"], True, x0s), "fig_manip_rampc": (rr, fk(Rr["x"].T[:2]).T, True, x0s)}
     for name, (mask, yt, field, xr) in PAN.items():
         fig, ax = plt.subplots(figsize=(650 * px, 600 * px), layout="constrained"); fig.set_dpi(200)
-        if field: ax.streamplot(FV1, FV2, FU, FW, color=C_GRAY, linewidth=0.9, density=0.9, arrowsize=0.9, zorder=1)
+        # field k1: opaque mid grey, drawn above the safe-set fill and below its boundary so that it survives printing
+        if field: ax.streamplot(FV1, FV2, FU, FW, color=C_FIELD, linewidth=FIELD_LW, density=0.75, arrowsize=1.5, zorder=2.5)
         ax.contourf(G1, G2, PS, levels=[0, np.inf], colors=["#e6f2ff"], alpha=0.3, zorder=2); ax.contour(G1, G2, PS, levels=[0], colors=["#2166ac"], linewidths=2, zorder=3)
         ax.contourf(G1, G2, PH, levels=[-np.inf, 0], colors=["#fee0d2"], alpha=1.0, zorder=4); ax.contour(G1, G2, PH, levels=[0], colors=["#d6604d"], linewidths=2, zorder=5)
         workcell(ax); draw_robot(ax, xr)

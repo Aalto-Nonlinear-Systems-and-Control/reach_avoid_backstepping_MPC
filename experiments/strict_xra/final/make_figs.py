@@ -135,7 +135,7 @@ save(fig, "verify_sweep"); plt.close(fig)
 
 # ── paper figures (style of notebooks/make_paper_figs_dubins.ipynb) ─────────────────────────────────────
 px = 1 / plt.rcParams["figure.dpi"]; FS_P = 30
-C_GRAY = (178 / 255, 187 / 255, 205 / 255, 0.45); C_START = (1.0, 0.549, 0.0); C_END = (0.102, 0.596, 0.314)
+C_GRAY = (178 / 255, 187 / 255, 205 / 255, 0.45); C_FIELD, FIELD_LW = "0.55", 1.2; C_START = (1.0, 0.549, 0.0); C_END = (0.102, 0.596, 0.314)
 yv = np.linspace(-2.1, 2.1, 30); VY1, VY2 = np.meshgrid(yv, yv); kk = C.k1(VY1, VY2)
 KU = np.broadcast_to(np.asarray(kk[0], float), VY1.shape).astype(float); KV = np.broadcast_to(np.asarray(kk[1], float), VY1.shape).astype(float)
 def paper_figs(V, U, Rr, suffix=""):
@@ -143,7 +143,8 @@ def paper_figs(V, U, Rr, suffix=""):
   for name, (mask, yt, field) in PAN.items():
       fig, ax = plt.subplots(figsize=(650 * px, 600 * px), layout="constrained"); fig.set_dpi(200)
       if field:
-          ax.streamplot(yv, yv, KU, KV, color=C_GRAY, linewidth=0.9, density=0.9, arrowsize=0.9, zorder=1)
+          # field k1: opaque mid grey, drawn above the safe-set fill and below its boundary so that it survives printing
+          ax.streamplot(yv, yv, KU, KV, color=C_FIELD, linewidth=FIELD_LW, density=0.75, arrowsize=1.5, zorder=1.5)
       ax.contourf(G1, G2, Zs, levels=[0, np.inf], colors=["#e6f2ff"], alpha=0.3, zorder=1); ax.contour(G1, G2, Zs, levels=[0], colors=["#2166ac"], linewidths=2, zorder=2)
       ax.contourf(G1, G2, Zt, levels=[-np.inf, 0], colors=["#fee0d2"], alpha=1.0, zorder=3); ax.contour(G1, G2, Zt, levels=[0], colors=["#d6604d"], linewidths=2, zorder=4)
       ax.scatter(*X0[:2, ~mask], s=50, color="#d73027", alpha=0.85, marker="x", linewidths=3, zorder=8)
