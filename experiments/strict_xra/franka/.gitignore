@@ -1,9 +1,0 @@
-third_party/
-build/
-jit_tmp*
-tmp_casadi_compiler_shell*
-*.log
-data_*.out
-prof_*.py
-test_single.py
-MUJOCO_LOG.TXT
