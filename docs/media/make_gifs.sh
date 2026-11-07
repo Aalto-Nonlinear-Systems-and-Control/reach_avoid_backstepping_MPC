@@ -11,5 +11,4 @@ gif() {  # input, output, speed-up, fps, width
 }
 gif "$X/scara/figs/scara_cycle.mp4"                "$HERE/scara_cycle.gif"     3 12 800
 gif "$X/scara/figs/scara_red_task.mp4"             "$HERE/scara_red_task.gif"  2 15 800
-gif "$X/franka/figs/red_fwd_sq/franka_red_task.mp4" "$HERE/franka_red_task.gif" 2 15 800
 rm -f "$PAL"

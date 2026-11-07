@@ -13,7 +13,7 @@ from cert import Cert                      # noqa: E402
 import ra_mpc_dubins as rm                 # noqa: E402
 import ra_mpc_cert as R                    # noqa: E402
 
-# ── certificate (REPORT.md Section 11): psi = alpha*h/661.409, k1 of design/k1/W3_l0.06.txt, time scale s ──
+# ── certificate (REPORT.md Section 11, branch journal-full): psi = alpha*h/661.409, k1 of design/k1/W3_l0.06.txt, time scale s ──
 K1_FILE = os.path.join(DESIGN, "k1", "W3_l0.06.txt")
 MU_BASE, DFRAC = 0.02, 0.2
 # time scale of the terminal controller: SCALE env, else data/scale.json (solve_scale.py), else the earlier 0.159

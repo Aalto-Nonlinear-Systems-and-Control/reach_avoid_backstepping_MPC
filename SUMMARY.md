@@ -25,8 +25,12 @@ number to be regenerated without rerunning the experiments.
 | Example 1, Dubins car | `experiments/strict_xra/final/` | three controllers on 300 common initial states, sampled-data checks of Lemma 2, success rate over the sampling period, timings, figures, `summary.txt`; notes in `PAPER_DUBINS.md` |
 | Example 2, SCARA manipulator | `experiments/strict_xra/arm/`, `arm_top/` | workcell layout, eight kitting tasks under common torque bounds, the same experiments as Example 1 for each task; notes in `PAPER_ARM_TOP.md` |
 | MuJoCo scene and videos | `experiments/strict_xra/scara/`, `docs/media/` | SCARA scene, Fig. 6 of the article, kitting-cycle and red-task videos; notes in `PAPER_SCARA.md` |
-| Additional material not in the article | `experiments/strict_xra/franka/` | a Panda-like arm in MuJoCo with the same certificate construction, paused after the first task; notes in `PAPER_FRANKA.md` |
-| Documentation | `README.md`, `experiments/strict_xra/README.md`, `REPORT.md`, `STUDY_14_DIRECT.md` | requirements, reproduction steps, folder index and the design decisions behind the experiments |
+| Documentation | `README.md`, `experiments/strict_xra/README.md` | requirements, reproduction steps and the folder index |
+
+Material that is not needed to reproduce the article, such as a Panda-like
+arm in MuJoCo and the design notes behind the experiments, is on the branch
+`journal-full`; the studies of the earlier letter version are on
+`tac-revision-archive`.
 
 ## Reproduction
 

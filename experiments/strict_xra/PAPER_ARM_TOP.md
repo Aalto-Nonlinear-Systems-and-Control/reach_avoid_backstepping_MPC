@@ -114,7 +114,7 @@ Horizon nonincreasing in all runs. Corollary 1 bound holds in 137/137 runs (entr
 All 150 states, $NT = 0.6$ s, terminal design ($\delta$, $\omega$) fixed, periods 5 to 600 ms
 (rerun on 2026-10-13 with `PERIODS_MS=5,...,300 run_sweep_top.py 150` plus `PERIODS_MS=600
 SWEEP_OUT=sweep_600.pkl`, merged into `sweep.pkl`; the earlier 40-state run over 5 to 20 ms
-is kept as `sweep_n40.pkl` / `run_sweep_n40.out`):
+is on the branch `journal-full`):
 
 | $T$ [ms] | $N$ | vanilla feasible (reached) | $u^c$ held | RA-MPC | $\rho$ | later infeasible | decrease violations | min $\Delta\Psi$ on terminal set |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |

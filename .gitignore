@@ -21,3 +21,5 @@ temp.txt
 
 # Auto-generated MATLAB export files (intermediate / archived runs)
 generated/
+# Panda-like arm, only on the branch journal-full
+experiments/strict_xra/franka/

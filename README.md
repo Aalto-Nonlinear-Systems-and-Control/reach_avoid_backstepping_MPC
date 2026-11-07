@@ -138,11 +138,14 @@ environment).
     ├── arm_top/                Example 2, SCARA arm, all eight kitting tasks:
     │                           tasks/, k1/, data/<task>/, figs/<task>/
     ├── scara/                  MuJoCo scene, stills and videos of the SCARA
-    ├── franka/                 Panda-like arm in MuJoCo, not part of the paper (PAPER_FRANKA.md)
     └── PAPER_DUBINS.md, PAPER_ARM_TOP.md, PAPER_SCARA.md
-                                notes with every number, table and check behind the paper;
-                                REPORT.md and STUDY_14_DIRECT.md record the design decisions
+                                notes with every number, table and check behind the paper
 ```
+
+This branch holds only what the paper needs. The branch `journal-full`
+adds the material that is not needed to reproduce it (a Panda-like arm in
+MuJoCo, the design notes `REPORT.md` and `STUDY_14_DIRECT.md`, early runs),
+and `tac-revision-archive` keeps the studies of the earlier letter version.
 
 ## Licence and citation
 
