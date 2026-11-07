@@ -67,13 +67,14 @@ timing runs, which should run alone. Run times are for an Apple M5 with 10 cores
 
 ```bash
 cd experiments/dubins
-matlab -batch "run('run_design.m')"     # k1.txt; prints the SOS solve time of Table I
+matlab -batch "run('run_design.m')"     # k1.txt and its offline time
 python solve_scale.py                   # time scale s from the input bounds and T -> data/scale.json
 python verify_inputs_grid.py            # input bounds of u^c on a grid of X_RA^delta
 python run_main.py                      # three methods on 300 common initial states (3 min)
 python run_lemma2.py                    # sampled-data checks of the terminal controller (4 min)
 python run_sweep.py                     # success rate over T = 0.025 ... 1.25 s (20 min)
-python run_timing.py                    # computation times of Table I
+python run_timing.py                    # online computation times of Table I
+python run_timing_offline.py            # offline computation times of Table I, run alone
 python make_figs.py                     # figs/
 python summarize.py > data/summary.txt  # all numbers
 ```
@@ -84,12 +85,13 @@ The workcell, the safe set and the target set are given in `task.json`.
 
 ```bash
 cd experiments/scara
-matlab -batch "run('run_design.m')"     # k1.txt; prints the SOS solve time of Table I
+matlab -batch "run('run_design.m')"     # k1.txt and its offline time
 python solve_scale.py                   # time scale s and torque bounds -> data/scale.json
 python run_main.py                      # three methods on 150 common initial states (8 min)
 python run_lemma2.py                    # sampled-data checks of the terminal controller (1 min)
 python run_sweep.py                     # success rate over T = 5 ... 600 ms (80 min)
-python run_timing.py                    # computation times of Table I
+python run_timing.py                    # online computation times of Table I
+python run_timing_offline.py            # offline computation times of Table I, run alone
 python make_figs.py                     # figs/
 python summarize.py > data/summary.txt  # all numbers
 ```
@@ -133,10 +135,6 @@ Both examples have the same structure:
 | `run_*.py` | experiments, written to `data/` |
 | `make_figs.py`, `figs/` | figures of the paper |
 | `summarize.py`, `data/summary.txt` | all numbers behind the paper |
-
-This branch holds what the paper reports. The branch `journal-full` adds what it
-does not use: the other seven kitting tasks and the videos, the alternative
-figures and diagnostics, the design notes and a Panda-like arm in MuJoCo.
 
 ## Licence and citation
 

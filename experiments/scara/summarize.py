@@ -1,5 +1,5 @@
 """Print all numbers behind Example 2 from data/*.pkl."""
-import os, pickle, numpy as np
+import json, os, pickle, numpy as np
 import config as cf
 from config import C, fk, ra
 M = pickle.load(open(f"{cf.DATA}/main.pkl", "rb")); X0, P0, logs, van, cfg = M["X0"], M["Psi0"], M["logs"], M["van"], M["cfg"]; n = X0.shape[1]
@@ -34,3 +34,4 @@ for f in ("lemma2.pkl", "sweep.pkl", "timing.pkl"):
             print("| T [ms] | N | vanilla feasible (reached) | u^c held | RA-MPC | feasible at k=0 | later infeasible | decrease viol | min dPsi on terminal set | median entry | ms/solve |\n| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |")
             for r in D["rows"]: print(f"| {1e3*r['T']:g} | {r['N']} | {r['fv'].sum()} ({r['van_reached'].sum()}) | {r['zoh'].sum()} | {r['ra'].sum()} | {r['ra'].size - r['inf0']} | {r['later']} | {r['dec_viol']}/{r['steps']} | {r['eps']:+.1e} | {r['t_med']:.3f} s | {r['solve_ms']:.0f} |")
         else: print(D)
+print("\n## offline time [s]"); print(json.load(open(f"{cf.DATA}/timing_offline.json")))

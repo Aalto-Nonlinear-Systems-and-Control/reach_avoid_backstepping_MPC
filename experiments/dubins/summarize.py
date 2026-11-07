@@ -1,5 +1,5 @@
 """Print all numbers behind Example 1 from data/*.pkl."""
-import pickle, numpy as np
+import json, pickle, numpy as np
 import config as cf
 from config import rm, C
 
@@ -58,6 +58,7 @@ for r in SW["rows"]:
 base = [r for r in SW["rows"] if abs(r["T"] - cf.T) < 1e-9][0]; print("sweep base row equals main:", np.array_equal(base["ra"], ra), np.array_equal(base["fv"], fv))
 for r in SW["rows"]:
     print(f"T={r['T']:g}: vanilla&~RA {(r['fv'] & ~r['ra']).sum()}, RA&~vanilla {(r['ra'] & ~r['fv']).sum()}, status {r['status']}")
+print("\n## computation times"); print("online:", pickle.load(open(f"{cf.DATA}/timing.pkl", "rb"))); print("offline [s]:", json.load(open(f"{cf.DATA}/timing_offline.json")))
 try:
     S = pickle.load(open(f"{cf.DATA}/shared_x0.pkl", "rb")); print("\nshared x0:", S)
 except Exception:

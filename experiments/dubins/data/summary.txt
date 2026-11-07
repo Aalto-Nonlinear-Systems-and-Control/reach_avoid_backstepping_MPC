@@ -11,7 +11,7 @@ speeds of the initial set: [0.1530, 3.6192]
 | outside $\mathcal{X}_{RA}$ | 300 | 229 | 213 | 263 |
 pairwise: RA&~van 50, van&~RA 0, RA&~URA 38, URA&~RA 4, all three 199, none 33
 sampled-data URA (T=0.05): 46 reached, same states as continuous URA: False; URA statuses: {'unsafe': 71, 'reached': 229}
-RA-MPC statuses: {'infeasible': 37, 'reached': 263} | infeasible at k=0: 37 later: 0
+RA-MPC statuses: {'reached': 263, 'infeasible': 37} | infeasible at k=0: 37 later: 0
 vanilla closed loop: {'reached': 213} min h 0.13435038588814366
 
 ## performance on common successes
@@ -92,5 +92,9 @@ T=0.3125: vanilla&~RA 0, RA&~vanilla 48, status {'infeasible': 39, 'reached': 26
 T=0.416667: vanilla&~RA 0, RA&~vanilla 45, status {'infeasible': 44, 'reached': 256}
 T=0.625: vanilla&~RA 0, RA&~vanilla 39, status {'infeasible': 52, 'reached': 248}
 T=1.25: vanilla&~RA 30, RA&~vanilla 17, status {'infeasible': 135, 'reached': 165}
+
+## computation times
+online: {'idx': array([  2,  21,  43,  66,  95, 122, 142, 164, 187, 207, 246, 268]), 'ra': {'mean': 69.7072916573132, 'median': 68.92916699871421, 'first': 114.30860775484082, 'later': 66.5024066682693, 'n': 179}, 'vanilla': {'mean': 46.99179678125522, 'median': 44.98477099696174, 'first': 66.62820140869978, 'later': 45.355429728968176, 'n': 156}, 'ura_ms': 0.22658925862439597}
+offline [s]: {'steps': {'sos_design': 2.643, 'controller': 0.05825404200004414, 'time_scale': 33.57452654198278, 'input_bounds': 1.1036145000252873, 'terminal_weight': 0.1835265419795178}, 'URA': 2.701254042000044, 'RA_MPC': 37.56292162598763, 'reps': 3}
 
 shared x0: {'i0': 6, 'x0': array([ 1.32977056,  1.77623736, -2.82029617,  1.73260594]), 't_van': 1.2000000000000004, 't_ura': 1.471593629480743, 't_ra': 1.5500000000000007, 'all3': 199}

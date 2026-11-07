@@ -1,5 +1,6 @@
 % k1 of Example 2: psi from task.json (normalised to max 1), target disc at the slot. Solved in scaled outputs y / SCALE with
-% lambda fixed (LMIN), |k1_i| <= KMAX on {psi >= 0} and degree DEG. Writes k1.txt. Prints the solve time reported in Table I.
+% lambda fixed (LMIN), |k1_i| <= KMAX on {psi >= 0} and degree DEG. Writes k1.txt. Writes the time of this script to data/sos_time.txt for Table I.
+t_total = tic;
 global LMIN KMAX SCALE
 here = fileparts(mfilename('fullpath')); cd(here);
 addpath(fullfile(here, '..', 'sos'));
@@ -13,3 +14,4 @@ t0 = tic; [k1y, lam, del] = solve_vanilla_k1_controller(y_vars_sym, safe_set_sym
 fprintf('__DESIGN__,lambda %.10g,delta %.10g,delta/lambda %.10g,solve time %g s\n', lam, del, del/lam, toc(t0));
 fid = fopen('k1.txt', 'w');
 fprintf(fid, '%s\n%s\n%.17g\n%.17g\n%s\n%.17g\n', char(k1y(1)), char(k1y(2)), lam, del, char(psi_raw), pmax); fclose(fid);
+fid = fopen(fullfile('data', 'sos_time.txt'), 'w'); fprintf(fid, '%.3f\n', toc(t_total)); fclose(fid);
