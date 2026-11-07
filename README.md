@@ -38,10 +38,26 @@
 | Experiments              | Python 3.11 with numpy 2.4, scipy 1.17, sympy 1.14, casadi 3.7.2 (IPOPT), joblib 1.5 and matplotlib 3.10; conda environment `rab_mpc`      |
 | MuJoCo scenes and videos | the packages above plus mujoco 3.15 and imageio; conda environment `rab_franka`                                                            |
 
+The exact versions are pinned in `environment.yml` (`rab_mpc`) and
+`environment-mujoco.yml` (`rab_franka`):
+
 ```bash
-conda create -n rab_mpc python=3.11 numpy scipy sympy matplotlib joblib -c conda-forge
-conda activate rab_mpc && pip install casadi
+conda env create -f environment.yml && conda activate rab_mpc
 ```
+
+| Dependency | Version | Licence |
+| --- | --- | --- |
+| MATLAB, Symbolic Math Toolbox | R2025a | proprietary (MathWorks) |
+| [SOSTOOLS](https://github.com/oxfordcontrol/SOSTOOLS) | 4.03 | GPL 3.0 |
+| MOSEK | 11.0 | proprietary; free academic licence |
+| numpy, scipy, sympy, joblib | 2.4.6, 1.17.1, 1.14.0, 1.5.3 | BSD 3-Clause |
+| matplotlib | 3.10.9 | Matplotlib licence (PSF based) |
+| CasADi, with the bundled IPOPT | 3.7.2 | LGPL 3.0; IPOPT under EPL 2.0 |
+| MuJoCo | 3.15.0 | Apache 2.0 |
+| imageio | 2.38.1 | BSD 2-Clause |
+
+No specialised hardware is needed; a multi-core CPU shortens the runs that use
+joblib.
 
 ## Reproduction
 
@@ -103,7 +119,9 @@ environment).
 
 ```
 .
-├── README.md, reach_avoid_mpc.png
+├── README.md, SUMMARY.md, LICENSE, CITATION.cff, reach_avoid_mpc.png
+├── environment.yml, environment-mujoco.yml
+│                               conda environments rab_mpc and rab_franka with pinned versions
 ├── docs/readme_figure/         LaTeX source of reach_avoid_mpc.png (block diagram and Fig. 1)
 ├── docs/media/                 GIFs of the MuJoCo videos shown in this README
 ├── matlab/                     SOS helpers: poly2sym.m, sym2pvar.m
@@ -120,7 +138,15 @@ environment).
     ├── arm_top/                Example 2, SCARA arm, all eight kitting tasks:
     │                           tasks/, k1/, data/<task>/, figs/<task>/
     ├── scara/                  MuJoCo scene, stills and videos of the SCARA
+    ├── franka/                 Panda-like arm in MuJoCo, not part of the paper (PAPER_FRANKA.md)
     └── PAPER_DUBINS.md, PAPER_ARM_TOP.md, PAPER_SCARA.md
                                 notes with every number, table and check behind the paper;
                                 REPORT.md and STUDY_14_DIRECT.md record the design decisions
 ```
+
+## Licence and citation
+
+The code and data are released under the MIT License, see `LICENSE`; the
+dependencies above keep their own licences. `SUMMARY.md` describes the
+components of the repository, and `CITATION.cff` gives the citation of the
+paper.

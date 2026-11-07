@@ -1,0 +1,19 @@
+# Environment of the MuJoCo scenes, stills and videos (Fig. 6 and the
+# videos of the SCARA, and the Panda-like arm in experiments/strict_xra/franka).
+# Same packages as environment.yml plus mujoco and imageio.
+#   conda env create -f environment-mujoco.yml && conda activate rab_franka
+name: rab_franka
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11.0
+  - numpy=2.4.6
+  - scipy=1.17.1
+  - sympy=1.14.0
+  - matplotlib=3.10.9
+  - joblib=1.5.3
+  - pip
+  - pip:
+      - casadi==3.7.2
+      - mujoco==3.15.0
+      - imageio==2.38.1

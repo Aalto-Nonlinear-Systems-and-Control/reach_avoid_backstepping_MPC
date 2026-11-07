@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+message: "If you use this code or data, please cite the article below."
+title: "Code and data of: Reach-Avoid Model Predictive Control with Guaranteed Recursive Feasibility via Input Constrained Backstepping"
+authors:
+  - family-names: Ding
+    given-names: Jianqiang
+    affiliation: "Aalto University"
+  - family-names: Bhave
+    given-names: Nishant Jayesh
+    affiliation: "Indian Institute of Technology Bombay"
+  - family-names: Deka
+    given-names: Shankar A.
+    affiliation: "Aalto University"
+repository-code: "https://github.com/Aalto-Nonlinear-Systems-and-Control/reach_avoid_backstepping_MPC"
+license: MIT
+preferred-citation:
+  type: article
+  title: "Reach-Avoid Model Predictive Control with Guaranteed Recursive Feasibility via Input Constrained Backstepping"
+  authors:
+    - family-names: Ding
+      given-names: Jianqiang
+    - family-names: Bhave
+      given-names: Nishant Jayesh
+    - family-names: Deka
+      given-names: Shankar A.
+  year: 2026
+  journal: "arXiv preprint arXiv:2604.03407"
+  url: "https://arxiv.org/abs/2604.03407"
+  notes: "Submitted to the IEEE Open Journal of Control Systems; replace with the journal citation once published."
