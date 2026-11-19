@@ -138,7 +138,8 @@ Both examples have the same structure:
 
 ## Licence and citation
 
-The code and data are released under the MIT License, see `LICENSE`; the
-dependencies above keep their own licences. `SUMMARY.md` describes the
-components of the repository, and `CITATION.cff` gives the citation of the
-paper.
+The code and data are released under the [MIT License](LICENSE). The
+third-party software listed above keeps its own licence.
+
+If you use this code in your research, please cite our paper as given in
+[CITATION.cff](CITATION.cff).
